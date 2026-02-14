@@ -55,8 +55,8 @@
     },
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 32,
-      "lastAccessed": 1771067155427,
+      "accessCount": 40,
+      "lastAccessed": 1771068109817,
       "type": "file"
     },
     {
@@ -67,20 +67,20 @@
     },
     {
       "path": "src/lib/api/response.ts",
-      "accessCount": 15,
-      "lastAccessed": 1771067160710,
+      "accessCount": 16,
+      "lastAccessed": 1771067646252,
       "type": "file"
     },
     {
       "path": "src/types/api.ts",
-      "accessCount": 14,
-      "lastAccessed": 1771067164728,
+      "accessCount": 15,
+      "lastAccessed": 1771067672195,
       "type": "file"
     },
     {
       "path": "src/lib/api/client.ts",
-      "accessCount": 11,
-      "lastAccessed": 1771067155467,
+      "accessCount": 12,
+      "lastAccessed": 1771067646237,
       "type": "file"
     },
     {
@@ -90,33 +90,33 @@
       "type": "file"
     },
     {
+      "path": "src/components/layout/AppLayout.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1771067640122,
+      "type": "file"
+    },
+    {
       "path": "docs/TECHNICAL_SPECIFICATION_V3.md",
       "accessCount": 8,
       "lastAccessed": 1771030609178,
       "type": "file"
     },
     {
-      "path": "src/components/layout/AppLayout.tsx",
+      "path": "package.json",
       "accessCount": 8,
-      "lastAccessed": 1771067150982,
+      "lastAccessed": 1771067640072,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/queryClient.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771067642906,
       "type": "file"
     },
     {
       "path": "src/components/layout/Sidebar.tsx",
       "accessCount": 7,
       "lastAccessed": 1771048121125,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/queryClient.ts",
-      "accessCount": 7,
-      "lastAccessed": 1771067150825,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 7,
-      "lastAccessed": 1771067155680,
       "type": "file"
     },
     {
@@ -186,6 +186,12 @@
       "type": "file"
     },
     {
+      "path": "src/lib/utils.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771067672264,
+      "type": "file"
+    },
+    {
       "path": "docs/CLARIFICATION_QUESTIONS.md",
       "accessCount": 2,
       "lastAccessed": 1771011839861,
@@ -225,12 +231,6 @@
       "path": "src/app/(main)/dashboard/page.tsx",
       "accessCount": 2,
       "lastAccessed": 1771067145528,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/utils.ts",
-      "accessCount": 2,
-      "lastAccessed": 1771067151046,
       "type": "file"
     },
     {
