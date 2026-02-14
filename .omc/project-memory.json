@@ -60,6 +60,12 @@
       "type": "file"
     },
     {
+      "path": "prisma/schema.prisma",
+      "accessCount": 5,
+      "lastAccessed": 1771034523454,
+      "type": "file"
+    },
+    {
       "path": ".prettierrc",
       "accessCount": 3,
       "lastAccessed": 1771034218729,
@@ -171,6 +177,12 @@
       "path": ".env.local",
       "accessCount": 1,
       "lastAccessed": 1771034402712,
+      "type": "file"
+    },
+    {
+      "path": "prisma/seed.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771034547239,
       "type": "file"
     }
   ],

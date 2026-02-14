@@ -1,0 +1,187 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 用户与权限
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  passwordHash   String
+  name          String
+  avatar        String?
+  phone         String?
+  status        UserStatus @default(PENDING)
+  role          SystemRole @default(REGULAR)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  // 关系
+  ownedProjects  Project[]     @relation("ProjectOwner")
+  projectMembers ProjectMember[]
+
+  @@index([email])
+  @@map("users")
+}
+
+enum UserStatus {
+  PENDING     // 待审批
+  ACTIVE      // 已激活
+  SUSPENDED   // 已暂停
+  INACTIVE    // 已停用
+}
+
+enum SystemRole {
+  REGULAR      // 普通员工
+  ADMIN        // 系统管理员
+}
+
+// ============================================================================
+// 项目管理
+// ============================================================================
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String
+  description String?
+  status      ProjectStatus @default(PLANNING)
+  startDate   DateTime?
+  endDate     DateTime?
+  ownerId     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // 关系
+  owner       User           @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members     ProjectMember[]
+  milestones  Milestone[]
+  tasks       Task[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@map("projects")
+}
+
+enum ProjectStatus {
+  PLANNING    // 计划中
+  ACTIVE      // 进行中
+  ON_HOLD     // 暂停
+  COMPLETED   // 已完成
+  CANCELLED   // 已取消
+}
+
+model ProjectMember {
+  projectId String
+  userId    String
+  role      ProjectMemberRole
+  joinedAt  DateTime @default(now())
+
+  // 关系
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([projectId, userId])
+  @@map("project_members")
+}
+
+enum ProjectMemberRole {
+  PROJECT_OWNER    // 项目所有者 - 完整权限
+  PROJECT_ADMIN    // 项目管理员 - 可管理成员和设置
+  PROJECT_MEMBER   // 项目成员 - 可参与任务
+}
+
+// ============================================================================
+// 里程碑管理
+// ============================================================================
+
+model Milestone {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      MilestoneStatus @default(NOT_STARTED)
+  progress    Int       @default(0) // 0-100
+  dueDate     DateTime?
+  projectId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // 关系
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@map("milestones")
+}
+
+enum MilestoneStatus {
+  NOT_STARTED  // 未开始
+  IN_PROGRESS  // 进行中
+  COMPLETED    // 已完成
+  CANCELLED   // 已取消
+}
+
+// ============================================================================
+// 任务管理 (第一阶段基础表)
+// ============================================================================
+
+model Task {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  progress    Int       @default(0) // 0-100
+  priority    TaskPriority @default(MEDIUM)
+  startDate   DateTime?
+  dueDate     DateTime?
+  estimatedHours Float?
+  projectId   String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  // 关系
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignees  TaskAssignee[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@map("tasks")
+}
+
+enum TaskStatus {
+  TODO        // 待办
+  IN_PROGRESS // 进行中
+  REVIEW      // 待审核
+  TESTING     // 测试中
+  DONE        // 已完成
+}
+
+enum TaskPriority {
+  LOW      // 低
+  MEDIUM   // 中
+  HIGH      // 高
+  URGENT   // 紧急
+}
+
+// 任务执行人关联表
+model TaskAssignee {
+  taskId    String
+  userId    String
+  assignedAt DateTime @default(now())
+
+  // 关系
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@map("task_assignees")
+}
