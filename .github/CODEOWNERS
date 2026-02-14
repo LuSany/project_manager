@@ -1,0 +1,12 @@
+# 代码所有者配置
+
+# 全局默认所有者
+* @team-lead
+
+# 核心模块所有者
+/src/app/api/ @team-lead
+/src/lib/auth/ @team-lead
+/src/lib/db/ @team-lead
+
+# 前端组件
+/src/components/ui/ @frontend-dev

@@ -1,0 +1,178 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1771011034903,
+  "projectRoot": "/home/sany/projects/project_manager",
+  "techStack": {
+    "languages": [],
+    "frameworks": [],
+    "packageManager": null,
+    "runtime": null
+  },
+  "build": {
+    "buildCommand": null,
+    "testCommand": null,
+    "lintCommand": null,
+    "devCommand": null,
+    "scripts": {}
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": null,
+    "fileOrganization": null
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 3,
+      "lastAccessed": 1771011034896,
+      "keyFiles": [
+        "FINAL_TECHNICAL_SPECIFICATION.md",
+        "OPTIMIZED_FINAL_SPECIFICATION.md",
+        "TECHNICAL_SPECIFICATION_V3.md"
+      ]
+    }
+  },
+  "hotPaths": [
+    {
+      "path": "docs/TECHNICAL_SPECIFICATION_V4.md",
+      "accessCount": 87,
+      "lastAccessed": 1771034034676,
+      "type": "file"
+    },
+    {
+      "path": "docs/TECHNICAL_SPECIFICATION_V3.md",
+      "accessCount": 8,
+      "lastAccessed": 1771030609178,
+      "type": "file"
+    },
+    {
+      "path": ".prettierrc",
+      "accessCount": 3,
+      "lastAccessed": 1771034218729,
+      "type": "file"
+    },
+    {
+      "path": "README.md",
+      "accessCount": 3,
+      "lastAccessed": 1771034360002,
+      "type": "file"
+    },
+    {
+      "path": "docs/CLARIFICATION_QUESTIONS.md",
+      "accessCount": 2,
+      "lastAccessed": 1771011839861,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 2,
+      "lastAccessed": 1771034218365,
+      "type": "file"
+    },
+    {
+      "path": "docs/CLARIFICATION_ANSWERS.md",
+      "accessCount": 1,
+      "lastAccessed": 1771029873741,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 1,
+      "lastAccessed": 1771034134576,
+      "type": "file"
+    },
+    {
+      "path": "next.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771034134923,
+      "type": "file"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771034135267,
+      "type": "file"
+    },
+    {
+      "path": "postcss.config.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1771034135628,
+      "type": "file"
+    },
+    {
+      "path": "eslint.config.mjs",
+      "accessCount": 1,
+      "lastAccessed": 1771034135975,
+      "type": "file"
+    },
+    {
+      "path": ".prettierignore",
+      "accessCount": 1,
+      "lastAccessed": 1771034136681,
+      "type": "file"
+    },
+    {
+      "path": "src/app/globals.css",
+      "accessCount": 1,
+      "lastAccessed": 1771034160010,
+      "type": "file"
+    },
+    {
+      "path": "src/app/layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771034160377,
+      "type": "file"
+    },
+    {
+      "path": "src/app/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771034160745,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771034161114,
+      "type": "file"
+    },
+    {
+      "path": ".env.example",
+      "accessCount": 1,
+      "lastAccessed": 1771034161503,
+      "type": "file"
+    },
+    {
+      "path": ".vscode/settings.json",
+      "accessCount": 1,
+      "lastAccessed": 1771034246094,
+      "type": "file"
+    },
+    {
+      "path": ".vscode/extensions.json",
+      "accessCount": 1,
+      "lastAccessed": 1771034246476,
+      "type": "file"
+    },
+    {
+      "path": ".env.local",
+      "accessCount": 1,
+      "lastAccessed": 1771034402712,
+      "type": "file"
+    }
+  ],
+  "userDirectives": []
+}
