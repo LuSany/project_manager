@@ -328,6 +328,18 @@
       "accessCount": 1,
       "lastAccessed": 1771048350958,
       "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/auth/login/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771048502920,
+      "type": "file"
+    },
+    {
+      "path": "src/app/login/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771048503284,
+      "type": "file"
     }
   ],
   "userDirectives": []
