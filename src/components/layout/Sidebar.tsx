@@ -9,6 +9,7 @@ import {
   FileText,
   CheckSquare,
   AlertCircle,
+  Menu,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,10 +56,13 @@ const navItems: NavItem[] = [
 
 export interface SidebarProps {
   className?: string;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
 }
 
-export function Sidebar({ className }: SidebarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsedChange }: SidebarProps) {
+  const [internalCollapsed, setInternalCollapsed] = useState(false);
+  const collapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
 
   return (
     <aside
@@ -77,7 +81,11 @@ export function Sidebar({ className }: SidebarProps) {
           <span className="font-semibold text-foreground">项目管理</span>
         </div>
         <button
-          onClick={() => setCollapsed(!collapsed)}
+          onClick={() => {
+            const newCollapsed = !collapsed;
+            setInternalCollapsed(newCollapsed);
+            onCollapsedChange?.(newCollapsed);
+          }}
           className="p-2 rounded-md hover:bg-accent"
         >
           <Menu className="h-5 w-5" />

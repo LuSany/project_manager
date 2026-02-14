@@ -11,25 +11,24 @@ interface AuthState {
   token: string | null;
 }
 
-interface AuthActions {
+type AuthActions = {
   setUser: (user: AuthState["user"]) => void;
   setToken: (token: string) => void;
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState & AuthActions>(
+export const useAuthStore = create<AuthState & AuthActions>()(
   persist(
     (set) => ({
-      name: "auth",
-      state: {
-        user: null,
-        token: null,
-      },
-      actions: (set) => ({
-        setUser: (user) => set({ user }),
-        setToken: (token) => set({ token }),
-        logout: () => set({ user: null, token: null }),
-      }),
-    })
+      name: "auth-storage",
+      user: null,
+      token: null,
+      setUser: (user) => set({ user }),
+      setToken: (token) => set({ token }),
+      logout: () => set({ user: null, token: null }),
+    }),
+    {
+      name: "auth-storage",
+    }
   )
 );

@@ -4,11 +4,11 @@ import { useState } from "react";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 
-export function AppLayout({
-  children,
-}: {
+export interface AppLayoutProps {
   children: React.ReactNode;
-}) {
+}
+
+export function AppLayout({ children }: AppLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (

@@ -1,6 +1,6 @@
-import { type NextRequest } from "next/server";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import type { ApiResponse, PaginatedResponse } from "@/types/api";
+import type { ApiResponse } from "@/types/api";
 
 export class ApiResponder {
   /**
@@ -10,8 +10,8 @@ export class ApiResponder {
     data: T,
     message?: string,
     status: number = 200
-  ): Response {
-    return Response.json({
+  ): NextResponse<ApiResponse<T>> {
+    return NextResponse.json({
       success: true,
       data,
       ...(message && { message }),
@@ -24,7 +24,7 @@ export class ApiResponder {
   static created<T>(
     data: T,
     message: string = "创建成功"
-  ): Response {
+  ): NextResponse<ApiResponse<T>> {
     return this.success(data, message, 201);
   }
 
@@ -36,8 +36,8 @@ export class ApiResponder {
     message: string,
     details?: Record<string, unknown>,
     status: number = 400
-  ): Response {
-    return Response.json({
+  ): NextResponse<ApiResponse<null>> {
+    return NextResponse.json({
       success: false,
       error: {
         code,
@@ -48,30 +48,30 @@ export class ApiResponder {
   }
 
   /**
-   * 验证错误
+   * 未授权错误
    */
-  static unauthorized(message: string = "未授权访问"): Response {
+  static unauthorized(message: string = "未授权访问"): NextResponse<ApiResponse<null>> {
     return this.error("UNAUTHORIZED", message, undefined, 401);
   }
 
   /**
    * 禁止访问
    */
-  static forbidden(message: string = "无权访问此资源"): Response {
+  static forbidden(message: string = "无权访问此资源"): NextResponse<ApiResponse<null>> {
     return this.error("FORBIDDEN", message, undefined, 403);
   }
 
   /**
    * 资源未找到
    */
-  static notFound(message: string = "请求的资源不存在"): Response {
+  static notFound(message: string = "请求的资源不存在"): NextResponse<ApiResponse<null>> {
     return this.error("NOT_FOUND", message, undefined, 404);
   }
 
   /**
    * 服务器错误
    */
-  static serverError(message: string = "服务器内部错误"): Response {
+  static serverError(message: string = "服务器内部错误"): NextResponse<ApiResponse<null>> {
     return this.error("INTERNAL_ERROR", message, undefined, 500);
   }
 
@@ -81,10 +81,7 @@ export class ApiResponder {
   static validationError(
     message: string,
     details?: Record<string, unknown>
-  ): Response {
+  ): NextResponse<ApiResponse<null>> {
     return this.error("VALIDATION_ERROR", message, details, 400);
   }
 }
-
-// 类型别名，方便使用
-type Response = Instance<typeof NextResponse>;

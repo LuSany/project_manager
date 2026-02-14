@@ -18,7 +18,7 @@ export type MiddlewareContext = {
 
 export async function requireAuth(
   context: MiddlewareContext
-): Promise<void> {
+): Promise<NextResponse | void> {
   const authHeader = context.req.headers.get("authorization");
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -42,7 +42,7 @@ export async function requireAuth(
 
 export async function requireAdmin(
   context: MiddlewareContext
-): Promise<void> {
+): Promise<NextResponse | void> {
   const req = context.req as AuthenticatedRequest;
 
   if (!req.user || req.user.role !== "ADMIN") {
