@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { TaskKanban } from "@/components/tasks/TaskKanban";
 
 interface Task {
   id: string;
@@ -27,7 +28,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     params.then(p => setProjectId(p.id));
   }, [params]);
-  
+
   const [tasks, setTasks] = useState<Task[]>([]);
   const [project, setProject] = useState<Project | null>(null);
   const [loading, setLoading] = useState(true);
@@ -35,6 +36,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   const [totalPages, setTotalPages] = useState(1);
   const [filterStatus, setFilterStatus] = useState<string>("");
   const [filterPriority, setFilterPriority] = useState<string>("");
+  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
 
   const fetchTasks = async () => {
     setLoading(true);
@@ -129,14 +131,38 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         <div className="border-b bg-card px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">任务列表</h1>
-            <button
-              onClick={() => router.push(`/projects/${projectId}/tasks/new`)}
-              className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
-            >
-              新建任务
-            </button>
+            <div className="flex items-center gap-2">
+              <div className="flex bg-muted rounded-md p-1">
+                <button
+                  onClick={() => setViewMode("list")}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === "list"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  列表视图
+                </button>
+                <button
+                  onClick={() => setViewMode("kanban")}
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    viewMode === "kanban"
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  看板视图
+                </button>
+              </div>
+              <button
+                onClick={() => router.push(`/projects/${projectId}/tasks/new`)}
+                className="bg-primary text-primary-foreground px-4 py-2 rounded-md hover:bg-primary/90"
+              >
+                新建任务
+              </button>
+            </div>
           </div>
-          
+
           <div className="flex items-center gap-4 mt-4">
             <select
               value={filterStatus}
@@ -153,7 +179,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
               <option value="TESTING">测试中</option>
               <option value="DONE">已完成</option>
             </select>
-            
+
             <select
               value={filterPriority}
               onChange={(e) => {
@@ -172,63 +198,69 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         </div>
 
         <div className="p-6">
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-          ) : tasks.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <p className="text-lg font-medium mb-2 text-muted-foreground">暂无任务</p>
-                <p className="text-sm text-muted-foreground">开始创建您的第一个任务</p>
-              </div>
-            </div>
+          {viewMode === "kanban" ? (
+            <TaskKanban projectId={projectId} />
           ) : (
-            <div className="space-y-4">
-              {tasks.map((task) => (
-                <div key={task.id} className="bg-card border rounded-lg p-6 hover:shadow-md transition-all">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-semibold">{task.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
-                          {statusLabels[task.status]}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
-                          {priorityLabels[task.priority]}
-                        </span>
-                      </div>
-                      {task.description && (
-                        <p className="text-muted-foreground text-sm mb-2">{task.description}</p>
-                      )}
-                      <div className="text-sm text-muted-foreground">
-                        进度: {task.progress}%
-                        {task.dueDate && (
-                          <span className="ml-4">
-                            截止: {new Date(task.dueDate).toLocaleDateString("zh-CN")}
+          <>
+            {loading ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : tasks.length === 0 ? (
+              <div className="flex items-center justify-center h-64">
+                <div className="text-center">
+                  <p className="text-lg font-medium mb-2 text-muted-foreground">暂无任务</p>
+                  <p className="text-sm text-muted-foreground">开始创建您的第一个任务</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {tasks.map((task) => (
+                  <div key={task.id} className="bg-card border rounded-lg p-6 hover:shadow-md transition-all">
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="text-xl font-semibold">{task.title}</h3>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
+                            {statusLabels[task.status]}
                           </span>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
+                            {priorityLabels[task.priority]}
+                          </span>
+                        </div>
+                        {task.description && (
+                          <p className="text-muted-foreground text-sm mb-2">{task.description}</p>
                         )}
+                        <div className="text-sm text-muted-foreground">
+                          进度: {task.progress}%
+                          {task.dueDate && (
+                            <span className="ml-4">
+                              截止: {new Date(task.dueDate).toLocaleDateString("zh-CN")}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => router.push(`/projects/${projectId}/tasks/${task.id}`)}
-                      className="text-primary hover:underline"
-                    >
-                      查看详情 →
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task.id)}
-                      className="text-destructive hover:underline text-sm"
-                    >
-                      删除
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => router.push(`/projects/${projectId}/tasks/${task.id}`)}
+                        className="text-primary hover:underline"
+                      >
+                        查看详情 →
+                      </button>
+                      <button
+                        onClick={() => handleDelete(task.id)}
+                        className="text-destructive hover:underline text-sm"
+                      >
+                        删除
+                      </button>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
+          </>
           )}
 
           {totalPages > 1 && (
