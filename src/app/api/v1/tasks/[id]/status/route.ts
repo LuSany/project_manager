@@ -8,14 +8,16 @@ const updateStatusSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
+
   try {
     const body = await request.json();
     const validatedData = updateStatusSchema.parse(body);
 
     const task = await db.task.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
     });
 

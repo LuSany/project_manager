@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-export default function NewTaskPage({ params }: { params: { id: string } }) {
+export default function NewTaskPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const projectId = params.id;
-
+  const [projectId, setProjectId] = useState<string>("");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState("TODO");
@@ -16,6 +15,10 @@ export default function NewTaskPage({ params }: { params: { id: string } }) {
   const [estimatedHours, setEstimatedHours] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    params.then(p => setProjectId(p.id));
+  }, [params]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

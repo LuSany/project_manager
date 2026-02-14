@@ -12,10 +12,10 @@ const projectSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = req;
-    const page = parseInt(searchParams.page || "1");
-    const pageSize = parseInt(searchParams.pageSize || "10");
-    const status = searchParams.status as any;
+    const searchParams = req.nextUrl.searchParams;
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const status = searchParams.get("status") as any;
 
     const where: any = {};
     if (status) {
@@ -36,11 +36,6 @@ export async function GET(req: NextRequest) {
           select: {
             id: true,
             name: true,
-            description: true,
-            status: true,
-            startDate: true,
-            endDate: true,
-            createdAt: true,
           },
         },
       },

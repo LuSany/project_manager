@@ -20,9 +20,13 @@ interface Project {
   status: string;
 }
 
-export default function TasksPage({ params }: { params: { id: string } }) {
+export default function TasksPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
-  const projectId = params.id;
+  const [projectId, setProjectId] = useState<string>("");
+
+  useEffect(() => {
+    params.then(p => setProjectId(p.id));
+  }, [params]);
   
   const [tasks, setTasks] = useState<Task[]>([]);
   const [project, setProject] = useState<Project | null>(null);

@@ -15,36 +15,37 @@ datasource db {
 // ============================================================================
 
 model User {
-  id            String    @id @default(cuid())
-  email         String    @unique
-  passwordHash   String
-  name          String
-  avatar        String?
-  phone         String?
-  status        UserStatus @default(PENDING)
-  role          SystemRole @default(REGULAR)
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String
+  name         String
+  avatar       String?
+  phone        String?
+  status       UserStatus @default(PENDING)
+  role         SystemRole @default(REGULAR)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   // 关系
-  ownedProjects  Project[]        @relation("ProjectOwner")
-  projectMembers ProjectMember[]
+  ownedProjects       Project[]            @relation("ProjectOwner")
+  projectMembers      ProjectMember[]
   passwordResetTokens PasswordResetToken[]
+  taskAssignees      TaskAssignee[]          @relation("TaskAssignees")
 
   @@index([email])
   @@map("users")
 }
 
 enum UserStatus {
-  PENDING     // 待审批
-  ACTIVE      // 已激活
-  SUSPENDED   // 已暂停
-  INACTIVE    // 已停用
+  PENDING // 待审批
+  ACTIVE // 已激活
+  SUSPENDED // 已暂停
+  INACTIVE // 已停用
 }
 
 enum SystemRole {
-  REGULAR      // 普通员工
-  ADMIN        // 系统管理员
+  REGULAR // 普通员工
+  ADMIN // 系统管理员
 }
 
 // ============================================================================
@@ -52,21 +53,21 @@ enum SystemRole {
 // ============================================================================
 
 model Project {
-  id          String    @id @default(cuid())
+  id          String        @id @default(cuid())
   name        String
   description String?
   status      ProjectStatus @default(PLANNING)
   startDate   DateTime?
   endDate     DateTime?
   ownerId     String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   // 关系
-  owner       User           @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members     ProjectMember[]
-  milestones  Milestone[]
-  tasks       Task[]
+  owner      User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members    ProjectMember[]
+  milestones Milestone[]
+  tasks      Task[]
 
   @@index([ownerId])
   @@index([status])
@@ -74,31 +75,31 @@ model Project {
 }
 
 enum ProjectStatus {
-  PLANNING    // 计划中
-  ACTIVE      // 进行中
-  ON_HOLD     // 暂停
-  COMPLETED   // 已完成
-  CANCELLED   // 已取消
+  PLANNING // 计划中
+  ACTIVE // 进行中
+  ON_HOLD // 暂停
+  COMPLETED // 已完成
+  CANCELLED // 已取消
 }
 
 model ProjectMember {
   projectId String
   userId    String
   role      ProjectMemberRole
-  joinedAt  DateTime @default(now())
+  joinedAt  DateTime          @default(now())
 
   // 关系
-  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([projectId, userId])
   @@map("project_members")
 }
 
 enum ProjectMemberRole {
-  PROJECT_OWNER    // 项目所有者 - 完整权限
-  PROJECT_ADMIN    // 项目管理员 - 可管理成员和设置
-  PROJECT_MEMBER   // 项目成员 - 可参与任务
+  PROJECT_OWNER // 项目所有者 - 完整权限
+  PROJECT_ADMIN // 项目管理员 - 可管理成员和设置
+  PROJECT_MEMBER // 项目成员 - 可参与任务
 }
 
 // ============================================================================
@@ -106,15 +107,15 @@ enum ProjectMemberRole {
 // ============================================================================
 
 model Milestone {
-  id          String    @id @default(cuid())
+  id          String          @id @default(cuid())
   title       String
   description String?
   status      MilestoneStatus @default(NOT_STARTED)
-  progress    Int       @default(0) // 0-100
+  progress    Int             @default(0) // 0-100
   dueDate     DateTime?
   projectId   String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   // 关系
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -125,10 +126,10 @@ model Milestone {
 }
 
 enum MilestoneStatus {
-  NOT_STARTED  // 未开始
-  IN_PROGRESS  // 进行中
-  COMPLETED    // 已完成
-  CANCELLED   // 已取消
+  NOT_STARTED // 未开始
+  IN_PROGRESS // 进行中
+  COMPLETED // 已完成
+  CANCELLED // 已取消
 }
 
 // ============================================================================
@@ -155,22 +156,24 @@ model PasswordResetToken {
 // ============================================================================
 
 model Task {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  status      TaskStatus @default(TODO)
-  progress    Int       @default(0) // 0-100
-  priority    TaskPriority @default(MEDIUM)
-  startDate   DateTime?
-  dueDate     DateTime?
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  status         TaskStatus   @default(TODO)
+  progress       Int          @default(0) // 0-100
+  priority       TaskPriority @default(MEDIUM)
+  startDate      DateTime?
+  dueDate        DateTime?
   estimatedHours Float?
-  projectId   String
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  projectId      String
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   // 关系
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  assignees  TaskAssignee[]
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignees TaskAssignee[]
+  subTasks  SubTask[]
+  taskTags  TaskTag[]
 
   @@index([projectId])
   @@index([status])
@@ -179,29 +182,107 @@ model Task {
 }
 
 enum TaskStatus {
-  TODO        // 待办
+  TODO // 待办
   IN_PROGRESS // 进行中
-  REVIEW      // 待审核
-  TESTING     // 测试中
-  DONE        // 已完成
+  REVIEW // 待审核
+  TESTING // 测试中
+  DONE // 已完成
 }
 
 enum TaskPriority {
-  LOW      // 低
-  MEDIUM   // 中
-  HIGH      // 高
-  URGENT   // 紧急
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
+  URGENT // 紧急
 }
 
 // 任务执行人关联表
 model TaskAssignee {
-  taskId    String
-  userId    String
+  taskId     String
+  userId     String
   assignedAt DateTime @default(now())
 
   // 关系
   task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation("TaskAssignees", fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([taskId, userId])
   @@map("task_assignees")
+}
+
+// ============================================================================
+// 子任务管理
+// ============================================================================
+
+model SubTask {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  taskId      String
+  parentId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系
+  task     Task      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  parent   SubTask?  @relation("SubTaskHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children SubTask[] @relation("SubTaskHierarchy")
+
+  @@index([taskId])
+  @@index([parentId])
+  @@index([completed])
+  @@map("subtasks")
+}
+
+// ============================================================================
+// 标签管理
+// ============================================================================
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  color     String   @default("#3B82F6")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  taskTags TaskTag[]
+
+  @@index([name])
+  @@map("tags")
+}
+
+// 任务与标签关联表
+model TaskTag {
+  taskId    String
+  tagId     String
+  createdAt DateTime @default(now())
+
+  // 关系
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  tag  Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, tagId])
+  @@index([tagId])
+  @@map("task_tags")
+}
+
+// ============================================================================
+// 任务模板管理
+// ============================================================================
+
+model TaskTemplate {
+  id           String   @id @default(cuid())
+  title        String
+  description  String?
+  templateData String // JSON格式存储模板配置
+  isPublic     Boolean  @default(false)
+  createdBy    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([createdBy])
+  @@index([isPublic])
+  @@map("task_templates")
 }

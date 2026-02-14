@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { z } from "zod";
 
 const updateProgressSchema = z.object({
   progress: z.number().min(0).max(100).optional(),
@@ -7,14 +8,15 @@ const updateProgressSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params;
   try {
     const body = await request.json();
     const validatedData = updateProgressSchema.parse(body);
 
     const task = await db.task.update({
-      where: { id: params.id },
+      where: { id },
       data: validatedData,
     });
 

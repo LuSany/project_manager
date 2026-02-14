@@ -3,10 +3,14 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
 import type { AuthenticatedRequest } from "@/middleware";
 
-export async function DELETE(req: NextRequest) {
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user = (req as AuthenticatedRequest).user;
+
   try {
-    const { id } = req;
-    const user = (req as AuthenticatedRequest).user;
     if (!user) {
       return ApiResponder.unauthorized("未授权访问");
     }

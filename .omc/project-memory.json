@@ -54,27 +54,39 @@
       "type": "file"
     },
     {
-      "path": "src/app/globals.css",
-      "accessCount": 15,
-      "lastAccessed": 1771051237069,
-      "type": "file"
-    },
-    {
-      "path": "src/types/api.ts",
-      "accessCount": 11,
-      "lastAccessed": 1771049536585,
-      "type": "file"
-    },
-    {
       "path": "prisma/schema.prisma",
-      "accessCount": 11,
-      "lastAccessed": 1771050669204,
+      "accessCount": 32,
+      "lastAccessed": 1771067155427,
+      "type": "file"
+    },
+    {
+      "path": "src/app/globals.css",
+      "accessCount": 21,
+      "lastAccessed": 1771067421857,
       "type": "file"
     },
     {
       "path": "src/lib/api/response.ts",
-      "accessCount": 10,
-      "lastAccessed": 1771049522660,
+      "accessCount": 15,
+      "lastAccessed": 1771067160710,
+      "type": "file"
+    },
+    {
+      "path": "src/types/api.ts",
+      "accessCount": 14,
+      "lastAccessed": 1771067164728,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api/client.ts",
+      "accessCount": 11,
+      "lastAccessed": 1771067155467,
+      "type": "file"
+    },
+    {
+      "path": "src/stores/authStore.ts",
+      "accessCount": 9,
+      "lastAccessed": 1771067140485,
       "type": "file"
     },
     {
@@ -84,15 +96,9 @@
       "type": "file"
     },
     {
-      "path": "src/stores/authStore.ts",
+      "path": "src/components/layout/AppLayout.tsx",
       "accessCount": 8,
-      "lastAccessed": 1771048145027,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/api/client.ts",
-      "accessCount": 8,
-      "lastAccessed": 1771049530165,
+      "lastAccessed": 1771067150982,
       "type": "file"
     },
     {
@@ -102,15 +108,27 @@
       "type": "file"
     },
     {
-      "path": "src/components/layout/AppLayout.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1771048034980,
+      "path": "src/lib/queryClient.ts",
+      "accessCount": 7,
+      "lastAccessed": 1771067150825,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 7,
+      "lastAccessed": 1771067155680,
       "type": "file"
     },
     {
       "path": "tests/setup.ts",
       "accessCount": 6,
       "lastAccessed": 1771048456882,
+      "type": "file"
+    },
+    {
+      "path": "tsconfig.json",
+      "accessCount": 6,
+      "lastAccessed": 1771067160625,
       "type": "file"
     },
     {
@@ -123,12 +141,6 @@
       "path": "src/middleware.ts",
       "accessCount": 5,
       "lastAccessed": 1771048121885,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/queryClient.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771048035819,
       "type": "file"
     },
     {
@@ -162,21 +174,15 @@
       "type": "file"
     },
     {
-      "path": "package.json",
-      "accessCount": 3,
-      "lastAccessed": 1771048715827,
-      "type": "file"
-    },
-    {
       "path": "src/app/api/v1/route.ts",
       "accessCount": 3,
       "lastAccessed": 1771051329529,
       "type": "file"
     },
     {
-      "path": "tsconfig.json",
+      "path": "src/lib/prisma.ts",
       "accessCount": 3,
-      "lastAccessed": 1771051365929,
+      "lastAccessed": 1771066237402,
       "type": "file"
     },
     {
@@ -216,21 +222,27 @@
       "type": "file"
     },
     {
-      "path": "src/lib/prisma.ts",
+      "path": "src/app/(main)/dashboard/page.tsx",
       "accessCount": 2,
-      "lastAccessed": 1771050859841,
+      "lastAccessed": 1771067145528,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/utils.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771067151046,
+      "type": "file"
+    },
+    {
+      "path": "tailwind.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771067164538,
       "type": "file"
     },
     {
       "path": "docs/CLARIFICATION_ANSWERS.md",
       "accessCount": 1,
       "lastAccessed": 1771029873741,
-      "type": "file"
-    },
-    {
-      "path": "tailwind.config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771034135267,
       "type": "file"
     },
     {
@@ -249,12 +261,6 @@
       "path": ".prettierignore",
       "accessCount": 1,
       "lastAccessed": 1771034136681,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/utils.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771034161114,
       "type": "file"
     },
     {
@@ -297,12 +303,6 @@
       "path": "src/app/(main)/layout.tsx",
       "accessCount": 1,
       "lastAccessed": 1771034877643,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/dashboard/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771034878396,
       "type": "file"
     },
     {

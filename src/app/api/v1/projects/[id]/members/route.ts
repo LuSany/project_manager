@@ -9,9 +9,13 @@ const memberSchema = z.object({
   userId: z.string().email("请选择用户"),
 });
 
-export async function GET(req: NextRequest) {
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+
   try {
-    const { id } = req;
     const project = await prisma.project.findUnique({
       where: { id },
       include: {

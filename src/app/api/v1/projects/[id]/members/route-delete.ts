@@ -3,14 +3,24 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
 import type { AuthenticatedRequest } from "@/middleware";
 
-export async function DELETE(req: NextRequest) {
-  try {
-    const { id } = req;
-    const { userId } = req;
-    const user = (req as AuthenticatedRequest).user;
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const user = (req as AuthenticatedRequest).user;
 
+  try {
     if (!user) {
       return ApiResponder.unauthorized("未授权访问");
+    }
+
+    // 从请求body中获取userId
+    const body = await req.json();
+    const { userId } = body;
+
+    if (!userId) {
+      return ApiResponder.validationError("userId不能为空");
     }
 
     // 查找项目
@@ -40,11 +50,9 @@ export async function DELETE(req: NextRequest) {
     // 检查成员是否存在
     const member = await prisma.projectMember.findFirst({
       where: {
-        AND: [
-          { projectId: id },
-          { userId: userId },
-          { role: { in: ["PROJECT_MEMBER", "PROJECT_ADMIN", "PROJECT_OWNER"] },
-        ],
+        projectId: id,
+        userId: userId,
+        role: { in: ["PROJECT_MEMBER", "PROJECT_ADMIN", "PROJECT_OWNER"] },
       },
     });
 
@@ -57,13 +65,11 @@ export async function DELETE(req: NextRequest) {
       return ApiResponder.forbidden("不能删除项目所有者");
     }
 
-    await prisma.projectMember.delete({
+    await prisma.projectMember.deleteMany({
       where: {
-        AND: [
-          { projectId: id },
-          { userId },
-          { role: { in: ["PROJECT_MEMBER", "PROJECT_ADMIN", "PROJECT_OWNER"] },
-        ],
+        projectId: id,
+        userId: userId,
+        role: { in: ["PROJECT_MEMBER", "PROJECT_ADMIN", "PROJECT_OWNER"] },
       },
     });
 
