@@ -1,4 +1,4 @@
-import { beforeAll, afterEach } from "vitest/globals";
+import { beforeAll, afterAll } from "vitest";
 import { prisma } from "../src/lib/prisma";
 
 beforeAll(async () => {

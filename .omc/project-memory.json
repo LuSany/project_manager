@@ -96,6 +96,12 @@
       "type": "file"
     },
     {
+      "path": "tests/setup.ts",
+      "accessCount": 6,
+      "lastAccessed": 1771048456882,
+      "type": "file"
+    },
+    {
       "path": "prisma/schema.prisma",
       "accessCount": 5,
       "lastAccessed": 1771034523454,
@@ -138,6 +144,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/api/v1/auth/register/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771048397164,
+      "type": "file"
+    },
+    {
       "path": "docs/CLARIFICATION_QUESTIONS.md",
       "accessCount": 2,
       "lastAccessed": 1771011839861,
@@ -174,15 +186,15 @@
       "type": "file"
     },
     {
-      "path": "tests/setup.ts",
-      "accessCount": 2,
-      "lastAccessed": 1771048287850,
-      "type": "file"
-    },
-    {
       "path": "tests/e2e/auth.spec.ts",
       "accessCount": 2,
       "lastAccessed": 1771048288241,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/auth/register/route.test.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771048381282,
       "type": "file"
     },
     {
@@ -309,6 +321,12 @@
       "path": "tests/mocks/factories.ts",
       "accessCount": 1,
       "lastAccessed": 1771048224101,
+      "type": "file"
+    },
+    {
+      "path": "src/app/register/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1771048350958,
       "type": "file"
     }
   ],
