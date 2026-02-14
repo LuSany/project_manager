@@ -55,8 +55,8 @@
     },
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 46,
-      "lastAccessed": 1771068389419,
+      "accessCount": 48,
+      "lastAccessed": 1771068544147,
       "type": "file"
     },
     {
@@ -67,44 +67,44 @@
     },
     {
       "path": "src/lib/api/response.ts",
-      "accessCount": 16,
-      "lastAccessed": 1771067646252,
+      "accessCount": 17,
+      "lastAccessed": 1771068550498,
       "type": "file"
     },
     {
       "path": "src/types/api.ts",
-      "accessCount": 15,
-      "lastAccessed": 1771067672195,
+      "accessCount": 16,
+      "lastAccessed": 1771068538227,
       "type": "file"
     },
     {
       "path": "src/lib/api/client.ts",
-      "accessCount": 12,
-      "lastAccessed": 1771067646237,
-      "type": "file"
-    },
-    {
-      "path": "src/stores/authStore.ts",
-      "accessCount": 9,
-      "lastAccessed": 1771067140485,
+      "accessCount": 13,
+      "lastAccessed": 1771068538714,
       "type": "file"
     },
     {
       "path": "src/components/layout/AppLayout.tsx",
+      "accessCount": 10,
+      "lastAccessed": 1771068538285,
+      "type": "file"
+    },
+    {
+      "path": "src/stores/authStore.ts",
+      "accessCount": 10,
+      "lastAccessed": 1771068544370,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
       "accessCount": 9,
-      "lastAccessed": 1771067640122,
+      "lastAccessed": 1771068531967,
       "type": "file"
     },
     {
       "path": "docs/TECHNICAL_SPECIFICATION_V3.md",
       "accessCount": 8,
       "lastAccessed": 1771030609178,
-      "type": "file"
-    },
-    {
-      "path": "package.json",
-      "accessCount": 8,
-      "lastAccessed": 1771067640072,
       "type": "file"
     },
     {
@@ -150,6 +150,12 @@
       "type": "file"
     },
     {
+      "path": "src/lib/prisma.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771068554661,
+      "type": "file"
+    },
+    {
       "path": ".prettierrc",
       "accessCount": 3,
       "lastAccessed": 1771034218729,
@@ -177,12 +183,6 @@
       "path": "src/app/api/v1/route.ts",
       "accessCount": 3,
       "lastAccessed": 1771051329529,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/prisma.ts",
-      "accessCount": 3,
-      "lastAccessed": 1771066237402,
       "type": "file"
     },
     {
@@ -237,6 +237,12 @@
       "path": "tailwind.config.ts",
       "accessCount": 2,
       "lastAccessed": 1771067164538,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/auth/login/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771068544604,
       "type": "file"
     },
     {
@@ -327,12 +333,6 @@
       "path": "src/app/register/page.tsx",
       "accessCount": 1,
       "lastAccessed": 1771048350958,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/auth/login/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771048502920,
       "type": "file"
     },
     {
