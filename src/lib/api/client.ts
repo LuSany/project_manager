@@ -39,12 +39,13 @@ export class ApiClient {
   static async get<T>(
     endpoint: string,
     params?: PaginationParams
-  ): Promise<ApiResponse<PaginatedResponse<T>>> {
+  ): Promise<ApiResponse<T>> {
     const queryString = params
       ? `?${new URLSearchParams(params as any).toString()}`
       : "";
 
-    return this.request<PaginatedResponse<T>>(`${endpoint}${queryString}`);
+    return this.request<T>(`${endpoint}${queryString}`);
+  }
 
   // ========================================================================
   // POST请求
