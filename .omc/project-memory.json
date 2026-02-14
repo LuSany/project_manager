@@ -66,6 +66,12 @@
       "type": "file"
     },
     {
+      "path": "prisma/schema.prisma",
+      "accessCount": 9,
+      "lastAccessed": 1771048658652,
+      "type": "file"
+    },
+    {
       "path": "docs/TECHNICAL_SPECIFICATION_V3.md",
       "accessCount": 8,
       "lastAccessed": 1771030609178,
@@ -99,12 +105,6 @@
       "path": "tests/setup.ts",
       "accessCount": 6,
       "lastAccessed": 1771048456882,
-      "type": "file"
-    },
-    {
-      "path": "prisma/schema.prisma",
-      "accessCount": 5,
-      "lastAccessed": 1771034523454,
       "type": "file"
     },
     {
