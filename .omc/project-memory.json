@@ -150,15 +150,15 @@
       "type": "file"
     },
     {
-      "path": "docs/CLARIFICATION_QUESTIONS.md",
-      "accessCount": 2,
-      "lastAccessed": 1771011839861,
+      "path": "package.json",
+      "accessCount": 3,
+      "lastAccessed": 1771048715827,
       "type": "file"
     },
     {
-      "path": "package.json",
+      "path": "docs/CLARIFICATION_QUESTIONS.md",
       "accessCount": 2,
-      "lastAccessed": 1771034218365,
+      "lastAccessed": 1771011839861,
       "type": "file"
     },
     {
