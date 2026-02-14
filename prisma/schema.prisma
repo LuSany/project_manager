@@ -64,10 +64,11 @@ model Project {
   updatedAt   DateTime      @updatedAt
 
   // 关系
-  owner      User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members    ProjectMember[]
-  milestones Milestone[]
-  tasks      Task[]
+  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members      ProjectMember[]
+  milestones   Milestone[]
+  tasks        Task[]
+  requirements Requirement[]
 
   @@index([ownerId])
   @@index([status])
@@ -285,4 +286,41 @@ model TaskTemplate {
   @@index([createdBy])
   @@index([isPublic])
   @@map("task_templates")
+}
+
+// ============================================================================
+// 需求管理
+// ============================================================================
+
+model Requirement {
+  id          String             @id @default(cuid())
+  title       String
+  description String?
+  status      RequirementStatus @default(PENDING)
+  priority    RequirementPriority @default(MEDIUM)
+  projectId   String
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  // 关系
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@map("requirements")
+}
+
+enum RequirementStatus {
+  PENDING // 待审批
+  APPROVED // 已批准
+  REJECTED // 已拒绝
+  IN_PROGRESS // 进行中
+  COMPLETED // 已完成
+}
+
+enum RequirementPriority {
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
 }
