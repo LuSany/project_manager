@@ -132,6 +132,12 @@
       "type": "file"
     },
     {
+      "path": "playwright.config.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771048261804,
+      "type": "file"
+    },
+    {
       "path": "docs/CLARIFICATION_QUESTIONS.md",
       "accessCount": 2,
       "lastAccessed": 1771011839861,
@@ -159,6 +165,24 @@
       "path": "src/app/layout.tsx",
       "accessCount": 2,
       "lastAccessed": 1771034992558,
+      "type": "file"
+    },
+    {
+      "path": "vitest.config.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771048224860,
+      "type": "file"
+    },
+    {
+      "path": "tests/setup.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771048287850,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/auth.spec.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771048288241,
       "type": "file"
     },
     {
@@ -273,6 +297,18 @@
       "path": "src/app/providers.tsx",
       "accessCount": 1,
       "lastAccessed": 1771034992183,
+      "type": "file"
+    },
+    {
+      "path": "tests/mocks/handlers.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771048223723,
+      "type": "file"
+    },
+    {
+      "path": "tests/mocks/factories.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771048224101,
       "type": "file"
     }
   ],
