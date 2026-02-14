@@ -27,10 +27,13 @@ model User {
   updatedAt    DateTime   @updatedAt
 
   // 关系
-  ownedProjects       Project[]            @relation("ProjectOwner")
-  projectMembers      ProjectMember[]
-  passwordResetTokens PasswordResetToken[]
-  taskAssignees      TaskAssignee[]          @relation("TaskAssignees")
+  ownedProjects        Project[]               @relation("ProjectOwner")
+  projectMembers       ProjectMember[]
+  passwordResetTokens  PasswordResetToken[]
+  taskAssignees        TaskAssignee[]          @relation("TaskAssignees")
+  reviewedRequirements Requirement[]           @relation("RequirementReviewer")
+  authoredProposals    Proposal[]              @relation("ProposalAuthor")
+  authoredAcceptances  RequirementAcceptance[] @relation("AcceptanceAuthor")
 
   @@index([email])
   @@map("users")
@@ -69,6 +72,7 @@ model Project {
   milestones   Milestone[]
   tasks        Task[]
   requirements Requirement[]
+  issues       Issue[]
 
   @@index([ownerId])
   @@index([status])
@@ -293,21 +297,29 @@ model TaskTemplate {
 // ============================================================================
 
 model Requirement {
-  id          String             @id @default(cuid())
-  title       String
-  description String?
-  status      RequirementStatus @default(PENDING)
-  priority    RequirementPriority @default(MEDIUM)
-  projectId   String
-  createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt
+  id           String              @id @default(cuid())
+  title        String
+  description  String?
+  status       RequirementStatus   @default(PENDING)
+  priority     RequirementPriority @default(MEDIUM)
+  projectId    String
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  rejectReason String?
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
 
   // 关系
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  reviewer    User?                   @relation("RequirementReviewer", fields: [reviewedBy], references: [id])
+  proposals   Proposal[]
+  impacts     RequirementImpact[]
+  acceptances RequirementAcceptance[]
 
   @@index([projectId])
   @@index([status])
   @@index([priority])
+  @@index([reviewedBy])
   @@map("requirements")
 }
 
@@ -323,4 +335,126 @@ enum RequirementPriority {
   LOW // 低
   MEDIUM // 中
   HIGH // 高
+}
+
+// ============================================================================
+// 方案评估
+// ============================================================================
+
+model Proposal {
+  id             String         @id @default(cuid())
+  requirementId  String
+  userId         String
+  content        String
+  estimatedHours Float?
+  estimatedCost  Float?
+  status         ProposalStatus @default(PENDING)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  // 关系
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  user        User        @relation("ProposalAuthor", fields: [userId], references: [id])
+
+  @@index([requirementId])
+  @@index([userId])
+  @@index([status])
+  @@map("proposals")
+}
+
+enum ProposalStatus {
+  PENDING // 待审核
+  ACCEPTED // 已接受
+  REJECTED // 已拒绝
+}
+
+// ============================================================================
+// 波及影响分析
+// ============================================================================
+
+model RequirementImpact {
+  id            String         @id @default(cuid())
+  requirementId String
+  description   String
+  severity      ImpactSeverity @default(MEDIUM)
+  createdAt     DateTime       @default(now())
+
+  // 关系
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([requirementId])
+  @@index([severity])
+  @@map("requirement_impacts")
+}
+
+enum ImpactSeverity {
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
+}
+
+// ============================================================================
+// 需求验收
+// ============================================================================
+
+model RequirementAcceptance {
+  id            String           @id @default(cuid())
+  requirementId String
+  userId        String
+  result        AcceptanceResult @default(PENDING)
+  notes         String?
+  createdAt     DateTime         @default(now())
+
+  // 关系
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  user        User        @relation("AcceptanceAuthor", fields: [userId], references: [id])
+
+  @@index([requirementId])
+  @@index([userId])
+  @@index([result])
+  @@map("requirement_acceptances")
+}
+
+enum AcceptanceResult {
+  PENDING // 待验收
+  PASSED // 通过
+  FAILED // 未通过
+  CONDITIONAL // 有条件通过
+}
+
+// ============================================================================
+// 问题管理
+// ============================================================================
+
+model Issue {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  status      IssueStatus   @default(OPEN)
+  priority    IssuePriority @default(MEDIUM)
+  projectId   String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // 关系
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+  @@index([status])
+  @@index([priority])
+  @@map("issues")
+}
+
+enum IssueStatus {
+  OPEN // 待处理
+  IN_PROGRESS // 进行中
+  RESOLVED // 已解决
+  CLOSED // 已关闭
+}
+
+enum IssuePriority {
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
+  URGENT // 紧急
 }
