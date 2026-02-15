@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
+import { SignJWT } from "jose";
+import bcrypt from "bcrypt";
 import type { AuthenticatedRequest } from "@/middleware";
 
 // 登录请求验证Schema
@@ -27,8 +29,9 @@ export async function POST(req: NextRequest) {
       return ApiResponder.unauthorized("邮箱或密码错误");
     }
 
-    // 验证密码（占位，实际实现需要bcrypt）
-    if (user.passwordHash !== `HASH_${validatedData.password}`) {
+    // 验证密码
+    const isValidPassword = await bcrypt.compare(validatedData.password, user.passwordHash);
+    if (!isValidPassword) {
       return ApiResponder.unauthorized("邮箱或密码错误");
     }
 
@@ -37,8 +40,21 @@ export async function POST(req: NextRequest) {
       return ApiResponder.forbidden("账号未激活或已被禁用");
     }
 
-    // 生成JWT Token（占位，实际实现需要jose）
-    const token = `JWT_TOKEN_${user.id}_${user.email}_${user.role}`;
+    // 生成JWT Token
+    const jwtSecret = process.env.JWT_SECRET;
+    if (!jwtSecret || jwtSecret.length < 32) {
+      return ApiResponder.serverError("服务器配置错误");
+    }
+
+    const secret = new TextEncoder().encode(jwtSecret);
+    const token = await new SignJWT({
+      userId: user.id,
+      email: user.email,
+      role: user.role,
+    })
+      .setProtectedHeader({ alg: "HS256" })
+      .setExpirationTime("24h")
+      .sign(secret);
 
     // 返回成功响应
     return ApiResponder.success({

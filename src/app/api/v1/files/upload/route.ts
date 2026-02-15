@@ -17,10 +17,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = uploadFileSchema.parse(body);
 
-    // 检查用户是否认证
-    const userId = request.headers.get('x-user-id');
+    // 从中间件设置的 cookies 获取用户信息
+    const userId = request.cookies.get('user-id')?.value;
+    const userEmail = request.cookies.get('user-email')?.value;
+    const userRole = request.cookies.get('user-role')?.value;
+
     if (!userId) {
-      return error('未授权_ERROR', '未授权', undefined, 401);
+      return error('未授权_ERROR', '未授权，请先登录', undefined, 401);
     }
 
     // 检查用户是否存在

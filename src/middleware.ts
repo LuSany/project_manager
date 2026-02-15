@@ -97,7 +97,29 @@ export async function middleware(request: NextRequest) {
       }
 
       try {
-        await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+        const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+
+        // 通过 cookies 传递用户信息给路由处理器
+        const response = NextResponse.next()
+        response.cookies.set('user-id', (payload as any).userId, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24 // 24 hours
+        })
+        response.cookies.set('user-email', (payload as any).email, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24
+        })
+        response.cookies.set('user-role', (payload as any).role, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 60 * 60 * 24
+        })
+        return response
       } catch (error) {
         return NextResponse.json(
           { success: false, error: { code: 'UNAUTHORIZED', message: '令牌无效或已过期' } },

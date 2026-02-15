@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
+import bcrypt from "bcrypt";
 import type { AuthenticatedRequest } from "@/middleware";
 
 // 注册请求验证Schema
@@ -34,8 +35,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 简单密码哈希（占位，实际实现需要bcrypt）
-    const passwordHash = `HASH_${validatedData.password}`;
+    // 使用 bcrypt 进行密码哈希
+    const passwordHash = await bcrypt.hash(validatedData.password, 10);
 
     // 创建用户（状态为PENDING，需要管理员审批）
     const newUser = await prisma.user.create({
