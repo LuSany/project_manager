@@ -3,6 +3,21 @@ import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 
 export async function GET(request: NextRequest, context: any) {
+  // 从中间件设置的 cookies 获取用户信息
+  const userId = request.cookies.get('user-id')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
+  // 检查用户是否存在
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+  });
+  if (!user) {
+    return error('USER_NOT_FOUND_ERROR', '用户不存在', undefined, 404);
+  }
+
   const { searchParams } = new URL(request.url);
 
   const page = parseInt(searchParams.get('page') || '1');
@@ -14,8 +29,10 @@ export async function GET(request: NextRequest, context: any) {
   if (status) {
     where.status = status;
   }
+  // 只允许用户查看自己的项目，或所有项目（如果需要权限控制）
   if (ownerId) {
-    where.ownerId = ownerId;
+    // 确保只能查询当前用户的项目
+    where.ownerId = ownerId === userId ? userId : userId;
   }
 
   const skip = (page - 1) * pageSize;

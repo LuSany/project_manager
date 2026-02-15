@@ -220,26 +220,230 @@
   "hotPaths": [
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 43,
-      "lastAccessed": 1771114757010,
+      "accessCount": 50,
+      "lastAccessed": 1771172422983,
       "type": "file"
     },
     {
       "path": "src/app/projects/[id]/reviews/[reviewId]/page.tsx",
-      "accessCount": 13,
-      "lastAccessed": 1771115401622,
+      "accessCount": 27,
+      "lastAccessed": 1771135170447,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/projects/route.ts",
+      "accessCount": 20,
+      "lastAccessed": 1771172462262,
+      "type": "file"
+    },
+    {
+      "path": "src",
+      "accessCount": 20,
+      "lastAccessed": 1771172561722,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/api/v1/notifications/route.ts",
+      "accessCount": 15,
+      "lastAccessed": 1771172487965,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews/[id]/route.ts",
+      "accessCount": 12,
+      "lastAccessed": 1771133672599,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews/[id]/participants/route.ts",
+      "accessCount": 12,
+      "lastAccessed": 1771133933633,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/files/upload/route.ts",
+      "accessCount": 11,
+      "lastAccessed": 1771172566978,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/files/[id]/route.ts",
+      "accessCount": 10,
+      "lastAccessed": 1771161334891,
+      "type": "file"
+    },
+    {
+      "path": "prisma",
+      "accessCount": 9,
+      "lastAccessed": 1771134544930,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/api/v1/risks/route.ts",
+      "accessCount": 9,
+      "lastAccessed": 1771172213295,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/preview/services/[id]/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771132502557,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/reviews/page.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1771135312584,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews/[id]/materials/route.ts",
+      "accessCount": 7,
+      "lastAccessed": 1771132837312,
+      "type": "file"
+    },
+    {
+      "path": "src/components/dashboard/TaskTimeline.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1771161002050,
+      "type": "file"
+    },
+    {
+      "path": "src/components/risks/RiskMatrix.tsx",
+      "accessCount": 7,
+      "lastAccessed": 1771161011369,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/dashboard/my-tasks/route.ts",
+      "accessCount": 7,
+      "lastAccessed": 1771161370361,
       "type": "file"
     },
     {
       "path": "src/app/projects/[id]/risks/page.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1771114627171,
+      "accessCount": 6,
+      "lastAccessed": 1771135353795,
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/notifications/route.ts",
+      "path": "src/lib/api/response.ts",
+      "accessCount": 6,
+      "lastAccessed": 1771161019504,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/signature/route.ts",
+      "accessCount": 6,
+      "lastAccessed": 1771172497534,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api",
+      "accessCount": 5,
+      "lastAccessed": 1771161011073,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/api/v1/dashboard/progress/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1771161370287,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews.disabled/[id]/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771135109675,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/dashboard/stats/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771161370268,
+      "type": "file"
+    },
+    {
+      "path": "package.json",
+      "accessCount": 4,
+      "lastAccessed": 1771172383818,
+      "type": "file"
+    },
+    {
+      "path": "src/components/views/MaterialUpload.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1771131015921,
+      "type": "file"
+    },
+    {
+      "path": "src/components/risks/RiskTaskLink.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1771131163442,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews.disabled/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771134863337,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/preview/services/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771161385378,
+      "type": "file"
+    },
+    {
+      "path": "src/components/views/materialUpload.tsx",
       "accessCount": 2,
-      "lastAccessed": 1771114769403,
+      "lastAccessed": 1771130655177,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/dashboard/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771130746649,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/files/preview/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771130747027,
+      "type": "file"
+    },
+    {
+      "path": "src/components/views/AddParticipant.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771130855685,
+      "type": "file"
+    },
+    {
+      "path": "src/components/views/ReviewItemForm.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771130855743,
+      "type": "file"
+    },
+    {
+      "path": "src/components/risks/RiskProgress.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771131046716,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews/[id]/items/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771131497770,
+      "type": "file"
+    },
+    {
+      "path": "src/app",
+      "accessCount": 2,
+      "lastAccessed": 1771132006326,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/api/v1/reviews.disabled/types/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771134901639,
       "type": "file"
     },
     {
@@ -255,45 +459,9 @@
       "type": "file"
     },
     {
-      "path": "src/components/dashboard/TaskTimeline.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771114086844,
-      "type": "file"
-    },
-    {
-      "path": "src/components/risks/RiskMatrix.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771114461633,
-      "type": "file"
-    },
-    {
-      "path": "src/components/risks/RiskProgress.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771114495076,
-      "type": "file"
-    },
-    {
-      "path": "src/components/risks/RiskTaskLink.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771114511997,
-      "type": "file"
-    },
-    {
-      "path": "prisma",
-      "accessCount": 1,
-      "lastAccessed": 1771114693732,
-      "type": "directory"
-    },
-    {
       "path": "src/components/tasks/TaskTimeline.tsx",
       "accessCount": 1,
       "lastAccessed": 1771114721219,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/risks/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771114721673,
       "type": "file"
     },
     {
@@ -315,21 +483,39 @@
       "type": "file"
     },
     {
-      "path": "src/components/views/materialUpload.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771115323598,
-      "type": "file"
-    },
-    {
       "path": "tsconfig.json",
       "accessCount": 1,
       "lastAccessed": 1771115428922,
       "type": "file"
     },
     {
-      "path": "package.json",
+      "path": "src/app/api/v1/dashboard",
       "accessCount": 1,
-      "lastAccessed": 1771115428968,
+      "lastAccessed": 1771130726577,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/projects/[id]/reviews/[reviewId]",
+      "accessCount": 1,
+      "lastAccessed": 1771130739681,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/api",
+      "accessCount": 1,
+      "lastAccessed": 1771131006817,
+      "type": "directory"
+    },
+    {
+      "path": "src/lib/api/client.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771131006896,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/email/configs/route.ts",
+      "accessCount": 1,
+      "lastAccessed": 1771132302994,
       "type": "file"
     }
   ],

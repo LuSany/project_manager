@@ -11,11 +11,22 @@ const signUrlSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    // 从中间件设置的 cookies 获取用户信息
+    const userId = request.cookies.get('user-id')?.value;
+
+    if (!userId) {
+      return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+    }
+
     const body = await request.json();
     const validated = signUrlSchema.parse(body);
 
-    // 生成HMAC-SHA256签名
-    const secret = process.env.URL_SIGN_SECRET || 'default-secret-change-in-production';
+    // 获取并验证 URL 签名密钥
+    const secret = process.env.URL_SIGN_SECRET;
+    if (!secret || secret.length < 32) {
+      return error('CONFIGURATION_ERROR', 'URL 签名密钥未配置或长度不足', undefined, 500);
+    }
+
     const url = validated.url;
 
     // 简单签名实现：HMAC-SHA256(url + secret + expires)
