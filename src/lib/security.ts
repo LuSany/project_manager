@@ -25,8 +25,13 @@ export function sanitizeInput(input: string): string {
 // 敏感数据加密
 export function encryptSensitiveData(data: string): string {
   const algorithm = 'aes-256-cbc'
-  const key = process.env.ENCRYPTION_KEY || 'default-key-32-characters-long!'
-  const keyBuffer = Buffer.from(key.slice(0, 32).padEnd(32, '0'))
+  const key = process.env.ENCRYPTION_KEY
+
+  if (!key || key.length < 32) {
+    throw new Error('ENCRYPTION_KEY must be at least 32 characters. Please set ENCRYPTION_KEY environment variable.')
+  }
+
+  const keyBuffer = Buffer.from(key.slice(0, 32))
   const iv = crypto.randomBytes(16)
 
   const cipher = crypto.createCipheriv(algorithm, keyBuffer, iv)
@@ -37,8 +42,13 @@ export function encryptSensitiveData(data: string): string {
 
 export function decryptSensitiveData(encryptedData: string): string {
   const [ivHex, encrypted] = encryptedData.split(':')
-  const key = process.env.ENCRYPTION_KEY || 'default-key-32-characters-long!'
-  const keyBuffer = Buffer.from(key.slice(0, 32).padEnd(32, '0'))
+  const key = process.env.ENCRYPTION_KEY
+
+  if (!key || key.length < 32) {
+    throw new Error('ENCRYPTION_KEY must be at least 32 characters. Please set ENCRYPTION_KEY environment variable.')
+  }
+
+  const keyBuffer = Buffer.from(key.slice(0, 32))
 
   const decipher = crypto.createDecipheriv('aes-256-cbc', keyBuffer, Buffer.from(ivHex, 'hex'))
   const decrypted = Buffer.concat([
