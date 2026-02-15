@@ -40,15 +40,6 @@ export default function TemplatesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // 权限检查：只有管理员可以访问
-  if (!user || user.role !== "ADMIN") {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">您没有权限访问此页面</p>
-      </div>
-    );
-  }
-
   const fetchTemplates = async () => {
     setLoading(true);
     setError(null);
@@ -164,8 +155,19 @@ export default function TemplatesPage() {
   };
 
   useEffect(() => {
-    fetchTemplates();
-  }, [page]);
+    if (user && user.role === "ADMIN") {
+      fetchTemplates();
+    }
+  }, [page, user]);
+
+  // 权限检查：只有管理员可以访问
+  if (!user || user.role !== "ADMIN") {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">您没有权限访问此页面</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
