@@ -39,7 +39,6 @@ model User {
   notifications        Notification[]
   notificationPreferences NotificationPreference[]
   notificationIgnores  NotificationIgnore[]
-  risks             Risk[]               @relation("UserRisks")
 
   @@index([email])
   @@map("users")
@@ -81,7 +80,6 @@ model Project {
   issues       Issue[]
   reviews      Review[]
   notificationIgnores NotificationIgnore[]
-  risks Risk[]               @relation("ProjectRisks")
 
   @@index([ownerId])
   @@index([status])
@@ -188,7 +186,6 @@ model Task {
   assignees TaskAssignee[]
   subTasks  SubTask[]
   taskTags  TaskTag[]
-  riskTasks RiskTask[]         @relation("RiskTasks")
 
   @@index([projectId])
   @@index([status])
@@ -679,106 +676,9 @@ model NotificationIgnore {
 
   // 关系
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project  @relation("notificationIgnores", fields: [projectId], references: [id], onDelete: Cascade)
 
   @@id([userId, projectId])
   @@map("notification_ignores")
 }
 
-// 在文件末尾添加风险管理模型
-
-// ============================================================================
-// 风险管理
-// ============================================================================
-
-model Risk {
-  id          String        @id @default(cuid())
-  title       String
-  description String?
-  status      RiskStatus   @default(IDENTIFIED)
-  priority    RiskPriority @default(MEDIUM)
-  probability RiskProbability @default(MEDIUM)
-  impact     RiskImpact    @default(MEDIUM)
-  ownerId     String
-  projectId   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-
-  // 关系
-  owner      User            @relation("UserRisks", fields: [ownerId], references: [id], onDelete: Cascade)
-  riskTasks  RiskTask[]        @relation("RiskTasks")
-  riskProgress RiskProgress[]   @relation("RiskProgress")
-  project     Project?        @relation("ProjectRisks", fields: [projectId], references: [id], onDelete: Cascade)
-
-  @@index([ownerId])
-  @@index([status])
-  @@index([priority])
-  @@map("risks")
-}
-
-enum RiskStatus {
-  IDENTIFIED // 已识别
-  ANALYZING   // 分析中
-  MITIGATING  // 缓解中
-  MONITORING  // 监控中
-  RESOLVED   // 已解决
-  CLOSED      // 已关闭
-}
-
-enum RiskProbability {
-  LOW    // 低 (1-20%)
-  MEDIUM // 中 (21-50%)
-  HIGH   // 高 (51-80%)
-  CERTAIN // 必然 (81-100%)
-}
-
-enum RiskImpact {
-  LOW    // 低
-  MEDIUM // 中
-  HIGH   // 高
-  CRITICAL // 严重
-}
-
-enum RiskPriority {
-  LOW     // 低
-  MEDIUM  // 中
-  HIGH    // 高
-  URGENT  // 紧急
-}
-
-model RiskTask {
-  id          String      @id @default(cuid())
-  riskId      String
-  taskId      String
-  relationType RiskTaskRelation
-  createdAt   DateTime   @default(now())
-
-  // 关系
-  risk        Risk   @relation("RiskTasks", fields: [riskId], references: [id], onDelete: Cascade)
-  task        Task   @relation("RiskTasks", fields: [taskId], references: [id], onDelete: Cascade)
-
-  @@index([riskId])
-  @@map("risk_tasks")
-}
-
-enum RiskTaskRelation {
-  RELATED   // 相关
-  CAUSES     // 导致
-  MITIGATES  // 缓解
-}
-
-model RiskProgress {
-  id          String      @id @default(cuid())
-  riskId      String
-  updatedAt   DateTime   @default(now())
-  status      RiskStatus
-  note        String?
-  createdAt   DateTime   @default(now())
-
-  // 关系
-  risk        Risk   @relation("RiskProgress", fields: [riskId], references: [id], onDelete: Cascade)
-
-  @@index([riskId])
-  @@index([createdAt])
-  @@map("risk_progress")
-}

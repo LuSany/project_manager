@@ -1,0 +1,97 @@
+// 在文件末尾添加风险管理模型
+
+// ============================================================================
+// 风险管理
+// ============================================================================
+
+model Risk {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  status      RiskStatus   @default(IDENTIFIED)
+  priority    RiskPriority @default(MEDIUM)
+  probability RiskProbability @default(MEDIUM)
+  impact     RiskImpact    @default(MEDIUM)
+  ownerId     String
+  projectId   String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // 关系
+  owner      User            @relation("RiskOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  project     Project?        @relation("RiskProject", fields: [projectId], references: [id], onDelete: Cascade)
+  tasks       RiskTask[]
+  progress    RiskProgress[]
+
+  @@index([ownerId])
+  @@index([status])
+  @@index([priority])
+  @@map("risks")
+}
+
+enum RiskStatus {
+  IDENTIFIED // 已识别
+  ANALYZING   // 分析中
+  MITIGATING  // 缓解中
+  MONITORING  // 监控中
+  RESOLVED   // 已解决
+  CLOSED      // 已关闭
+}
+
+enum RiskProbability {
+  LOW    // 低 (1-20%)
+  MEDIUM // 中 (21-50%)
+  HIGH   // 高 (51-80%)
+  CERTAIN // 必然 (81-100%)
+}
+
+enum RiskImpact {
+  LOW    // 低
+  MEDIUM // 中
+  HIGH   // 高
+  CRITICAL // 严重
+}
+
+enum RiskPriority {
+  LOW     // 低
+  MEDIUM  // 中
+  HIGH    // 高
+  URGENT  // 紧急
+}
+
+model RiskTask {
+  id          String      @id @default(cuid())
+  riskId      String
+  taskId      String
+  relationType RiskTaskRelation
+  createdAt   DateTime   @default(now())
+
+  // 关系
+  risk        Risk   @relation("RiskTaskRisk", fields: [riskId], references: [id], onDelete: Cascade)
+  task        Task   @relation("RiskTaskTask", fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([riskId])
+  @@map("risk_tasks")
+}
+
+enum RiskTaskRelation {
+  RELATED   // 相关
+  CAUSES     // 导致
+  MITIGATES  // 缓解
+}
+
+model RiskProgress {
+  id          String      @id @default(cuid())
+  riskId      String
+  updatedAt   DateTime   @default(now())
+  status      RiskStatus
+  note        String?
+  createdAt   DateTime   @default(now())
+
+  // 关系
+  risk        Risk   @relation("RiskProgressRisk", fields: [riskId], references: [id], onDelete: Cascade)
+
+  @@index([riskId])
+  @@index([createdAt])
+  @@map("risk_progress")
+}

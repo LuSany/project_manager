@@ -1,0 +1,52 @@
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { success, error } from '@/lib/api/response';
+
+// GET /api/v1/files/preview - 获取文件预览URL
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+  const fileId = searchParams.get('fileId');
+  const service = searchParams.get('service') || 'native'; // native, onlyoffice, kkfileview
+
+  if (!fileId) {
+    return NextResponse.json(error('文件ID不能为空', 400));
+  }
+
+  // 检查文件是否存在
+  const file = await prisma.fileStorage.findUnique({
+    where: { id: fileId },
+  });
+
+  if (!file) {
+    return NextResponse.json(error('文件不存在', 404));
+  }
+
+  let previewUrl = '';
+
+  // 根据服务类型生成预览URL
+  switch (service) {
+    case 'onlyoffice':
+      // OnlyOffice预览服务
+      previewUrl = `http://localhost:8080/preview?file=${encodeURIComponent(file.filePath)}`;
+      break;
+    case 'kkfileview':
+      // KKFileView预览服务
+      previewUrl = `http://localhost:8081/preview?file=${encodeURIComponent(file.filePath)}`;
+      break;
+    case 'native':
+    default:
+      // 原生预览（图片、PDF等）
+      previewUrl = `/api/v1/files/${fileId}/download`;
+      break;
+  }
+
+  return NextResponse.json(success({
+    previewUrl,
+    fileName: file.fileName,
+    fileType: file.mimeType,
+  }));
+  } catch (err) {
+    console.error('获取文件预览失败:', err);
+    return NextResponse.json(error('获取文件预览失败', 500));
+  }
+}
