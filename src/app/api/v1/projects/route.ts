@@ -29,10 +29,9 @@ export async function GET(request: NextRequest, context: any) {
   if (status) {
     where.status = status;
   }
-  // 只允许用户查看自己的项目，或所有项目（如果需要权限控制）
+  // 只允许用户查看自己的项目
   if (ownerId) {
-    // 确保只能查询当前用户的项目
-    where.ownerId = ownerId === userId ? userId : userId;
+    where.ownerId = userId;
   }
 
   const skip = (page - 1) * pageSize;

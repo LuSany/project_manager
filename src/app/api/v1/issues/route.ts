@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取已认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // Issue创建验证 Schema
 const createIssueSchema = z.object({
   title: z.string().min(1, "问题标题不能为空"),
@@ -21,6 +28,15 @@ const updateIssueSchema = z.object({
 
 // GET /api/v1/issues - 获取问题列表
 export async function GET(request: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -86,6 +102,15 @@ export async function GET(request: NextRequest) {
 
 // POST /api/v1/issues - 创建问题
 export async function POST(request: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const validatedData = createIssueSchema.parse(body);

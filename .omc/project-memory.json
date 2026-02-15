@@ -220,8 +220,8 @@
   "hotPaths": [
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 50,
-      "lastAccessed": 1771172422983,
+      "accessCount": 51,
+      "lastAccessed": 1771173006195,
       "type": "file"
     },
     {
@@ -238,14 +238,20 @@
     },
     {
       "path": "src/app/api/v1/projects/route.ts",
-      "accessCount": 22,
-      "lastAccessed": 1771172677780,
+      "accessCount": 24,
+      "lastAccessed": 1771173138027,
       "type": "file"
     },
     {
       "path": "src/app/api/v1/notifications/route.ts",
       "accessCount": 17,
       "lastAccessed": 1771172678044,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/files/[id]/route.ts",
+      "accessCount": 13,
+      "lastAccessed": 1771173101550,
       "type": "file"
     },
     {
@@ -264,12 +270,6 @@
       "path": "src/app/api/v1/files/upload/route.ts",
       "accessCount": 12,
       "lastAccessed": 1771172680243,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/files/[id]/route.ts",
-      "accessCount": 12,
-      "lastAccessed": 1771172927538,
       "type": "file"
     },
     {
@@ -351,6 +351,12 @@
       "type": "file"
     },
     {
+      "path": "src/app/api/v1/files/preview/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1771173102482,
+      "type": "file"
+    },
+    {
       "path": "src/app/api/v1/reviews.disabled/[id]/route.ts",
       "accessCount": 4,
       "lastAccessed": 1771135109675,
@@ -381,9 +387,15 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/files/preview/route.ts",
+      "path": "src/app/api/v1/notifications/ignore/route.ts",
       "accessCount": 4,
-      "lastAccessed": 1771172927636,
+      "lastAccessed": 1771173099914,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/notifications/preferences/route.ts",
+      "accessCount": 4,
+      "lastAccessed": 1771173100778,
       "type": "file"
     },
     {
@@ -396,18 +408,6 @@
       "path": "src/components/risks/RiskTaskLink.tsx",
       "accessCount": 3,
       "lastAccessed": 1771131163442,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/notifications/preferences/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1771172927409,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/notifications/ignore/route.ts",
-      "accessCount": 3,
-      "lastAccessed": 1771172927453,
       "type": "file"
     },
     {

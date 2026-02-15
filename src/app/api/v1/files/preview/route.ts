@@ -4,6 +4,13 @@ import { success, error } from '@/lib/api/response';
 
 // GET /api/v1/files/preview - 获取文件预览URL
 export async function GET(request: NextRequest) {
+  // 从中间件设置的 cookies 获取用户信息
+  const userId = request.cookies.get('user-id')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
   const { searchParams } = new URL(request.url);
   const fileId = searchParams.get('fileId');
   const service = searchParams.get('service') || 'native'; // native, onlyoffice, kkfileview
@@ -19,6 +26,11 @@ export async function GET(request: NextRequest) {
 
   if (!file) {
     return error('文件不存在_ERROR', '文件不存在', undefined, 404);
+  }
+
+  // 验证文件所有权：只能预览自己上传的文件
+  if (file.uploadedBy !== userId) {
+    return error('FORBIDDEN_ERROR', '无权访问此文件', undefined, 403);
   }
 
   let previewUrl = '';

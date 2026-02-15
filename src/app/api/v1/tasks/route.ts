@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取已认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 任务创建验证 Schema
 const createTaskSchema = z.object({
   title: z.string().min(1, "任务标题不能为空"),
@@ -18,6 +25,15 @@ const createTaskSchema = z.object({
 
 // GET /api/v1/tasks - 获取任务列表
 export async function GET(request: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -88,6 +104,15 @@ export async function GET(request: NextRequest) {
 
 // POST /api/v1/tasks - 创建任务
 export async function POST(request: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const validatedData = createTaskSchema.parse(body);

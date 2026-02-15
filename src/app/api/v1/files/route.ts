@@ -25,12 +25,7 @@ export async function GET(request: NextRequest) {
 
     const where: any = {};
     // 只允许用户查看自己上传的文件
-    if (requestedUserId) {
-      // 确保只能查询当前用户的文件
-      where.uploadedBy = requestedUserId === userId ? userId : userId;
-    } else {
-      where.uploadedBy = userId;
-    }
+    where.uploadedBy = userId;
 
     const files = await prisma.fileStorage.findMany({
       where,

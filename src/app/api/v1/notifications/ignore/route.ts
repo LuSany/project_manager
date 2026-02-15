@@ -5,16 +5,23 @@ import { success, error } from '@/lib/api/response';
 // POST /api/v1/notifications/ignore - 忽略项目通知
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { userId, projectId } = body;
+    // 从中间件设置的 cookies 获取用户信息
+    const userId = request.cookies.get('user-id')?.value;
 
-    if (!userId || !projectId) {
-      return error('用户ID和项目ID不能为空_ERROR', '用户ID和项目ID不能为空', undefined, 400);
+    if (!userId) {
+      return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+    }
+
+    const body = await request.json();
+    const { projectId } = body;
+
+    if (!projectId) {
+      return error('项目ID不能为空_ERROR', '项目ID不能为空', undefined, 400);
     }
 
     const ignore = await prisma.notificationIgnore.create({
       data: {
-        userId,
+        userId, // 使用当前认证用户的ID
         projectId,
       },
     });
@@ -29,17 +36,23 @@ export async function POST(request: NextRequest) {
 // DELETE /api/v1/notifications/ignore - 取消忽略项目通知
 export async function DELETE(request: NextRequest) {
   try {
+    // 从中间件设置的 cookies 获取用户信息
+    const userId = request.cookies.get('user-id')?.value;
+
+    if (!userId) {
+      return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+    }
+
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
     const projectId = searchParams.get('projectId');
 
-    if (!userId || !projectId) {
-      return error('用户ID和项目ID不能为空_ERROR', '用户ID和项目ID不能为空', undefined, 400);
+    if (!projectId) {
+      return error('项目ID不能为空_ERROR', '项目ID不能为空', undefined, 400);
     }
 
     await prisma.notificationIgnore.deleteMany({
       where: {
-        userId,
+        userId, // 只能删除当前用户的忽略设置
         projectId,
       },
     });

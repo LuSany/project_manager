@@ -1,12 +1,28 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+// 辅助函数：获取已认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
-  
+
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const task = await db.task.findUnique({
       where: { id },
