@@ -49,16 +49,20 @@ describe('POST /api/v1/auth/register', () => {
       name: 'Test User',
       status: 'PENDING',
     })
-    expect(prisma.user.create).toHaveBeenCalledWith({
-      data: {
-        email: 'test@example.com',
-        passwordHash: 'HASH_password123',
-        name: 'Test User',
-        phone: null,
-        status: 'PENDING',
-        role: 'REGULAR',
-      },
-    })
+    // 验证 prisma.user.create 被调用（bcrypt 哈希每次结果不同，只验证调用）
+    expect(prisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          email: 'test@example.com',
+          name: 'Test User',
+          phone: null,
+          status: 'PENDING',
+          role: 'REGULAR',
+          // passwordHash 由 bcrypt 生成，每次结果不同，不验证具体值
+          passwordHash: expect.any(String),
+        }),
+      })
+    )
   })
 
   it('应该拒绝重复的邮箱', async () => {

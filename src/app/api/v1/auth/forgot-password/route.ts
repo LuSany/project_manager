@@ -32,6 +32,16 @@ export async function POST(req: NextRequest) {
     const resetToken = generateResetToken();
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1小时后过期
 
+    // 存储重置令牌到数据库
+    await prisma.passwordResetToken.create({
+      data: {
+        token: resetToken,
+        userId: user.id,
+        expiresAt,
+        used: false,
+      },
+    });
+
     // 发送邮件（占位，第七阶段实现）
     // TODO: 第七阶段集成邮件服务
     console.log(`重置密码邮件发送至 ${user.email}, token: ${resetToken}`);
