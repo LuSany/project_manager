@@ -63,18 +63,44 @@ export async function requireAdmin(context: MiddlewareContext): Promise<NextResp
 }
 
 // 实际的 middleware 导出
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   // 对 API 路由启用认证检查
   if (request.nextUrl.pathname.startsWith('/api/v1/')) {
-    // 排除登录和注册路由
-    const publicRoutes = ['/api/v1/auth/login', '/api/v1/auth/register', '/api/v1/auth/forgot-password', '/api/v1/auth/reset-password']
+    // 排除公开路由：登录、注册、密码重置
+    const publicRoutes = [
+      '/api/v1/auth/login',
+      '/api/v1/auth/register',
+      '/api/v1/auth/forgot-password',
+      '/api/v1/auth/reset-password'
+    ]
     const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
     if (!isPublicRoute) {
       const authHeader = request.headers.get('authorization')
+
       if (!authHeader || !authHeader.startsWith('Bearer ')) {
         return NextResponse.json(
           { success: false, error: { code: 'UNAUTHORIZED', message: '请提供有效的认证令牌' } },
+          { status: 401 }
+        )
+      }
+
+      // 实际验证 JWT token 有效性
+      const token = authHeader.substring(7)
+      const jwtSecret = process.env.JWT_SECRET
+
+      if (!jwtSecret || jwtSecret.length < 32) {
+        return NextResponse.json(
+          { success: false, error: { code: 'INTERNAL_ERROR', message: '服务器配置错误' } },
+          { status: 500 }
+        )
+      }
+
+      try {
+        await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+      } catch (error) {
+        return NextResponse.json(
+          { success: false, error: { code: 'UNAUTHORIZED', message: '令牌无效或已过期' } },
           { status: 401 }
         )
       }
