@@ -2,7 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
-import crypto from "crypto";
+import bcrypt from "bcrypt";
 
 // 请求验证Schema
 const resetPasswordSchema = z.object({
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
       return ApiResponder.notFound("重置链接无效或已过期");
     }
 
-    // 简单密码哈希（占位，实际实现需要bcrypt）
-    const passwordHash = `HASH_${validatedData.password}`;
+    // 使用 bcrypt 进行密码哈希
+    const passwordHash = await bcrypt.hash(validatedData.password, 10);
 
     // 更新用户密码
     await prisma.user.update({
