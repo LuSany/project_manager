@@ -1,10 +1,10 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -12,29 +12,30 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/select'
 
 interface PreviewServiceConfigProps {
-  onSuccess?: () => void;
+  onSuccess?: () => void
 }
 
 export function PreviewServiceConfig({ onSuccess }: PreviewServiceConfigProps) {
-  const [open, setOpen] = useState(false);
-  const [serviceType, setServiceType] = useState<'ONLYOFFICE' | 'KKFILEVIEW' | 'NATIVE'>('NATIVE');
-  const [endpoint, setEndpoint] = useState('');
-  const [config, setConfig] = useState('{}');
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [serviceType, setServiceType] = useState<'ONLYOFFICE' | 'KKFILEVIEW' | 'NATIVE'>('NATIVE')
+  const [endpoint, setEndpoint] = useState('')
+  const [config, setConfig] = useState('{}')
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
       const response = await fetch('/api/v1/preview/services', {
@@ -46,22 +47,22 @@ export function PreviewServiceConfig({ onSuccess }: PreviewServiceConfigProps) {
           isEnabled: true,
           config: config ? JSON.stringify(config) : undefined,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (data.success) {
-        setOpen(false);
-        setServiceType('NATIVE');
-        setEndpoint('');
-        setConfig('{}');
-        onSuccess?.();
+        setOpen(false)
+        setServiceType('NATIVE')
+        setEndpoint('')
+        setConfig('{}')
+        onSuccess?.()
       }
     } catch (err) {
-      console.error('创建预览服务配置失败:', err);
+      console.error('创建预览服务配置失败:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -79,7 +80,13 @@ export function PreviewServiceConfig({ onSuccess }: PreviewServiceConfigProps) {
           <div className="space-y-2">
             <div>
               <Label htmlFor="serviceType">服务类型</Label>
-              <Select value={serviceType} onValueChange={setServiceType} required>
+              <Select
+                value={serviceType}
+                onValueChange={(value: string) =>
+                  setServiceType(value as 'ONLYOFFICE' | 'KKFILEVIEW' | 'NATIVE')
+                }
+                required
+              >
                 <SelectTrigger>
                   {serviceType === 'ONLYOFFICE' && 'OnlyOffice'}
                   {serviceType === 'KKFILEVIEW' && 'KKFileView'}
@@ -124,5 +131,5 @@ export function PreviewServiceConfig({ onSuccess }: PreviewServiceConfigProps) {
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

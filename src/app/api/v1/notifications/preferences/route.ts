@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get('userId');
 
     if (!userId) {
-      return NextResponse.json(error('用户ID不能为空', 400));
+      return error('用户ID不能为空_ERROR', '用户ID不能为空', undefined, 400);
     }
 
     const preferences = await prisma.notificationPreference.findMany({
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(success(preferences));
   } catch (err) {
     console.error('获取通知偏好失败:', err);
-    return NextResponse.json(error('获取通知偏好失败', 500));
+    return error('获取通知偏好失败_ERROR', '获取通知偏好失败', undefined, 500);
   }
 }
 
@@ -30,7 +30,7 @@ export async function PUT(request: NextRequest) {
     const { userId, preferences } = body;
 
     if (!userId) {
-      return NextResponse.json(error('用户ID不能为空', 400));
+      return error('用户ID不能为空_ERROR', '用户ID不能为空', undefined, 400);
     }
 
     // 删除旧偏好设置
@@ -55,6 +55,6 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json(success(newPreferences));
   } catch (err) {
     console.error('更新通知偏好失败:', err);
-    return NextResponse.json(error('更新通知偏好失败', 500));
+    return error('更新通知偏好失败_ERROR', '更新通知偏好失败', undefined, 500);
   }
 }

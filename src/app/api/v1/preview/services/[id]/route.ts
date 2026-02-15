@@ -3,73 +3,67 @@ import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 import { z } from 'zod';
 
-// PUT /api/v1/preview/services/[id] - 更新预览服务配置
 const updateServiceSchema = z.object({
-  endpoint: z.string().url().optional(),
+  endpoint: z.string().optional(),
   isEnabled: z.boolean().optional(),
   config: z.string().optional(),
 });
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(request: NextRequest, context: any) {
+  const id = context.params.id;
+
   try {
     const body = await request.json();
     const validated = updateServiceSchema.parse(body);
 
-    // 检查服务配置是否存在
-    const existing = await prisma.previewServiceConfig.findUnique({
-      where: { id: params.id },
+    const service = await prisma.previewServiceConfig.findUnique({
+      where: { id },
     });
 
-    if (!existing) {
-      return NextResponse.json(error('预览服务配置不存在', 404));
+    if (!service) {
+      return error('SERVICE_NOT_FOUND', '预览服务配置不存在', undefined, 404);
     }
 
     const updateData: any = {};
     if (validated.endpoint !== undefined) updateData.endpoint = validated.endpoint;
     if (validated.isEnabled !== undefined) updateData.isEnabled = validated.isEnabled;
     if (validated.config !== undefined) updateData.config = validated.config;
-    updateData.updatedAt = new Date();
 
-    const service = await prisma.previewServiceConfig.update({
-      where: { id: params.id },
+    const updatedService = await prisma.previewServiceConfig.update({
+      where: { id },
       data: updateData,
     });
 
-    return NextResponse.json(success(service));
+    return NextResponse.json(success(updatedService));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('更新预览服务配置失败:', err);
-    return NextResponse.json(error('更新预览服务配置失败', 500));
+    return error('UPDATE_SERVICE_FAILED', '更新预览服务配置失败', undefined, 500);
   }
 }
 
 // DELETE /api/v1/preview/services/[id] - 删除预览服务配置
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(request: NextRequest, context: any) {
+  const id = context.params.id;
+
   try {
-    // 检查服务配置是否存在
     const existing = await prisma.previewServiceConfig.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existing) {
-      return NextResponse.json(error('预览服务配置不存在', 404));
+      return error('SERVICE_NOT_FOUND', '预览服务配置不存在', undefined, 404);
     }
 
     await prisma.previewServiceConfig.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json(success({ message: '预览服务配置已删除' }));
   } catch (err) {
     console.error('删除预览服务配置失败:', err);
-    return NextResponse.json(error('删除预览服务配置失败', 500));
+    return error('DELETE_SERVICE_FAILED', '删除预览服务配置失败', undefined, 500);
   }
 }

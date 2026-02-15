@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     // 检查用户是否认证
     const userId = request.headers.get('x-user-id');
     if (!userId) {
-      return NextResponse.json(error('未授权', 401));
+      return error('未授权_ERROR', '未授权', undefined, 401);
     }
 
     // 检查用户是否存在
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
       where: { id: userId },
     });
     if (!user) {
-      return NextResponse.json(error('用户不存在', 404));
+      return error('用户不存在_ERROR', '用户不存在', undefined, 404);
     }
 
     // 生成唯一文件名
@@ -59,9 +59,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(success(file));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('上传文件失败:', err);
-    return NextResponse.json(error('上传文件失败', 500));
+    return error('UPLOAD_FILE_FAILED', '上传文件失败', undefined, 500);
   }
 }

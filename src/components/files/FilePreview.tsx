@@ -1,9 +1,9 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Dialog,
   DialogContent,
@@ -11,45 +11,46 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/select'
 
 interface FilePreviewProps {
-  fileId: string;
-  fileName: string;
+  fileId: string
+  fileName: string
 }
 
 export function FilePreview({ fileId, fileName }: FilePreviewProps) {
-  const [open, setOpen] = useState(false);
-  const [service, setService] = useState<'onlyoffice' | 'kkfileview' | 'native'>('native');
-  const [loading, setLoading] = useState(false);
+  const [open, setOpen] = useState(false)
+  const [service, setService] = useState<'onlyoffice' | 'kkfileview' | 'native'>('native')
+  const [loading, setLoading] = useState(false)
 
   const handlePreview = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
-      const response = await fetch(`/api/v1/files/preview?fileId=${fileId}&service=${service}`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/files/preview?fileId=${fileId}&service=${service}`)
+      const data = await response.json()
       if (data.success) {
         if (service === 'native' || data.data.previewUrl.startsWith('/api/v1/files/')) {
           // 原生预览：直接下载或新标签页打开
-          window.open(data.data.previewUrl, '_blank');
+          window.open(data.data.previewUrl, '_blank')
         } else {
           // OnlyOffice/KKFileView预览：在iframe中打开
-          setOpen(true);
+          setOpen(true)
         }
       }
     } catch (err) {
-      console.error('预览文件失败:', err);
+      console.error('预览文件失败:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -66,7 +67,12 @@ export function FilePreview({ fileId, fileName }: FilePreviewProps) {
         <div className="space-y-4">
           <div>
             <Label htmlFor="service">预览服务</Label>
-            <Select value={service} onValueChange={setService}>
+            <Select
+              value={service}
+              onValueChange={(value: string) =>
+                setService(value as 'onlyoffice' | 'kkfileview' | 'native')
+              }
+            >
               <SelectTrigger>
                 {service === 'onlyoffice' && 'OnlyOffice'}
                 {service === 'kkfileview' && 'KKFileView'}
@@ -90,5 +96,5 @@ export function FilePreview({ fileId, fileName }: FilePreviewProps) {
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

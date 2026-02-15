@@ -34,9 +34,6 @@ export async function GET(request: NextRequest) {
           },
         },
         items: true,
-        _count: {
-          select: true,
-        },
       },
       orderBy: { createdAt: 'desc' },
     });
@@ -44,7 +41,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(success(reviews));
   } catch (err) {
     console.error('获取评审列表失败:', err);
-    return NextResponse.json(error('获取评审列表失败', 500));
+    return error('获取评审列表失败_ERROR', '获取评审列表失败', undefined, 500);
   }
 }
 
@@ -67,7 +64,7 @@ export async function POST(request: NextRequest) {
       where: { id: validated.projectId },
     });
     if (!project) {
-      return NextResponse.json(error('项目不存在', 404));
+      return error('项目不存在_ERROR', '项目不存在', undefined, 404);
     }
 
     // 验证评审类型存在
@@ -75,7 +72,7 @@ export async function POST(request: NextRequest) {
       where: { id: validated.typeId },
     });
     if (!reviewType) {
-      return NextResponse.json(error('评审类型不存在', 404));
+      return error('评审类型不存在_ERROR', '评审类型不存在', undefined, 404);
     }
 
     const review = await prisma.review.create({
@@ -95,9 +92,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(success(review));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('参数验证失败_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('创建评审失败:', err);
-    return NextResponse.json(error('创建评审失败', 500));
+    return error('创建评审失败_ERROR', '创建评审失败', undefined, 500);
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { success, error } from '@/lib/api/response';
+import { z } from 'zod';
 
 // POST /api/v1/signature - 生成URL签名
 const signUrlSchema = z.object({
@@ -32,9 +33,9 @@ export async function POST(request: NextRequest) {
     }));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('参数验证失败_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('生成URL签名失败:', err);
-    return NextResponse.json(error('生成URL签名失败', 500));
+    return error('生成URL签名失败_ERROR', '生成URL签名失败', undefined, 500);
   }
 }

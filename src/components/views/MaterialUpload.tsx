@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { uploadFile } from '@/lib/api-client';
+import { api } from '@/lib/api/client';
 
 interface MaterialUploadProps {
   reviewId: string;
@@ -19,7 +19,10 @@ export function MaterialUpload({ reviewId, onSuccess }: MaterialUploadProps) {
 
     setUploading(true);
     try {
-      await uploadFile(file, reviewId);
+      await api.post(`/api/v1/files/upload`, {
+        file,
+        reviewId
+      });
       alert('材料上传成功');
       setFile(null);
       onSuccess?.();

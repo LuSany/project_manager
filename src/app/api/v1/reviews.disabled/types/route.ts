@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(success(types));
   } catch (err) {
     console.error('获取评审类型列表失败:', err);
-    return NextResponse.json(error('获取评审类型列表失败', 500));
+    return error('获取评审类型列表失败_ERROR', '获取评审类型列表失败', undefined, 500);
   }
 }
 
@@ -40,15 +40,20 @@ export async function POST(request: NextRequest) {
     const validated = createReviewTypeSchema.parse(body);
 
     const type = await prisma.reviewTypeConfig.create({
-      data: validated,
+      data: {
+        name: validated.name,
+        displayName: validated.displayName,
+        description: validated.description,
+        isSystem: validated.isSystem,
+      },
     });
 
     return NextResponse.json(success(type));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('参数验证失败_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('创建评审类型失败:', err);
-    return NextResponse.json(error('创建评审类型失败', 500));
+    return error('创建评审类型失败_ERROR', '创建评审类型失败', undefined, 500);
   }
 }

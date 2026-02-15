@@ -25,6 +25,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(success(files));
   } catch (err) {
     console.error('获取文件列表失败:', err);
-    return NextResponse.json(error('获取文件列表失败', 500));
+    return error('获取文件列表失败_ERROR', '获取文件列表失败', undefined, 500);
   }
 }

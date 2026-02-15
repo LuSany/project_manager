@@ -1,50 +1,51 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Checkbox } from '@/components/ui/checkbox';
+import { useState } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Checkbox } from '@/components/ui/checkbox'
+import type { CheckedState } from '@radix-ui/react-checkbox'
 
 interface ReviewItemFormProps {
-  reviewId: string;
-  onSuccess?: () => void;
+  reviewId: string
+  onSuccess?: () => void
 }
 
 export function ReviewItemForm({ reviewId, onSuccess }: ReviewItemFormProps) {
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('');
-  const [isRequired, setIsRequired] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState('')
+  const [category, setCategory] = useState('')
+  const [isRequired, setIsRequired] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault()
 
-    if (!title) return;
+    if (!title) return
 
-    setLoading(true);
+    setLoading(true)
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, category, isRequired }),
-      });
+      })
 
       if (response.ok) {
-        alert('评审项创建成功');
-        setTitle('');
-        setCategory('');
-        setIsRequired(false);
-        onSuccess?.();
+        alert('评审项创建成功')
+        setTitle('')
+        setCategory('')
+        setIsRequired(false)
+        onSuccess?.()
       } else {
-        alert('创建失败');
+        alert('创建失败')
       }
     } catch (err) {
-      alert('创建失败：' + err);
+      alert('创建失败：' + err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Card>
@@ -54,9 +55,7 @@ export function ReviewItemForm({ reviewId, onSuccess }: ReviewItemFormProps) {
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium mb-2">
-              评审项标题
-            </label>
+            <label className="mb-2 block text-sm font-medium">评审项标题</label>
             <Input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -66,9 +65,7 @@ export function ReviewItemForm({ reviewId, onSuccess }: ReviewItemFormProps) {
           </div>
 
           <div>
-            <label className="block text-sm font-medium mb-2">
-              类别
-            </label>
+            <label className="mb-2 block text-sm font-medium">类别</label>
             <Input
               value={category}
               onChange={(e) => setCategory(e.target.value)}
@@ -80,7 +77,7 @@ export function ReviewItemForm({ reviewId, onSuccess }: ReviewItemFormProps) {
             <Checkbox
               id="required"
               checked={isRequired}
-              onCheckedChange={setIsRequired}
+              onCheckedChange={(checked) => setIsRequired(checked as boolean)}
             />
             <label htmlFor="required" className="text-sm">
               必填项
@@ -93,5 +90,5 @@ export function ReviewItemForm({ reviewId, onSuccess }: ReviewItemFormProps) {
         </form>
       </CardContent>
     </Card>
-  );
+  )
 }

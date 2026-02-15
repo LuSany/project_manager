@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,7 +59,8 @@ export function MyTasks() {
         <CardTitle>我的任务</CardTitle>
         <Link href="/tasks/new">
           <Button size="sm">新建任务</Button>
-        </CardHeader>
+        </Link>
+      </CardHeader>
       <CardContent className="p-6">
         {loading ? (
           <div>加载中...</div>

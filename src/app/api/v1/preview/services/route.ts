@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(success(services));
   } catch (err) {
     console.error('获取预览服务配置失败:', err);
-    return NextResponse.json(error('获取预览服务配置失败', 500));
+    return error('FETCH_SERVICES_FAILED', '获取预览服务配置失败', undefined, 500);
   }
 }
 
@@ -44,9 +44,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(success(service));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return NextResponse.json(error('参数验证失败', 400, err.errors));
+      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
     }
     console.error('创建预览服务配置失败:', err);
-    return NextResponse.json(error('创建预览服务配置失败', 500));
+    return error('CREATE_SERVICE_FAILED', '创建预览服务配置失败', undefined, 500);
   }
 }

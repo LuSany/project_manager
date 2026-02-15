@@ -63,41 +63,93 @@ export function RiskMatrix({ risks }: RiskMatrixProps) {
     }
   };
 
+  const getProbabilityLabel = (level: number) => {
+    switch (level) {
+      case 1: return '极低';
+      case 2: return '低';
+      case 3: return '中';
+      case 4: return '高';
+      default: return '低';
+    }
+  };
+
+  const getImpactLabel = (level: number) => {
+    switch (level) {
+      case 1: return '轻微';
+      case 2: return '中等';
+      case 3: return '严重';
+      case 4: return '灾难性';
+      default: return '中等';
+    }
+  };
+
+  // 获取某个位置的风险
+  const getRiskAtPosition = (probLevel: number, impactLevel: number) => {
+    return risks.find(risk =>
+      getPriorityLevel(risk.probability) === probLevel &&
+      getImpactLevel(risk.impact) === impactLevel
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>风险矩阵</CardTitle>
       </CardHeader>
       <CardContent className="p-6">
-        <div className="grid grid-cols-5 gap-4">
-          <div className="text-xs font-semibold mb-4">概率/影响</div>
-          <div className="grid grid-cols-5 gap-4">
-            <div className="text-center text-muted-foreground">影响↓</div>
-            <div className="text-center text-muted-foreground">概率→</div>
+        <div className="space-y-4">
+          {/* 图例 */}
+          <div className="flex items-center gap-4 text-sm">
+            <span className="font-semibold">风险等级：</span>
+            <Badge className="bg-green-200 text-green-800">低</Badge>
+            <Badge className="bg-yellow-200 text-yellow-800">中</Badge>
+            <Badge className="bg-orange-200 text-orange-800">高</Badge>
+            <Badge className="bg-red-200 text-red-800">严重</Badge>
           </div>
-          <div className="text-xs text-muted-foreground">概率</div>
-        </div>
-        {[1, 2, 3, 4].map((level) => (
-            <div key={level} className="text-center">
-              <div className={`h-8 w-8 rounded-full ${getCellColor(level)}`}>
-                {getCellLabel(level)}
+
+          {/* 矩阵表头 */}
+          <div className="grid grid-cols-6 gap-2 text-sm">
+            <div></div>
+            <div className="text-center font-semibold">轻微</div>
+            <div className="text-center font-semibold">中等</div>
+            <div className="text-center font-semibold">严重</div>
+            <div className="text-center font-semibold">灾难性</div>
+            <div className="text-center font-semibold">概率</div>
+          </div>
+
+          {/* 矩阵内容 */}
+          {[1, 2, 3, 4].map((probLevel) => (
+            <div key={probLevel} className="grid grid-cols-6 gap-2 items-center">
+              <div className="text-right font-semibold text-xs">
+                {getProbabilityLabel(probLevel)}
               </div>
-            </div>
-          )).map((impact) => (
-            <div key={5 * level} className={`mt-2 h-8 rounded-full ${getCellColor(5 * level)}`}>
-              {getImpactLabel(5 * level)}
+              {[1, 2, 3, 4].map((impactLevel) => {
+                const risk = getRiskAtPosition(probLevel, impactLevel);
+                const riskLevel = risk ? getRiskLevel(risk.probability, risk.impact) : 0;
+                const bgColor = riskLevel > 0 ? getCellColor(riskLevel) : 'bg-gray-100 text-gray-400';
+
+                return (
+                  <div
+                    key={impactLevel}
+                    className={`h-16 rounded flex items-center justify-center text-xs font-medium ${bgColor}`}
+                  >
+                    {risk ? (
+                      <div className="text-center">
+                        <div className="font-bold">{getCellLabel(riskLevel)}</div>
+                        <div className="text-xs opacity-75 truncate max-w-20">{risk.title}</div>
+                      </div>
+                    ) : (
+                      <span>-</span>
+                    )}
+                  </div>
+                );
+              })}
+              <div className="text-center text-xs text-muted-foreground">
+                {getProbabilityLabel(probLevel)}
+              </div>
             </div>
           ))}
         </div>
-        {[1, 2, 3, 4].map((priority) => (
-          <div key={priority} className={`col-start-${getPriorityLevel(priority)}`}>
-            <div className={`p-3 rounded-full ${getCellColor(getPriorityLevel(priority))}`}>
-              P{getPriorityLabel(priority)}
-            </div>
-          </div>
-        ))}
-      </div>
-    </Card>
       </CardContent>
     </Card>
   );

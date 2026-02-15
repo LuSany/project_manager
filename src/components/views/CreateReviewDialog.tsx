@@ -1,11 +1,11 @@
-'use client';
+'use client'
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Dialog,
   DialogContent,
@@ -13,48 +13,46 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+  DialogTrigger,
+} from '@/components/ui/dialog'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/ui/select'
 
 interface CreateReviewDialogProps {
-  projectId: string;
-  onSuccess?: () => void;
+  projectId: string
+  onSuccess?: () => void
 }
 
-export function CreateReviewDialog({
-  projectId,
-  onSuccess,
-}: CreateReviewDialogProps) {
-  const router = useRouter();
-  const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [typeId, setTypeId] = useState<string>('');
-  const [scheduledAt, setScheduledAt] = useState('');
-  const [loading, setLoading] = useState(false);
+export function CreateReviewDialog({ projectId, onSuccess }: CreateReviewDialogProps) {
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [typeId, setTypeId] = useState<string>('')
+  const [scheduledAt, setScheduledAt] = useState('')
+  const [loading, setLoading] = useState(false)
 
-  const [types, setTypes] = useState<Array<{ id: string; name: string; displayName: string }>>([]);
+  const [types, setTypes] = useState<Array<{ id: string; name: string; displayName: string }>>([])
 
   // 获取评审类型列表
-  useState(() => {
+  useEffect(() => {
     fetch(`/api/v1/reviews/types?isActive=true`)
       .then((res) => res.json())
       .then((data) => {
         if (data.success) {
-          setTypes(data.data || []);
+          setTypes(data.data || [])
         }
-      });
-  }, []);
+      })
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    e.preventDefault()
+    setLoading(true)
 
     try {
       const response = await fetch('/api/v1/reviews', {
@@ -67,24 +65,24 @@ export function CreateReviewDialog({
           typeId,
           scheduledAt: scheduledAt || undefined,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (data.success) {
-        setOpen(false);
-        setTitle('');
-        setDescription('');
-        setTypeId('');
-        setScheduledAt('');
-        onSuccess?.();
-        router.refresh();
+        setOpen(false)
+        setTitle('')
+        setDescription('')
+        setTypeId('')
+        setScheduledAt('')
+        onSuccess?.()
+        router.refresh()
       }
     } catch (err) {
-      console.error('创建评审失败:', err);
+      console.error('创建评审失败:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -100,12 +98,7 @@ export function CreateReviewDialog({
           <div className="space-y-2">
             <div>
               <Label htmlFor="title">标题</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                required
-              />
+              <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
             </div>
             <div>
               <Label htmlFor="type">评审类型</Label>
@@ -152,5 +145,5 @@ export function CreateReviewDialog({
         </form>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

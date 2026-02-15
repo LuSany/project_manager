@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   const service = searchParams.get('service') || 'native'; // native, onlyoffice, kkfileview
 
   if (!fileId) {
-    return NextResponse.json(error('文件ID不能为空', 400));
+    return error('文件ID不能为空_ERROR', '文件ID不能为空', undefined, 400);
   }
 
   // 检查文件是否存在
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   });
 
   if (!file) {
-    return NextResponse.json(error('文件不存在', 404));
+    return error('文件不存在_ERROR', '文件不存在', undefined, 404);
   }
 
   let previewUrl = '';
@@ -45,8 +45,4 @@ export async function GET(request: NextRequest) {
     fileName: file.fileName,
     fileType: file.mimeType,
   }));
-  } catch (err) {
-    console.error('获取文件预览失败:', err);
-    return NextResponse.json(error('获取文件预览失败', 500));
-  }
 }

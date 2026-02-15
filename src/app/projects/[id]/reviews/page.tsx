@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, use } from 'react';
 import { CreateReviewDialog } from '@/components/views/CreateReviewDialog';
 import { MaterialUpload } from '@/components/views/MaterialUpload';
 import { AddParticipant } from '@/components/views/AddParticipant';
@@ -37,15 +37,16 @@ interface Review {
 export default function ReviewsPage({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }) {
+  const { id } = use(params);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
 
   const fetchReviews = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/v1/reviews?projectId=${params.id}`);
+      const response = await fetch(`/api/v1/reviews?projectId=${id}`);
       const data = await response.json();
       if (data.success) {
         setReviews(data.data || []);
@@ -59,7 +60,7 @@ export default function ReviewsPage({
 
   useEffect(() => {
     fetchReviews();
-  }, [params.id]);
+  }, [id]);
 
   const handleDelete = async (review: Review) => {
     if (!confirm(`确定要删除评审"${review.title}"吗？`)) return;
@@ -82,7 +83,7 @@ export default function ReviewsPage({
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl font-bold">评审管理</h1>
         <div className="flex gap-2">
-          <CreateReviewDialog projectId={params.id} onSuccess={fetchReviews} />
+          <CreateReviewDialog projectId={id} onSuccess={fetchReviews} />
         </div>
       </div>
 
