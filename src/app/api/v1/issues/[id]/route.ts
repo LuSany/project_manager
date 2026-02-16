@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // Issue更新验证 Schema
 const updateIssueSchema = z.object({
   title: z.string().min(1, "问题标题不能为空").optional(),
@@ -16,6 +23,15 @@ export async function GET(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
 
   try {
     const issue = await db.issue.findUnique({
@@ -56,6 +72,15 @@ export async function PUT(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
 
   try {
     const body = await request.json();
@@ -112,6 +137,15 @@ export async function DELETE(
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
+
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
 
   try {
     // 验证问题是否存在

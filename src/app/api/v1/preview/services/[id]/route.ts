@@ -10,6 +10,19 @@ const updateServiceSchema = z.object({
 });
 
 export async function PUT(request: NextRequest, context: any) {
+  // 认证检查
+  const userId = request.cookies.get('user-id')?.value;
+  const userRole = request.cookies.get('user-role')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
+  // 只有管理员可以访问
+  if (userRole !== 'ADMIN') {
+    return error('FORBIDDEN_ERROR', '需要管理员权限', undefined, 403);
+  }
+
   const id = context.params.id;
 
   try {
@@ -46,6 +59,19 @@ export async function PUT(request: NextRequest, context: any) {
 
 // DELETE /api/v1/preview/services/[id] - 删除预览服务配置
 export async function DELETE(request: NextRequest, context: any) {
+  // 认证检查
+  const userId = request.cookies.get('user-id')?.value;
+  const userRole = request.cookies.get('user-role')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
+  // 只有管理员可以访问
+  if (userRole !== 'ADMIN') {
+    return error('FORBIDDEN_ERROR', '需要管理员权限', undefined, 403);
+  }
+
   const id = context.params.id;
 
   try {

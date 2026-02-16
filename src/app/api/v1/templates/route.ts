@@ -3,6 +3,13 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiResponder } from "@/lib/api/response";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 模板创建验证Schema
 const createTemplateSchema = z.object({
   title: z.string().min(1, "模板标题不能为空"),
@@ -35,6 +42,12 @@ const updateTemplateSchema = z.object({
 
 // GET /api/v1/templates - 获取模板列表（支持分页）
 export async function GET(req: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(req);
+  if (!user) {
+    return ApiResponder.unauthorized("未授权，请先登录");
+  }
+
   try {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1");
@@ -81,6 +94,12 @@ export async function GET(req: NextRequest) {
 
 // POST /api/v1/templates - 创建模板
 export async function POST(req: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(req);
+  if (!user) {
+    return ApiResponder.unauthorized("未授权，请先登录");
+  }
+
   try {
     const body = await req.json();
     const validatedData = createTemplateSchema.parse(body);

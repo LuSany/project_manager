@@ -220,8 +220,8 @@
   "hotPaths": [
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 51,
-      "lastAccessed": 1771173006195,
+      "accessCount": 52,
+      "lastAccessed": 1771223419239,
       "type": "file"
     },
     {
@@ -238,8 +238,8 @@
     },
     {
       "path": "src/app/api/v1/projects/route.ts",
-      "accessCount": 24,
-      "lastAccessed": 1771173138027,
+      "accessCount": 25,
+      "lastAccessed": 1771223480029,
       "type": "file"
     },
     {
@@ -250,8 +250,20 @@
     },
     {
       "path": "src/app/api/v1/files/[id]/route.ts",
+      "accessCount": 14,
+      "lastAccessed": 1771223479972,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/preview/services/[id]/route.ts",
+      "accessCount": 14,
+      "lastAccessed": 1771224046205,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/files/upload/route.ts",
       "accessCount": 13,
-      "lastAccessed": 1771173101550,
+      "lastAccessed": 1771223459673,
       "type": "file"
     },
     {
@@ -267,15 +279,15 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/files/upload/route.ts",
-      "accessCount": 12,
-      "lastAccessed": 1771172680243,
+      "path": "src/app/api/v1/risks/route.ts",
+      "accessCount": 11,
+      "lastAccessed": 1771223428122,
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/risks/route.ts",
-      "accessCount": 10,
-      "lastAccessed": 1771172679898,
+      "path": "src/app/api/v1/dashboard/my-tasks/route.ts",
+      "accessCount": 11,
+      "lastAccessed": 1771223885154,
       "type": "file"
     },
     {
@@ -285,9 +297,9 @@
       "type": "directory"
     },
     {
-      "path": "src/app/api/v1/preview/services/[id]/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1771132502557,
+      "path": "src/app/api/v1/dashboard/progress/route.ts",
+      "accessCount": 9,
+      "lastAccessed": 1771223885731,
       "type": "file"
     },
     {
@@ -300,6 +312,18 @@
       "path": "src/app/api/v1/signature/route.ts",
       "accessCount": 8,
       "lastAccessed": 1771172678114,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/dashboard/stats/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771223886253,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/preview/services/route.ts",
+      "accessCount": 8,
+      "lastAccessed": 1771223935106,
       "type": "file"
     },
     {
@@ -321,12 +345,6 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/dashboard/my-tasks/route.ts",
-      "accessCount": 7,
-      "lastAccessed": 1771161370361,
-      "type": "file"
-    },
-    {
       "path": "src/app/projects/[id]/risks/page.tsx",
       "accessCount": 6,
       "lastAccessed": 1771135353795,
@@ -345,12 +363,6 @@
       "type": "directory"
     },
     {
-      "path": "src/app/api/v1/dashboard/progress/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1771161370287,
-      "type": "file"
-    },
-    {
       "path": "src/app/api/v1/files/preview/route.ts",
       "accessCount": 5,
       "lastAccessed": 1771173102482,
@@ -363,21 +375,9 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/dashboard/stats/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771161370268,
-      "type": "file"
-    },
-    {
       "path": "package.json",
       "accessCount": 4,
       "lastAccessed": 1771172383818,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/preview/services/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771172711356,
       "type": "file"
     },
     {

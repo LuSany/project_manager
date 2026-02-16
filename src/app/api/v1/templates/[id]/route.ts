@@ -3,6 +3,13 @@ import { z } from "zod";
 import { db } from "@/lib/db";
 import { ApiResponder } from "@/lib/api/response";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 模板更新验证Schema
 const updateTemplateSchema = z.object({
   title: z.string().min(1, "模板标题不能为空").optional(),
@@ -24,6 +31,12 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+
+  // 认证检查
+  const user = await getAuthUser(req);
+  if (!user) {
+    return ApiResponder.unauthorized("未授权，请先登录");
+  }
 
   try {
     const body = await req.json();
@@ -84,8 +97,13 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  try {
+  // 认证检查
+  const user = await getAuthUser(req);
+  if (!user) {
+    return ApiResponder.unauthorized("未授权，请先登录");
+  }
 
+  try {
     // 检查模板是否存在
     const existingTemplate = await db.taskTemplate.findUnique({
       where: { id },

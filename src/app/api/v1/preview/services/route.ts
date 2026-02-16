@@ -5,6 +5,19 @@ import { z } from 'zod';
 
 // GET /api/v1/preview/services - 获取预览服务配置列表
 export async function GET(request: NextRequest) {
+  // 认证检查
+  const userId = request.cookies.get('user-id')?.value;
+  const userRole = request.cookies.get('user-role')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
+  // 只有管理员可以访问
+  if (userRole !== 'ADMIN') {
+    return error('FORBIDDEN_ERROR', '需要管理员权限', undefined, 403);
+  }
+
   try {
     const services = await prisma.previewServiceConfig.findMany({
       orderBy: { createdAt: 'desc' },
@@ -26,6 +39,19 @@ const createServiceSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // 认证检查
+  const userId = request.cookies.get('user-id')?.value;
+  const userRole = request.cookies.get('user-role')?.value;
+
+  if (!userId) {
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+  }
+
+  // 只有管理员可以访问
+  if (userRole !== 'ADMIN') {
+    return error('FORBIDDEN_ERROR', '需要管理员权限', undefined, 403);
+  }
+
   try {
     const body = await request.json();
     const validated = createServiceSchema.parse(body);

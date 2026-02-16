@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 任务标签关联验证 Schema
 const addTagSchema = z.object({
   tagId: z.string().min(1, "标签ID不能为空"),
@@ -12,19 +19,36 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id: taskId } = await params;
     const body = await request.json();
     const { tagId } = addTagSchema.parse(body);
 
-    // 验证任务是否存在
-    const task = await db.task.findUnique({
-      where: { id: taskId },
+    // 验证任务是否存在且用户有权限访问
+    const task = await db.task.findFirst({
+      where: {
+        id: taskId,
+        project: {
+          members: {
+            some: {
+              userId: user.id
+            }
+          }
+        }
+      },
     });
 
     if (!task) {
       return NextResponse.json(
-        { success: false, error: "任务不存在" },
+        { success: false, error: "任务不存在或无权访问" },
         { status: 404 }
       );
     }
@@ -93,17 +117,34 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id: taskId } = await params;
 
-    // 验证任务是否存在
-    const task = await db.task.findUnique({
-      where: { id: taskId },
+    // 验证任务是否存在且用户有权限访问
+    const task = await db.task.findFirst({
+      where: {
+        id: taskId,
+        project: {
+          members: {
+            some: {
+              userId: user.id
+            }
+          }
+        }
+      },
     });
 
     if (!task) {
       return NextResponse.json(
-        { success: false, error: "任务不存在" },
+        { success: false, error: "任务不存在或无权访问" },
         { status: 404 }
       );
     }

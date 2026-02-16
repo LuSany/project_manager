@@ -2,9 +2,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 需求拒绝验证 Schema
 const rejectRequirementSchema = z.object({
-  userId: z.string().min(1, "用户ID不能为空"),
   rejectReason: z.string().min(1, "拒绝原因不能为空"),
 });
 
@@ -15,9 +21,19 @@ export async function PUT(
 ) {
   const { id } = await context.params;
 
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
-    const { userId, rejectReason } = rejectRequirementSchema.parse(body);
+    const { rejectReason } = rejectRequirementSchema.parse(body);
+    const userId = user.id; // 使用认证用户的ID
 
     // 验证需求是否存在
     const requirement = await db.requirement.findUnique({

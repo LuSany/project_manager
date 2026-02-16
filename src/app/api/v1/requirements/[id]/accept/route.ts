@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
-// 需求接受验证 Schema
-const acceptRequirementSchema = z.object({
-  userId: z.string().min(1, "用户ID不能为空"),
-});
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
 
 // PUT /api/v1/requirements/[id]/accept - 接受需求
 export async function PUT(
@@ -14,9 +16,17 @@ export async function PUT(
 ) {
   const { id } = await context.params;
 
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
-    const body = await request.json();
-    const { userId } = acceptRequirementSchema.parse(body);
+    const userId = user.id; // 使用认证用户的ID
 
     // 验证需求是否存在
     const requirement = await db.requirement.findUnique({

@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // 标签创建验证 Schema
 const createTagSchema = z.object({
   name: z.string().min(1, "标签名称不能为空"),
@@ -10,6 +17,15 @@ const createTagSchema = z.object({
 
 // POST /api/v1/tags/create - 创建标签
 export async function POST(request: NextRequest) {
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const validatedData = createTagSchema.parse(body);

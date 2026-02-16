@@ -5,11 +5,11 @@ import { success, error } from '@/lib/api/response';
 // GET /api/v1/dashboard/my-tasks - 获取我的任务列表
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
+    // 从中间件设置的 cookies 获取用户信息
+    const userId = request.cookies.get('user-id')?.value;
 
     if (!userId) {
-      return error('USER_ID_REQUIRED', '用户ID不能为空', undefined, 400);
+      return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
     }
 
     const tasks = await prisma.task.findMany({

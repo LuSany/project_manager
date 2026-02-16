@@ -1,22 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
+// 辅助函数：获取认证用户
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value;
+  if (!userId) return null;
+  return db.user.findUnique({ where: { id: userId } });
+}
+
 // DELETE /api/v1/tasks/[id]/tags/[tagId] - 移除任务标签
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string; tagId: string }> }
 ) {
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "未授权，请先登录" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { id: taskId, tagId } = await params;
 
-    // 验证任务是否存在
-    const task = await db.task.findUnique({
-      where: { id: taskId },
+    // 验证任务是否存在且用户有权限访问
+    const task = await db.task.findFirst({
+      where: {
+        id: taskId,
+        project: {
+          members: {
+            some: {
+              userId: user.id
+            }
+          }
+        }
+      },
     });
 
     if (!task) {
       return NextResponse.json(
-        { success: false, error: "任务不存在" },
+        { success: false, error: "任务不存在或无权访问" },
         { status: 404 }
       );
     }
