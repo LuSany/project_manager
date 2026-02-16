@@ -42,6 +42,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
+            ownerId: true,
           },
         },
       },
@@ -51,6 +52,28 @@ export async function GET(
       return NextResponse.json(
         { success: false, error: "任务不存在" },
         { status: 404 }
+      );
+    }
+
+    // 检查用户是否为项目成员或管理员
+    const isProjectOwner = task.project.ownerId === user.id;
+    const isAssignee = task.assignees.some(a => a.userId === user.id);
+    const isAdmin = user.role === 'ADMIN';
+
+    // 查询项目成员关系
+    const projectMember = await db.projectMember.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: task.projectId,
+          userId: user.id,
+        },
+      },
+    });
+
+    if (!isProjectOwner && !isAssignee && !projectMember && !isAdmin) {
+      return NextResponse.json(
+        { success: false, error: "无权访问此任务" },
+        { status: 403 }
       );
     }
 
