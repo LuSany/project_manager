@@ -682,3 +682,64 @@ model NotificationIgnore {
   @@map("notification_ignores")
 }
 
+// ========== 邮件服务模块 ==========
+
+enum EmailStatus {
+  PENDING     // 待发送
+  SENT        // 已发送
+  DELIVERED   // 已送达
+  FAILED      // 发送失败
+  BOUNCED     // 退信
+}
+
+model EmailConfig {
+  id              String    @id @default(cuid())
+  name            String    @unique
+  provider        String    // COMPANY, SMTP, SENDGRID
+  apiKey          String?
+  smtpHost        String?
+  smtpPort        Int?
+  smtpUser        String?
+  smtpPassword    String?
+  fromAddress     String
+  fromName        String?
+  isActive        Boolean   @default(true)
+  isDefault       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@map("email_configs")
+}
+
+model EmailLog {
+  id              String      @id @default(cuid())
+  userId          String?
+  projectId       String?
+  to              String
+  subject         String
+  content         String
+  templateType    String?
+  status          EmailStatus @default(PENDING)
+  errorMessage    String?
+  externalId      String?
+  sentAt          DateTime?
+  createdAt       DateTime    @default(now())
+
+  @@map("email_logs")
+}
+
+// 邮件模板 (P1)
+model EmailTemplate {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  type        String    // TASK_ASSIGNED, TASK_DUE, REVIEW_INVITE, RISK_ALERT, PASSWORD_RESET
+  subject     String
+  body        String    // HTML模板，支持变量替换
+  variables   String?   // JSON格式变量定义
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("email_templates")
+}
+
