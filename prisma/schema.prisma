@@ -743,3 +743,58 @@ model EmailTemplate {
   @@map("email_templates")
 }
 
+// ========== AI服务模块 ==========
+
+enum AIProvider {
+  OPENAI
+  ANTHROPIC
+  CUSTOM
+}
+
+enum AIStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+enum AIServiceType {
+  RISK_ANALYSIS
+  REVIEW_AUDIT
+  DOC_PARSE
+}
+
+model AIConfig {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  provider    AIProvider @default(OPENAI)
+  apiKey      String?
+  baseUrl     String?
+  model       String    @default("gpt-4o-mini")
+  isActive    Boolean   @default(true)
+  isDefault   Boolean   @default(false)
+  config      String?   // JSON格式额外配置
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("ai_configs")
+}
+
+model AILog {
+  id            String        @id @default(cuid())
+  serviceType   AIServiceType
+  provider      String
+  model         String
+  prompt        String
+  response      String?
+  status        AIStatus      @default(PENDING)
+  errorMessage  String?
+  duration      Int?         // 毫秒
+  userId        String?
+  projectId     String?
+  externalId    String?       // AI服务返回的ID
+  createdAt     DateTime      @default(now())
+
+  @@index([serviceType, createdAt])
+  @@map("ai_logs")
+}
+
