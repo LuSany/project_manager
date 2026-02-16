@@ -1,61 +1,59 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { z } from 'zod'
+import { notifyTaskAssigned } from '@/lib/notification'
 
 // 辅助函数：获取已认证用户
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value;
-  if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  const userId = request.cookies.get('user-id')?.value
+  if (!userId) return null
+  return db.user.findUnique({ where: { id: userId } })
 }
 
 // 任务创建验证 Schema
 const createTaskSchema = z.object({
-  title: z.string().min(1, "任务标题不能为空"),
+  title: z.string().min(1, '任务标题不能为空'),
   description: z.string().optional(),
-  status: z.enum(["TODO", "IN_PROGRESS", "REVIEW", "TESTING", "DONE"]).optional(),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE']).optional(),
   progress: z.number().min(0).max(100).optional(),
-  priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
   startDate: z.string().datetime().optional(),
   dueDate: z.string().datetime().optional(),
   estimatedHours: z.number().positive().optional(),
   projectId: z.string(),
   assigneeIds: z.array(z.string()).optional(),
-});
+})
 
 // GET /api/v1/tasks - 获取任务列表
 export async function GET(request: NextRequest) {
   // 认证检查
-  const user = await getAuthUser(request);
+  const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
   }
 
   try {
-    const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
-    const projectId = searchParams.get("projectId");
-    const status = searchParams.get("status");
-    const priority = searchParams.get("priority");
+    const { searchParams } = new URL(request.url)
+    const page = parseInt(searchParams.get('page') || '1')
+    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+    const projectId = searchParams.get('projectId')
+    const status = searchParams.get('status')
+    const priority = searchParams.get('priority')
 
-    const skip = (page - 1) * pageSize;
+    const skip = (page - 1) * pageSize
 
-    const where: any = {};
+    const where: any = {}
 
     if (projectId) {
-      where.projectId = projectId;
+      where.projectId = projectId
     }
 
     if (status) {
-      where.status = status;
+      where.status = status
     }
 
     if (priority) {
-      where.priority = priority;
+      where.priority = priority
     }
 
     const [tasks, total] = await Promise.all([
@@ -77,11 +75,11 @@ export async function GET(request: NextRequest) {
           },
         },
         orderBy: {
-          createdAt: "desc",
+          createdAt: 'desc',
         },
       }),
       db.task.count({ where }),
-    ]);
+    ])
 
     return NextResponse.json({
       success: true,
@@ -92,38 +90,32 @@ export async function GET(request: NextRequest) {
         pageSize,
         totalPages: Math.ceil(total / pageSize),
       },
-    });
+    })
   } catch (error) {
-    console.error("获取任务列表失败:", error);
-    return NextResponse.json(
-      { success: false, error: "获取任务列表失败" },
-      { status: 500 }
-    );
+    console.error('获取任务列表失败:', error)
+    return NextResponse.json({ success: false, error: '获取任务列表失败' }, { status: 500 })
   }
 }
 
 // POST /api/v1/tasks - 创建任务
 export async function POST(request: NextRequest) {
   // 认证检查
-  const user = await getAuthUser(request);
+  const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
   }
 
   try {
-    const body = await request.json();
-    const validatedData = createTaskSchema.parse(body);
+    const body = await request.json()
+    const validatedData = createTaskSchema.parse(body)
 
     const task = await db.task.create({
       data: {
         title: validatedData.title,
         description: validatedData.description,
-        status: validatedData.status || "TODO",
+        status: validatedData.status || 'TODO',
         progress: validatedData.progress || 0,
-        priority: validatedData.priority || "MEDIUM",
+        priority: validatedData.priority || 'MEDIUM',
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         estimatedHours: validatedData.estimatedHours,
@@ -148,24 +140,42 @@ export async function POST(request: NextRequest) {
             },
           },
         },
+        project: {
+          select: {
+            name: true,
+          },
+        },
       },
-    });
+    })
+
+    if (validatedData.assigneeIds && validatedData.assigneeIds.length > 0) {
+      const project = await db.project.findUnique({
+        where: { id: validatedData.projectId },
+        select: { name: true },
+      })
+
+      for (const assigneeId of validatedData.assigneeIds) {
+        if (assigneeId !== user.id) {
+          await notifyTaskAssigned(
+            assigneeId,
+            task.title,
+            validatedData.projectId,
+            project?.name || '未知项目',
+            user.name
+          )
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
       data: task,
-    });
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.errors[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: error.errors[0].message }, { status: 400 })
     }
-    console.error("创建任务失败:", error);
-    return NextResponse.json(
-      { success: false, error: "创建任务失败" },
-      { status: 500 }
-    );
+    console.error('创建任务失败:', error)
+    return NextResponse.json({ success: false, error: '创建任务失败' }, { status: 500 })
   }
 }
