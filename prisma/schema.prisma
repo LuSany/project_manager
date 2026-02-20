@@ -130,7 +130,8 @@ model Milestone {
   updatedAt   DateTime        @updatedAt
 
   // 关系
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]          @relation("TaskMilestone")
 
   @@index([projectId])
   @@index([status])
@@ -178,16 +179,19 @@ model Task {
   dueDate        DateTime?
   estimatedHours Float?
   projectId      String
+  milestoneId    String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   // 关系
-  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone?  @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
   assignees TaskAssignee[]
   subTasks  SubTask[]
   taskTags  TaskTag[]
 
   @@index([projectId])
+  @@index([milestoneId])
   @@index([status])
   @@index([priority])
   @@map("tasks")
