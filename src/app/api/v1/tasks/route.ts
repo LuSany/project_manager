@@ -21,6 +21,8 @@ const createTaskSchema = z.object({
   dueDate: z.string().datetime().optional(),
   estimatedHours: z.number().positive().optional(),
   projectId: z.string(),
+  milestoneId: z.string().optional(),
+  issueId: z.string().optional(),
   assigneeIds: z.array(z.string()).optional(),
 })
 
@@ -39,6 +41,8 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('projectId')
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
+    const milestoneId = searchParams.get('milestoneId')
+    const issueId = searchParams.get('issueId')
 
     const skip = (page - 1) * pageSize
 
@@ -54,6 +58,14 @@ export async function GET(request: NextRequest) {
 
     if (priority) {
       where.priority = priority
+    }
+
+    if (milestoneId) {
+      where.milestoneId = milestoneId
+    }
+
+    if (issueId) {
+      where.issueId = issueId
     }
 
     const [tasks, total] = await Promise.all([
