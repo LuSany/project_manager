@@ -12,6 +12,117 @@ const createMilestoneSchema = z.object({
   projectId: z.string().min(1, '项目ID不能为空'),
 })
 
+// 查询参数验证 Schema
+const querySchema = z.object({
+  projectId: z.string().optional(),
+  status: z.enum(['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED']).optional(),
+  page: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 1)),
+  pageSize: z
+    .string()
+    .optional()
+    .transform((val) => (val ? parseInt(val) : 20)),
+})
+
+// GET /api/v1/milestones - 获取里程碑列表
+export async function GET(req: NextRequest) {
+  try {
+    const user = await getAuthenticatedUser(req)
+    if (!user) {
+      return ApiResponder.unauthorized('请先登录')
+    }
+
+    const { searchParams } = new URL(req.url)
+    const projectId = searchParams.get('projectId')
+    const status = searchParams.get('status')
+    const page = parseInt(searchParams.get('page') || '1')
+    const pageSize = parseInt(searchParams.get('pageSize') || '20')
+
+    // 构建查询条件
+    const where: any = {}
+
+    // 如果指定了项目ID，则只查询该项目的里程碑
+    if (projectId) {
+      // 验证项目存在且用户有权限访问
+      const project = await prisma.project.findUnique({
+        where: { id: projectId },
+        include: { members: true },
+      })
+
+      if (!project) {
+        return ApiResponder.notFound('项目不存在')
+      }
+
+      const isOwner = project.ownerId === user.id
+      const isMember = project.members.some((m) => m.userId === user.id)
+      const isAdmin = user.role === 'ADMIN'
+
+      if (!isOwner && !isMember && !isAdmin) {
+        return ApiResponder.forbidden('无权访问此项目')
+      }
+
+      where.projectId = projectId
+    } else {
+      // 如果没有指定项目ID，则查询用户有权限访问的所有项目的里程碑
+      const userProjects = await prisma.project.findMany({
+        where: {
+          OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }],
+        },
+        select: { id: true },
+      })
+
+      const projectIds = userProjects.map((p) => p.id)
+      if (projectIds.length === 0) {
+        return ApiResponder.success({ data: [], meta: { page, pageSize, total: 0, totalPages: 0 } })
+      }
+
+      where.projectId = { in: projectIds }
+    }
+
+    // 添加状态筛选
+    if (status) {
+      where.status = status
+    }
+
+    // 并行查询数据和总数
+    const [milestones, total] = await Promise.all([
+      prisma.milestone.findMany({
+        where,
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          _count: {
+            select: { tasks: true },
+          },
+        },
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { dueDate: 'asc' },
+      }),
+      prisma.milestone.count({ where }),
+    ])
+
+    return ApiResponder.success({
+      data: milestones,
+      meta: {
+        page,
+        pageSize,
+        total,
+        totalPages: Math.ceil(total / pageSize),
+      },
+    })
+  } catch (error) {
+    console.error('获取里程碑列表失败:', error)
+    return ApiResponder.serverError('获取里程碑列表失败')
+  }
+}
+
 // POST /api/v1/milestones - 创建里程碑
 export async function POST(req: NextRequest) {
   try {

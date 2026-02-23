@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthenticatedUser } from '@/lib/auth'
 
-const emailConfigSchema = z.object({
+const emailConfigCreateSchema = z.object({
   name: z.string().min(1, '配置名称不能为空'),
   provider: z.enum(['COMPANY', 'SMTP', 'SENDGRID']),
   apiKey: z.string().optional(),
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const validatedData = emailConfigSchema.parse(body)
+    const validatedData = emailConfigCreateSchema.parse(body)
 
     if (validatedData.isDefault) {
       await prisma.emailConfig.updateMany({
@@ -54,7 +54,19 @@ export async function POST(req: NextRequest) {
     }
 
     const config = await prisma.emailConfig.create({
-      data: validatedData,
+      data: {
+        name: validatedData.name,
+        provider: validatedData.provider,
+        apiKey: validatedData.apiKey,
+        smtpHost: validatedData.smtpHost,
+        smtpPort: validatedData.smtpPort,
+        smtpUser: validatedData.smtpUser,
+        smtpPassword: validatedData.smtpPassword,
+        fromAddress: validatedData.fromAddress,
+        fromName: validatedData.fromName,
+        isActive: validatedData.isActive,
+        isDefault: validatedData.isDefault,
+      },
     })
 
     return ApiResponder.success(config, '邮件配置创建成功')

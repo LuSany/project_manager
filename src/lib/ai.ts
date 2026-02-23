@@ -73,14 +73,14 @@ export async function callAI(
   const baseUrl = process.env.AI_BASE_URL || 'https://api.openai.com/v1'
   const model = process.env.AI_MODEL || 'gpt-4o-mini'
 
-  let logId = ''
+  const logId = ''
+
+  const config = await getDefaultAIConfig()
+  const effectiveModel = config?.model || model
+  const effectiveBaseUrl = config?.baseUrl || baseUrl
+  const effectiveApiKey = config?.apiKey || apiKey
 
   try {
-    const config = await getDefaultAIConfig()
-    const effectiveModel = config?.model || model
-    const effectiveBaseUrl = config?.baseUrl || baseUrl
-    const effectiveApiKey = config?.apiKey || apiKey
-
     if (!effectiveApiKey) {
       const log = await prisma.aILog.create({
         data: {

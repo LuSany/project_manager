@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthenticatedUser } from '@/lib/auth'
 
-const aiConfigSchema = z.object({
+const aiConfigCreateSchema = z.object({
   name: z.string().min(1, '配置名称不能为空'),
   provider: z.enum(['OPENAI', 'ANTHROPIC', 'CUSTOM']),
   apiKey: z.string().optional(),
@@ -14,6 +14,8 @@ const aiConfigSchema = z.object({
   isDefault: z.boolean().optional(),
   config: z.string().optional(),
 })
+
+const aiConfigUpdateSchema = aiConfigCreateSchema.partial()
 
 export async function GET(req: NextRequest) {
   try {
@@ -41,7 +43,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const validatedData = aiConfigSchema.parse(body)
+    const validatedData = aiConfigCreateSchema.parse(body)
 
     if (validatedData.isDefault) {
       await prisma.aIConfig.updateMany({
@@ -51,7 +53,16 @@ export async function POST(req: NextRequest) {
     }
 
     const config = await prisma.aIConfig.create({
-      data: validatedData,
+      data: {
+        name: validatedData.name,
+        provider: validatedData.provider,
+        apiKey: validatedData.apiKey,
+        baseUrl: validatedData.baseUrl,
+        model: validatedData.model,
+        isActive: validatedData.isActive,
+        isDefault: validatedData.isDefault,
+        config: validatedData.config,
+      },
     })
 
     return ApiResponder.success(config, 'AI配置创建成功')
