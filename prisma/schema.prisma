@@ -180,18 +180,21 @@ model Task {
   estimatedHours Float?
   projectId      String
   milestoneId    String?
+  issueId        String?
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   // 关系
   project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
   milestone Milestone?  @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
+  issue     Issue?      @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
   assignees TaskAssignee[]
   subTasks  SubTask[]
   taskTags  TaskTag[]
 
   @@index([projectId])
   @@index([milestoneId])
+  @@index([issueId])
   @@index([status])
   @@index([priority])
   @@map("tasks")
@@ -449,6 +452,7 @@ model Issue {
 
   // 关系
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks  Task[]  @relation("TaskIssue")
 
   @@index([projectId])
   @@index([status])
@@ -800,5 +804,144 @@ model AILog {
 
   @@index([serviceType, createdAt])
   @@map("ai_logs")
+}
+
+// ============================================================================
+// 审计日志
+// ============================================================================
+
+model AuditLog {
+  id          String      @id @default(cuid())
+  userId      String
+  action      AuditAction
+  entityType  String
+  entityId    String?
+  description String?
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime    @default(now())
+
+  @@index([userId])
+  @@index([entityType, entityId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  VIEW
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  EXPORT
+  IMPORT
+  PERMISSION_CHANGE
+  ROLE_CHANGE
+  PASSWORD_CHANGE
+  SETTINGS_CHANGE
+  BULK_DELETE
+}
+
+// ============================================================================
+// AI响应缓存
+// ============================================================================
+
+model AiResponseCache {
+  id          String    @id @default(cuid())
+  cacheKey    String    @unique
+  serviceType AIServiceType
+  requestHash String
+  response    String
+  hitCount    Int       @default(0)
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([serviceType, requestHash])
+  @@index([expiresAt])
+  @@map("ai_response_cache")
+}
+
+// ============================================================================
+// Webhook
+// ============================================================================
+
+model Webhook {
+  id          String          @id @default(cuid())
+  name        String
+  url         String
+  events      String          // JSON array of event types
+  secret      String?
+  isActive    Boolean         @default(true)
+  createdBy   String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  deliveries  WebhookDelivery[]
+
+  @@index([isActive])
+  @@index([createdBy])
+  @@map("webhooks")
+}
+
+model WebhookDelivery {
+  id          String              @id @default(cuid())
+  webhookId   String
+  event       String
+  payload     String              // JSON
+  status      WebhookDeliveryStatus @default(PENDING)
+  statusCode  Int?
+  response    String?
+  errorMessage String?
+  attemptedAt DateTime            @default(now())
+  deliveredAt DateTime?
+
+  webhook     Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+
+  @@index([webhookId])
+  @@index([status])
+  @@index([attemptedAt])
+  @@map("webhook_deliveries")
+}
+
+enum WebhookDeliveryStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  TIMEOUT
+}
+
+// ============================================================================
+// 定时任务
+// ============================================================================
+
+model ScheduledJob {
+  id          String        @id @default(cuid())
+  name        String        @unique
+  description String?
+  cron        String
+  endpoint    String        // API endpoint to call
+  method      String        @default("POST")
+  payload     String?       // JSON payload
+  isActive    Boolean       @default(true)
+  lastRunAt   DateTime?
+  lastStatus  JobStatus?
+  lastError   String?
+  createdBy   String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([isActive])
+  @@index([lastRunAt])
+  @@map("scheduled_jobs")
+}
+
+enum JobStatus {
+  SUCCESS
+  FAILED
+  TIMEOUT
 }
 
