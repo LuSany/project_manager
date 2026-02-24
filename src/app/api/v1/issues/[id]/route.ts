@@ -15,6 +15,7 @@ const updateIssueSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  autoClose: z.boolean().optional(),
 });
 
 // GET /api/v1/issues/[id] - 获取问题详情
@@ -98,9 +99,24 @@ export async function PUT(
       );
     }
 
+    // 当状态变为 RESOLVED 时，自动设置 resolvedAt
+    let updateData = { ...validatedData };
+    if (validatedData.status === 'RESOLVED' && existing.status !== 'RESOLVED') {
+      updateData = {
+        ...updateData,
+        resolvedAt: new Date(),
+      } as typeof validatedData & { resolvedAt?: Date };
+    } else if (validatedData.status && validatedData.status !== 'RESOLVED') {
+      // 如果状态从 RESOLVED 改为其他状态，清除 resolvedAt
+      updateData = {
+        ...updateData,
+        resolvedAt: null,
+      } as typeof validatedData & { resolvedAt?: Date | null };
+    }
+
     const issue = await db.issue.update({
       where: { id },
-      data: validatedData,
+      data: updateData,
       include: {
         project: {
           select: {

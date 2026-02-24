@@ -7,6 +7,11 @@ export default defineConfig({
     exclude: ['tests/e2e/**/*', 'tests/**/*.e2e.ts'],
     environment: 'node',
     setupFiles: ['tests/setup.ts'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/lib/**/*.ts'],
+    },
   },
   resolve: {
     alias: {

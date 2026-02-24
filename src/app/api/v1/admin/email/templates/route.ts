@@ -42,7 +42,14 @@ export async function POST(req: NextRequest) {
     const validatedData = emailTemplateSchema.parse(body)
 
     const template = await prisma.emailTemplate.create({
-      data: validatedData,
+      data: {
+        name: validatedData.name,
+        type: validatedData.type,
+        subject: validatedData.subject,
+        body: validatedData.body,
+        variables: validatedData.variables,
+        isActive: validatedData.isActive ?? true,
+      },
     })
 
     return ApiResponder.success(template, '邮件模板创建成功')

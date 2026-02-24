@@ -59,3 +59,10 @@ coverage/
 /test-results/
 /playwright-report/
 /playwright/.cache
+
+# OMC state files
+.omc/state/
+.omc/sessions/
+.omc/autopilot/
+.omc/plans/
+.sisyphus/

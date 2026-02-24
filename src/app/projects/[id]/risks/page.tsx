@@ -1,9 +1,24 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { RiskList } from '@/components/risks/RiskList';
 
-export default function RisksPage() {
+export default function RisksPage({ params }: { params: Promise<{ id: string }> }) {
+  const [projectId, setProjectId] = useState<string>('');
+
+  useEffect(() => {
+    params.then(p => setProjectId(p.id));
+  }, [params]);
+
+  if (!projectId) {
+    return (
+      <div className="container mx-auto p-6">
+        <div className="text-center py-8 text-muted-foreground">加载中...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6">
       <div className="flex justify-between items-center mb-6">
@@ -13,17 +28,7 @@ export default function RisksPage() {
         <h1 className="text-2xl font-bold ml-4">风险管理</h1>
       </div>
 
-      <div className="rounded-lg border p-12 text-center space-y-4">
-        <div className="text-lg text-muted-foreground">
-          风险管理功能将在第四阶段（第7-8周）实现
-        </div>
-        <div className="text-sm text-muted-foreground">
-          当前阶段：第一阶段 - 基础架构搭建 + 用户管理 + 项目管理 + 里程碑管理
-        </div>
-        <Link href="../">
-          <Button>返回项目详情</Button>
-        </Link>
-      </div>
+      <RiskList projectId={projectId} />
     </div>
   );
 }

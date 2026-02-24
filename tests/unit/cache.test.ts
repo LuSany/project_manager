@@ -51,6 +51,12 @@ describe('缓存模块', () => {
     it('不存在的key应返回false', () => {
       expect(cache.has('non-exist')).toBe(false)
     })
+
+    it('过期的key应返回false', async () => {
+      cache.set('key1', 'value', 100)
+      await new Promise((resolve) => setTimeout(resolve, 150))
+      expect(cache.has('key1')).toBe(false)
+    })
   })
 
   describe('cache.delete', () => {
@@ -80,6 +86,22 @@ describe('缓存模块', () => {
       expect(cache.get('key1')).toBeNull()
       expect(cache.get('key2')).toBeNull()
       expect(cache.get('key3')).toBe('value3')
+    })
+
+    it('覆盖已有键应清理旧标签', () => {
+      cache.set('key1', 'value1', 60000, ['tag1'])
+      cache.set('key1', 'value2', 60000, ['tag2'])
+
+      cache.invalidateByTag('tag1')
+      expect(cache.get('key1')).toBe('value2')
+
+      cache.invalidateByTag('tag2')
+      expect(cache.get('key1')).toBeNull()
+    })
+
+    it('不存在的标签应返回0', () => {
+      const count = cache.invalidateByTag('non-exist')
+      expect(count).toBe(0)
     })
   })
 

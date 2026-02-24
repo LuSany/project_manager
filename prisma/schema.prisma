@@ -27,18 +27,20 @@ model User {
   updatedAt    DateTime   @updatedAt
 
   // 关系
-  ownedProjects        Project[]               @relation("ProjectOwner")
-  projectMembers       ProjectMember[]
-  passwordResetTokens  PasswordResetToken[]
-  taskAssignees        TaskAssignee[]          @relation("TaskAssignees")
-  reviewedRequirements Requirement[]           @relation("RequirementReviewer")
-  authoredProposals    Proposal[]              @relation("ProposalAuthor")
-  authoredAcceptances  RequirementAcceptance[] @relation("AcceptanceAuthor")
-  reviewParticipants   ReviewParticipant[]
-  uploadedFiles       FileStorage[]
-  notifications        Notification[]
+  ownedProjects           Project[]                @relation("ProjectOwner")
+  projectMembers          ProjectMember[]
+  passwordResetTokens     PasswordResetToken[]
+  taskAssignees           TaskAssignee[]           @relation("TaskAssignees")
+  taskWatchers            TaskWatcher[]            @relation("TaskWatchers")
+  reviewedRequirements    Requirement[]            @relation("RequirementReviewer")
+  authoredProposals       Proposal[]               @relation("ProposalAuthor")
+  authoredAcceptances     RequirementAcceptance[]  @relation("AcceptanceAuthor")
+  reviewParticipants      ReviewParticipant[]
+  ownedRisks              Risk[]                   @relation("RiskOwner")
+  uploadedFiles           FileStorage[]
+  notifications           Notification[]
   notificationPreferences NotificationPreference[]
-  notificationIgnores  NotificationIgnore[]
+  notificationIgnores     NotificationIgnore[]
 
   @@index([email])
   @@map("users")
@@ -72,13 +74,14 @@ model Project {
   updatedAt   DateTime      @updatedAt
 
   // 关系
-  owner        User            @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
-  members      ProjectMember[]
-  milestones   Milestone[]
-  tasks        Task[]
-  requirements Requirement[]
-  issues       Issue[]
-  reviews      Review[]
+  owner               User                 @relation("ProjectOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  members             ProjectMember[]
+  milestones          Milestone[]
+  tasks               Task[]
+  requirements        Requirement[]
+  issues              Issue[]
+  reviews             Review[]
+  risks               Risk[]
   notificationIgnores NotificationIgnore[] @relation("notificationIgnores")
 
   @@index([ownerId])
@@ -130,8 +133,8 @@ model Milestone {
   updatedAt   DateTime        @updatedAt
 
   // 关系
-  project Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks   Task[]          @relation("TaskMilestone")
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]  @relation("TaskMilestone")
 
   @@index([projectId])
   @@index([status])
@@ -185,12 +188,14 @@ model Task {
   updatedAt      DateTime     @updatedAt
 
   // 关系
-  project   Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  milestone Milestone?  @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
-  issue     Issue?      @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
+  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone?     @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
+  issue     Issue?         @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
   assignees TaskAssignee[]
+  watchers  TaskWatcher[]  @relation("TaskWatcher")
   subTasks  SubTask[]
   taskTags  TaskTag[]
+  riskTasks RiskTask[]     @relation("RiskTaskRelation")
 
   @@index([projectId])
   @@index([milestoneId])
@@ -227,6 +232,22 @@ model TaskAssignee {
 
   @@id([taskId, userId])
   @@map("task_assignees")
+}
+
+// 任务关注者关联表
+model TaskWatcher {
+  taskId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  // 关系
+  task Task @relation("TaskWatcher", fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation("TaskWatchers", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([taskId, userId])
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_watchers")
 }
 
 // ============================================================================
@@ -329,6 +350,7 @@ model Requirement {
   proposals   Proposal[]
   impacts     RequirementImpact[]
   acceptances RequirementAcceptance[]
+  issues      Issue[]
 
   @@index([projectId])
   @@index([status])
@@ -441,22 +463,27 @@ enum AcceptanceResult {
 // ============================================================================
 
 model Issue {
-  id          String        @id @default(cuid())
-  title       String
-  description String?
-  status      IssueStatus   @default(OPEN)
-  priority    IssuePriority @default(MEDIUM)
-  projectId   String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  title          String
+  description    String?
+  status         IssueStatus   @default(OPEN)
+  priority       IssuePriority @default(MEDIUM)
+  projectId      String
+  requirementId  String?       // 关联的需求 ID
+  autoClose      Boolean       @default(true)
+  resolvedAt     DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
   // 关系
-  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  tasks  Task[]  @relation("TaskIssue")
+  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirement Requirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
+  tasks       Task[]      @relation("TaskIssue")
 
   @@index([projectId])
   @@index([status])
   @@index([priority])
+  @@index([requirementId])
   @@map("issues")
 }
 
@@ -465,6 +492,7 @@ enum IssueStatus {
   IN_PROGRESS // 进行中
   RESOLVED // 已解决
   CLOSED // 已关闭
+  REOPENED // 重新打开
 }
 
 enum IssuePriority {
@@ -489,29 +517,32 @@ model ReviewTypeConfig {
   updatedAt   DateTime @updatedAt
 
   // 关系
-  reviews     Review[]
+  reviews Review[]
 
   @@index([isActive])
   @@map("review_type_configs")
 }
 
 model Review {
-  id          String        @id @default(cuid())
-  title       String
-  description String?
-  projectId   String
-  typeId      String
-  scheduledAt DateTime?
-  status      ReviewStatus   @default(PENDING)
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  id              String       @id @default(cuid())
+  title           String
+  description     String?
+  projectId       String
+  typeId          String
+  scheduledAt     DateTime?
+  status          ReviewStatus @default(PENDING)
+  passedCriteria  Int          @default(0)
+  totalScore      Float?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
 
   // 关系
-  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  type        ReviewTypeConfig @relation(fields: [typeId], references: [id], onDelete: Restrict)
-  materials   ReviewMaterial[]
+  project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  type         ReviewTypeConfig    @relation(fields: [typeId], references: [id], onDelete: Restrict)
+  materials    ReviewMaterial[]
   participants ReviewParticipant[]
-  items       ReviewItem[]
+  items        ReviewItem[]
+  criteria     ReviewCriterion[]
 
   @@index([projectId])
   @@index([typeId])
@@ -527,30 +558,30 @@ enum ReviewStatus {
 }
 
 model ReviewMaterial {
-  id          String   @id @default(cuid())
-  reviewId    String
-  fileId      String
-  fileName     String
-  fileType     String
-  fileSize     Int
-  uploadedAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  reviewId   String
+  fileId     String
+  fileName   String
+  fileType   String
+  fileSize   Int
+  uploadedAt DateTime @default(now())
 
   // 关系
-  review      Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@map("review_materials")
 }
 
 model ReviewParticipant {
-  reviewId  String
-  userId     String
-  role      ReviewParticipantRole
-  joinedAt  DateTime @default(now())
+  reviewId String
+  userId   String
+  role     ReviewParticipantRole
+  joinedAt DateTime              @default(now())
 
   // 关系
-  review     Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([reviewId, userId])
   @@map("review_participants")
@@ -564,37 +595,54 @@ enum ReviewParticipantRole {
 
 model ReviewItem {
   id          String   @id @default(cuid())
-  reviewId     String
-  title        String
-  description  String?
-  category     String?
-  isRequired   Boolean  @default(false)
-  order        Int       @default(0)
-  createdAt    DateTime @default(now())
+  reviewId    String
+  title       String
+  description String?
+  category    String?
+  isRequired  Boolean  @default(false)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
 
   // 关系
-  review       Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
 
   @@index([reviewId])
   @@map("review_items")
 }
 
+
+model ReviewCriterion {
+  id          String   @id @default(cuid())
+  reviewId    String
+  title       String
+  description String?
+  weight      Float    @default(1.0)
+  maxScore    Float    @default(10)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  // 关系
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@map("review_criteria")
+}
 // ============================================================================
 // 文件存储
 // ============================================================================
 
 model FileStorage {
-  id          String   @id @default(cuid())
+  id           String   @id @default(cuid())
   fileName     String
   originalName String
   filePath     String
   fileSize     Int
-  mimeType    String
+  mimeType     String
   uploadedBy   String
-  createdAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
 
   // 关系
-  uploader    User     @relation(fields: [uploadedBy], references: [id], onDelete: Restrict)
+  uploader User @relation(fields: [uploadedBy], references: [id], onDelete: Restrict)
 
   @@index([uploadedBy])
   @@index([createdAt])
@@ -606,13 +654,13 @@ model FileStorage {
 // ============================================================================
 
 model PreviewServiceConfig {
-  id              String   @id @default(cuid())
-  serviceType     PreviewServiceType
-  endpoint        String
-  isEnabled       Boolean  @default(true)
-  config          String   // JSON格式存储服务配置
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String             @id @default(cuid())
+  serviceType PreviewServiceType
+  endpoint    String
+  isEnabled   Boolean            @default(true)
+  config      String // JSON格式存储服务配置
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
 
   @@map("preview_service_configs")
 }
@@ -628,18 +676,18 @@ enum PreviewServiceType {
 // ============================================================================
 
 model Notification {
-  id          String            @id @default(cuid())
-  type        NotificationType
-  title       String
-  content     String
-  link        String?
-  isRead      Boolean           @default(false)
-  userId      String
-  projectId   String?
-  createdAt   DateTime           @default(now())
+  id        String           @id @default(cuid())
+  type      NotificationType
+  title     String
+  content   String
+  link      String?
+  isRead    Boolean          @default(false)
+  userId    String
+  projectId String?
+  createdAt DateTime         @default(now())
 
   // 关系
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([isRead])
@@ -648,43 +696,43 @@ model Notification {
 }
 
 enum NotificationType {
-  RISK_ALERT           // 风险预警
-  REVIEW_INVITE        // 评审邀请
-  URGENT_TASK          // 紧急任务
-  TASK_DUE_REMINDER    // 任务到期提醒
-  TASK_ASSIGNED        // 任务分配
-  COMMENT_MENTION      // 评论提及
-  DAILY_DIGEST         // 每日摘要
+  RISK_ALERT // 风险预警
+  REVIEW_INVITE // 评审邀请
+  URGENT_TASK // 紧急任务
+  TASK_DUE_REMINDER // 任务到期提醒
+  TASK_ASSIGNED // 任务分配
+  COMMENT_MENTION // 评论提及
+  DAILY_DIGEST // 每日摘要
 }
 
 model NotificationPreference {
-  userId      String
-  type        NotificationType
-  enabled     Boolean           @default(true)
-  channel     NotificationChannel @default(IN_APP)
-  createdAt   DateTime           @default(now())
+  userId    String
+  type      NotificationType
+  enabled   Boolean             @default(true)
+  channel   NotificationChannel @default(IN_APP)
+  createdAt DateTime            @default(now())
 
   // 关系
-  user        User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@id([userId, type, channel])
   @@map("notification_preferences")
 }
 
 enum NotificationChannel {
-  IN_APP  // 站内通知
-  EMAIL    // 邮件通知
-  SMS      // 短信通知
+  IN_APP // 站内通知
+  EMAIL // 邮件通知
+  SMS // 短信通知
 }
 
 model NotificationIgnore {
-  userId      String
-  projectId   String
-  createdAt   DateTime @default(now())
+  userId    String
+  projectId String
+  createdAt DateTime @default(now())
 
   // 关系
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  project     Project  @relation("notificationIgnores", fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project Project @relation("notificationIgnores", fields: [projectId], references: [id], onDelete: Cascade)
 
   @@id([userId, projectId])
   @@map("notification_ignores")
@@ -693,60 +741,60 @@ model NotificationIgnore {
 // ========== 邮件服务模块 ==========
 
 enum EmailStatus {
-  PENDING     // 待发送
-  SENT        // 已发送
-  DELIVERED   // 已送达
-  FAILED      // 发送失败
-  BOUNCED     // 退信
+  PENDING // 待发送
+  SENT // 已发送
+  DELIVERED // 已送达
+  FAILED // 发送失败
+  BOUNCED // 退信
 }
 
 model EmailConfig {
-  id              String    @id @default(cuid())
-  name            String    @unique
-  provider        String    // COMPANY, SMTP, SENDGRID
-  apiKey          String?
-  smtpHost        String?
-  smtpPort        Int?
-  smtpUser        String?
-  smtpPassword    String?
-  fromAddress     String
-  fromName        String?
-  isActive        Boolean   @default(true)
-  isDefault       Boolean   @default(false)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id           String   @id @default(cuid())
+  name         String   @unique
+  provider     String // COMPANY, SMTP, SENDGRID
+  apiKey       String?
+  smtpHost     String?
+  smtpPort     Int?
+  smtpUser     String?
+  smtpPassword String?
+  fromAddress  String
+  fromName     String?
+  isActive     Boolean  @default(true)
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("email_configs")
 }
 
 model EmailLog {
-  id              String      @id @default(cuid())
-  userId          String?
-  projectId       String?
-  to              String
-  subject         String
-  content         String
-  templateType    String?
-  status          EmailStatus @default(PENDING)
-  errorMessage    String?
-  externalId      String?
-  sentAt          DateTime?
-  createdAt       DateTime    @default(now())
+  id           String      @id @default(cuid())
+  userId       String?
+  projectId    String?
+  to           String
+  subject      String
+  content      String
+  templateType String?
+  status       EmailStatus @default(PENDING)
+  errorMessage String?
+  externalId   String?
+  sentAt       DateTime?
+  createdAt    DateTime    @default(now())
 
   @@map("email_logs")
 }
 
 // 邮件模板 (P1)
 model EmailTemplate {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  type        String    // TASK_ASSIGNED, TASK_DUE, REVIEW_INVITE, RISK_ALERT, PASSWORD_RESET
-  subject     String
-  body        String    // HTML模板，支持变量替换
-  variables   String?   // JSON格式变量定义
-  isActive    Boolean   @default(true)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String   @id @default(cuid())
+  name      String   @unique
+  type      String // TASK_ASSIGNED, TASK_DUE, REVIEW_INVITE, RISK_ALERT, PASSWORD_RESET
+  subject   String
+  body      String // HTML模板，支持变量替换
+  variables String? // JSON格式变量定义
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("email_templates")
 }
@@ -772,35 +820,35 @@ enum AIServiceType {
 }
 
 model AIConfig {
-  id          String    @id @default(cuid())
-  name        String    @unique
-  provider    AIProvider @default(OPENAI)
-  apiKey      String?
-  baseUrl     String?
-  model       String    @default("gpt-4o-mini")
-  isActive    Boolean   @default(true)
-  isDefault   Boolean   @default(false)
-  config      String?   // JSON格式额外配置
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String     @id @default(cuid())
+  name      String     @unique
+  provider  AIProvider @default(OPENAI)
+  apiKey    String?
+  baseUrl   String?
+  model     String     @default("gpt-4o-mini")
+  isActive  Boolean    @default(true)
+  isDefault Boolean    @default(false)
+  config    String? // JSON格式额外配置
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@map("ai_configs")
 }
 
 model AILog {
-  id            String        @id @default(cuid())
-  serviceType   AIServiceType
-  provider      String
-  model         String
-  prompt        String
-  response      String?
-  status        AIStatus      @default(PENDING)
-  errorMessage  String?
-  duration      Int?         // 毫秒
-  userId        String?
-  projectId     String?
-  externalId    String?       // AI服务返回的ID
-  createdAt     DateTime      @default(now())
+  id           String        @id @default(cuid())
+  serviceType  AIServiceType
+  provider     String
+  model        String
+  prompt       String
+  response     String?
+  status       AIStatus      @default(PENDING)
+  errorMessage String?
+  duration     Int? // 毫秒
+  userId       String?
+  projectId    String?
+  externalId   String? // AI服务返回的ID
+  createdAt    DateTime      @default(now())
 
   @@index([serviceType, createdAt])
   @@map("ai_logs")
@@ -850,15 +898,15 @@ enum AuditAction {
 // ============================================================================
 
 model AiResponseCache {
-  id          String    @id @default(cuid())
-  cacheKey    String    @unique
+  id          String        @id @default(cuid())
+  cacheKey    String        @unique
   serviceType AIServiceType
   requestHash String
   response    String
-  hitCount    Int       @default(0)
+  hitCount    Int           @default(0)
   expiresAt   DateTime
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 
   @@index([serviceType, requestHash])
   @@index([expiresAt])
@@ -870,17 +918,17 @@ model AiResponseCache {
 // ============================================================================
 
 model Webhook {
-  id          String          @id @default(cuid())
-  name        String
-  url         String
-  events      String          // JSON array of event types
-  secret      String?
-  isActive    Boolean         @default(true)
-  createdBy   String
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
+  id        String   @id @default(cuid())
+  name      String
+  url       String
+  events    String // JSON array of event types
+  secret    String?
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  deliveries  WebhookDelivery[]
+  deliveries WebhookDelivery[]
 
   @@index([isActive])
   @@index([createdBy])
@@ -888,18 +936,18 @@ model Webhook {
 }
 
 model WebhookDelivery {
-  id          String              @id @default(cuid())
-  webhookId   String
-  event       String
-  payload     String              // JSON
-  status      WebhookDeliveryStatus @default(PENDING)
-  statusCode  Int?
-  response    String?
+  id           String                @id @default(cuid())
+  webhookId    String
+  event        String
+  payload      String // JSON
+  status       WebhookDeliveryStatus @default(PENDING)
+  statusCode   Int?
+  response     String?
   errorMessage String?
-  attemptedAt DateTime            @default(now())
-  deliveredAt DateTime?
+  attemptedAt  DateTime              @default(now())
+  deliveredAt  DateTime?
 
-  webhook     Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
+  webhook Webhook @relation(fields: [webhookId], references: [id], onDelete: Cascade)
 
   @@index([webhookId])
   @@index([status])
@@ -919,20 +967,20 @@ enum WebhookDeliveryStatus {
 // ============================================================================
 
 model ScheduledJob {
-  id          String        @id @default(cuid())
-  name        String        @unique
+  id          String     @id @default(cuid())
+  name        String     @unique
   description String?
   cron        String
-  endpoint    String        // API endpoint to call
-  method      String        @default("POST")
-  payload     String?       // JSON payload
-  isActive    Boolean       @default(true)
+  endpoint    String // API endpoint to call
+  method      String     @default("POST")
+  payload     String? // JSON payload
+  isActive    Boolean    @default(true)
   lastRunAt   DateTime?
   lastStatus  JobStatus?
   lastError   String?
   createdBy   String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 
   @@index([isActive])
   @@index([lastRunAt])
@@ -945,3 +993,79 @@ enum JobStatus {
   TIMEOUT
 }
 
+// ============================================================================
+// 风险管理
+// ============================================================================
+
+model Risk {
+  id             String       @id @default(cuid())
+  projectId      String
+  title          String
+  description    String?
+  category       RiskCategory @default(TECHNICAL)
+  probability    Int          @default(1) // 1-5
+  impact         Int          @default(1) // 1-5
+  riskLevel      RiskLevel    @default(LOW)
+  status         RiskStatus   @default(IDENTIFIED)
+  progress       Int          @default(0)
+  mitigation     String?
+  contingency    String?
+  ownerId        String
+  isAiIdentified Boolean      @default(false)
+  aiRiskScore    Float?
+  aiSuggestion   String?
+  identifiedDate DateTime     @default(now())
+  dueDate        DateTime?
+  resolvedDate   DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  project   Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  owner     User       @relation("RiskOwner", fields: [ownerId], references: [id])
+  riskTasks RiskTask[]
+
+  @@index([projectId])
+  @@index([status])
+  @@index([riskLevel])
+  @@map("risks")
+}
+
+model RiskTask {
+  id           String   @id @default(cuid())
+  riskId       String
+  taskId       String
+  relationType String   @default("RELATED") // RELATED, CAUSES, MITIGATES
+  createdAt    DateTime @default(now())
+
+  risk Risk @relation(fields: [riskId], references: [id], onDelete: Cascade)
+  task Task @relation("RiskTaskRelation", fields: [taskId], references: [id], onDelete: Cascade)
+
+  @@index([riskId])
+  @@index([taskId])
+  @@map("risk_tasks")
+}
+
+enum RiskCategory {
+  TECHNICAL // 技术风险
+  SCHEDULE // 进度风险
+  RESOURCE // 资源风险
+  BUDGET // 预算风险
+  EXTERNAL // 外部风险
+  MANAGEMENT // 管理风险
+}
+
+enum RiskLevel {
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
+  CRITICAL // 关键
+}
+
+enum RiskStatus {
+  IDENTIFIED // 已识别
+  ANALYZING // 分析中
+  MITIGATING // 缓解中
+  MONITORING // 监控中
+  RESOLVED // 已解决
+  CLOSED // 已关闭
+}

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
+import { checkIssueAutoClose } from '@/lib/services/issue-service'
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
@@ -50,11 +51,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       data: validatedData,
     })
 
+    // 当任务状态变为 DONE 时，检查关联的 Issue 是否应该自动关闭
     if (validatedData.status === 'DONE' && updatedTask.issueId) {
-      await db.issue.update({
-        where: { id: updatedTask.issueId },
-        data: { status: 'RESOLVED' },
-      })
+      await checkIssueAutoClose(updatedTask.issueId)
     }
 
     return NextResponse.json({

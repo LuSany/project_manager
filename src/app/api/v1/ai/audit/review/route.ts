@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
     const review = await prisma.review.findUnique({
       where: { id: validatedData.reviewId },
       include: {
+        type: true,
         project: {
           include: {
             members: true,
@@ -44,14 +45,14 @@ export async function POST(req: NextRequest) {
     }
 
     const materials = review.materials.map((m) => ({
-      name: m.name,
-      type: m.type || 'document',
-      content: m.content || '',
+      name: m.fileName,
+      type: m.fileType || 'document',
+      content: '', // ReviewMaterial doesn't have content field
     }))
 
     const result = await auditReview(
       review.title,
-      review.type || 'general',
+      review.type?.displayName || 'general',
       materials,
       user.id,
       review.projectId

@@ -25,21 +25,53 @@ const updateTemplateSchema = z.object({
   isPublic: z.boolean().optional(),
 });
 
-// PUT /api/v1/templates/[id] - 更新模板
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+// GET /api/v1/templates/:id - 获取模板详情
+export async function GET(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id } = await context.params;
 
   // 认证检查
-  const user = await getAuthUser(req);
+  const user = await getAuthUser(request);
   if (!user) {
     return ApiResponder.unauthorized("未授权，请先登录");
   }
 
   try {
-    const body = await req.json();
+    const template = await db.taskTemplate.findUnique({
+      where: { id },
+    });
+
+    if (!template) {
+      return ApiResponder.notFound("模板不存在");
+    }
+
+    return ApiResponder.success({
+      ...template,
+      templateData: JSON.parse(template.templateData),
+    });
+  } catch (error) {
+    console.error("获取模板详情失败:", error);
+    return ApiResponder.serverError("获取模板详情失败");
+  }
+}
+
+// PUT /api/v1/templates/:id - 更新模板
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  const { id } = await context.params;
+
+  // 认证检查
+  const user = await getAuthUser(request);
+  if (!user) {
+    return ApiResponder.unauthorized("未授权，请先登录");
+  }
+
+  try {
+    const body = await request.json();
     const validatedData = updateTemplateSchema.parse(body);
 
     // 检查模板是否存在
@@ -51,20 +83,11 @@ export async function PUT(
       return ApiResponder.notFound("模板不存在");
     }
 
-    // 构建更新数据
     const updateData: any = {};
-    if (validatedData.title !== undefined) {
-      updateData.title = validatedData.title;
-    }
-    if (validatedData.description !== undefined) {
-      updateData.description = validatedData.description;
-    }
-    if (validatedData.templateData !== undefined) {
-      updateData.templateData = JSON.stringify(validatedData.templateData);
-    }
-    if (validatedData.isPublic !== undefined) {
-      updateData.isPublic = validatedData.isPublic;
-    }
+    if (validatedData.title !== undefined) updateData.title = validatedData.title;
+    if (validatedData.description !== undefined) updateData.description = validatedData.description;
+    if (validatedData.templateData !== undefined) updateData.templateData = JSON.stringify(validatedData.templateData);
+    if (validatedData.isPublic !== undefined) updateData.isPublic = validatedData.isPublic;
 
     const template = await db.taskTemplate.update({
       where: { id },
@@ -90,15 +113,15 @@ export async function PUT(
   }
 }
 
-// DELETE /api/v1/templates/[id] - 删除模板
+// DELETE /api/v1/templates/:id - 删除模板
 export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
+  const { id } = await context.params;
 
   // 认证检查
-  const user = await getAuthUser(req);
+  const user = await getAuthUser(request);
   if (!user) {
     return ApiResponder.unauthorized("未授权，请先登录");
   }
