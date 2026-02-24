@@ -104,7 +104,7 @@ async function main() {
       description: '创建用户注册的后端API接口',
       status: 'IN_PROGRESS',
       progress: 30,
-      priority: 'URGENT',
+      priority: 'CRITICAL',
       projectId: project.id,
       startDate: new Date(),
       dueDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),

@@ -228,10 +228,10 @@ enum TaskStatus {
 }
 
 enum TaskPriority {
-  LOW // 低
-  MEDIUM // 中
-  HIGH // 高
-  URGENT // 紧急
+  LOW       // 低
+  MEDIUM    // 中
+  HIGH      // 高
+  CRITICAL  // 紧急/关键
 }
 
 // 任务执行人关联表
