@@ -21,6 +21,8 @@ model User {
   name         String
   avatar       String?
   phone        String?
+  department   String?    // 部门
+  position     String?    // 职位
   status       UserStatus @default(PENDING)
   role         SystemRole @default(REGULAR)
   createdAt    DateTime   @default(now())
@@ -41,6 +43,8 @@ model User {
   notifications           Notification[]
   notificationPreferences NotificationPreference[]
   notificationIgnores     NotificationIgnore[]
+  acceptedTasks           Task[]                   @relation("TaskAcceptor")
+  requirementDiscussions  RequirementDiscussion[]
 
   @@index([email])
   @@map("users")
@@ -184,24 +188,28 @@ model Task {
   projectId      String
   milestoneId    String?
   issueId        String?
+  acceptorId     String?      // 验收人 ID
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   // 关系
-  project   Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  milestone Milestone?     @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
-  issue     Issue?         @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
+  project   Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone Milestone?                @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
+  issue     Issue?                    @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
   assignees TaskAssignee[]
-  watchers  TaskWatcher[]  @relation("TaskWatcher")
+  watchers  TaskWatcher[]             @relation("TaskWatcher")
   subTasks  SubTask[]
   taskTags  TaskTag[]
-  riskTasks RiskTask[]     @relation("RiskTaskRelation")
+  riskTasks RiskTask[]                @relation("RiskTaskRelation")
+  acceptor  User?                     @relation("TaskAcceptor", fields: [acceptorId], references: [id], onDelete: SetNull)
+  discussions RequirementDiscussion[] @relation("TaskDiscussion")
 
   @@index([projectId])
   @@index([milestoneId])
   @@index([issueId])
   @@index([status])
   @@index([priority])
+  @@index([acceptorId])
   @@map("tasks")
 }
 
@@ -351,6 +359,8 @@ model Requirement {
   impacts     RequirementImpact[]
   acceptances RequirementAcceptance[]
   issues      Issue[]
+  discussions RequirementDiscussion[]
+  history     RequirementHistory[]
 
   @@index([projectId])
   @@index([status])
@@ -456,6 +466,51 @@ enum AcceptanceResult {
   PASSED // 通过
   FAILED // 未通过
   CONDITIONAL // 有条件通过
+}
+
+// ============================================================================
+// 需求讨论
+// ============================================================================
+
+model RequirementDiscussion {
+  id            String    @id @default(cuid())
+  requirementId String
+  userId        String
+  content       String
+  taskId        String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // 关系
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        Task?       @relation("TaskDiscussion", fields: [taskId], references: [id], onDelete: SetNull)
+
+  @@index([requirementId])
+  @@index([userId])
+  @@map("requirement_discussions")
+}
+
+// ============================================================================
+// 需求变更历史
+// ============================================================================
+
+model RequirementHistory {
+  id           String   @id @default(cuid())
+  requirementId String
+  changeType   String   // STATUS_CHANGE, CONTENT_UPDATE, PRIORITY_CHANGE
+  oldValue     String?
+  newValue     String?
+  changedBy    String
+  changeReason String?
+  createdAt    DateTime @default(now())
+
+  // 关系
+  requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+
+  @@index([requirementId])
+  @@index([changeType])
+  @@map("requirement_history")
 }
 
 // ============================================================================

@@ -245,14 +245,14 @@
   "hotPaths": [
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 103,
-      "lastAccessed": 1771944076646,
+      "accessCount": 125,
+      "lastAccessed": 1771947851880,
       "type": "file"
     },
     {
       "path": "docs/TECHNICAL_SPECIFICATION_V4.md",
-      "accessCount": 10,
-      "lastAccessed": 1771942268632,
+      "accessCount": 21,
+      "lastAccessed": 1771946423907,
       "type": "file"
     },
     {
@@ -400,6 +400,12 @@
       "type": "file"
     },
     {
+      "path": "src/lib",
+      "accessCount": 2,
+      "lastAccessed": 1771948517729,
+      "type": "directory"
+    },
+    {
       "path": "src/app/api/v1/projects/route.ts",
       "accessCount": 1,
       "lastAccessed": 1771934725423,
@@ -422,12 +428,6 @@
       "accessCount": 1,
       "lastAccessed": 1771934750992,
       "type": "file"
-    },
-    {
-      "path": "src/lib",
-      "accessCount": 1,
-      "lastAccessed": 1771934765744,
-      "type": "directory"
     },
     {
       "path": "src/lib/prisma.ts",

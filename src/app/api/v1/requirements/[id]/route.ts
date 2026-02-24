@@ -98,18 +98,52 @@ export async function PUT(
       );
     }
 
-    const requirement = await db.requirement.update({
-      where: { id },
-      data: validatedData,
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
+    // 记录变更历史
+    const changes: Record<string, any> = {};
+    if (validatedData.status && validatedData.status !== existing.status) {
+      changes.changeType = "STATUS_CHANGE";
+      changes.oldValue = existing.status;
+      changes.newValue = validatedData.status;
+    } else if (validatedData.priority && validatedData.priority !== existing.priority) {
+      changes.changeType = "PRIORITY_CHANGE";
+      changes.oldValue = existing.priority;
+      changes.newValue = validatedData.priority;
+    } else if (validatedData.title && validatedData.title !== existing.title) {
+      changes.changeType = "CONTENT_UPDATE";
+      changes.oldValue = existing.title;
+      changes.newValue = validatedData.title;
+    } else if (validatedData.description && validatedData.description !== existing.description) {
+      changes.changeType = "CONTENT_UPDATE";
+      changes.oldValue = existing.description || "";
+      changes.newValue = validatedData.description;
+    }
+
+    const [requirement] = await Promise.all([
+      db.requirement.update({
+        where: { id },
+        data: validatedData,
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+            },
           },
         },
-      },
-    });
+      }),
+      // 如果有变更，记录到历史
+      changes.changeType
+        ? db.requirementHistory.create({
+            data: {
+              requirementId: id,
+              changeType: changes.changeType,
+              oldValue: changes.oldValue,
+              newValue: changes.newValue,
+              changedBy: user.id,
+            },
+          })
+        : Promise.resolve(),
+    ]);
 
     return NextResponse.json({
       success: true,
