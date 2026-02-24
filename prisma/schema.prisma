@@ -217,11 +217,14 @@ model Task {
 }
 
 enum TaskStatus {
-  TODO // 待办
-  IN_PROGRESS // 进行中
-  REVIEW // 待审核
-  TESTING // 测试中
-  DONE // 已完成
+  TODO          // 未开始
+  IN_PROGRESS   // 进行中
+  REVIEW        // 待评审
+  TESTING       // 测试中
+  DONE          // 已完成
+  CANCELLED     // 已取消
+  DELAYED       // 延期
+  BLOCKED       // 阻塞
 }
 
 enum TaskPriority {
