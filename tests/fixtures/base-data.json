@@ -1,0 +1,107 @@
+{
+  "users": [
+    {
+      "id": "test-admin-001",
+      "email": "admin@test.com",
+      "passwordHash": "hashed_QWRtaW5QYXNzMTIzIQ==",
+      "name": "Test Admin",
+      "role": "ADMIN",
+      "status": "ACTIVE",
+      "department": "Engineering",
+      "position": "System Administrator",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-owner-001",
+      "email": "owner@test.com",
+      "passwordHash": "hashed_T3duZXJQYXNzMTIzIQ==",
+      "name": "Project Owner",
+      "role": "OWNER",
+      "status": "ACTIVE",
+      "department": "Engineering",
+      "position": "Project Owner",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-member-001",
+      "email": "member1@test.com",
+      "passwordHash": "hashed_TWVtYmVyUXdlcnQhMTIz",
+      "name": "Test Member 1",
+      "role": "EMPLOYEE",
+      "status": "ACTIVE",
+      "department": "Engineering",
+      "position": "Developer",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    },
+    {
+      "id": "test-member-002",
+      "email": "member2@test.com",
+      "passwordHash": "hashed_TWVtYmVyUXdlcnQhMTIz",
+      "name": "Test Member 2",
+      "role": "EMPLOYEE",
+      "status": "ACTIVE",
+      "department": "Engineering",
+      "position": "Developer",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "projects": [
+    {
+      "id": "test-project-001",
+      "name": "Test Project Alpha",
+      "description": "A test project for testing purposes",
+      "status": "ACTIVE",
+      "ownerId": "test-owner-001",
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-01T00:00:00.000Z"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "test-task-001",
+      "projectId": "test-project-001",
+      "title": "Setup Project Structure",
+      "description": "Initialize the project with proper structure",
+      "status": "DONE",
+      "priority": "HIGH",
+      "progress": 100,
+      "startDate": "2026-01-01T00:00:00.000Z",
+      "dueDate": "2026-01-08T00:00:00.000Z",
+      "estimatedHours": 8,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "updatedAt": "2026-01-08T00:00:00.000Z"
+    },
+    {
+      "id": "test-task-002",
+      "projectId": "test-project-001",
+      "title": "Configure CI/CD Pipeline",
+      "description": "Set up automated testing and deployment",
+      "status": "IN_PROGRESS",
+      "priority": "HIGH",
+      "progress": 50,
+      "startDate": "2026-01-09T00:00:00.000Z",
+      "dueDate": "2026-01-16T00:00:00.000Z",
+      "estimatedHours": 16,
+      "createdAt": "2026-01-09T00:00:00.000Z",
+      "updatedAt": "2026-01-09T00:00:00.000Z"
+    },
+    {
+      "id": "test-task-003",
+      "projectId": "test-project-001",
+      "title": "Write Unit Tests",
+      "description": "Implement unit tests for core modules",
+      "status": "TODO",
+      "priority": "MEDIUM",
+      "progress": 0,
+      "startDate": "2026-01-17T00:00:00.000Z",
+      "dueDate": "2026-01-24T00:00:00.000Z",
+      "estimatedHours": 24,
+      "createdAt": "2026-01-17T00:00:00.000Z",
+      "updatedAt": "2026-01-17T00:00:00.000Z"
+    }
+  ]
+}
