@@ -69,7 +69,7 @@ async function createTasks(
         data: {
           title: task.title,
           description: task.description,
-          priority: task.priority,
+          priority: task.priority === 'URGENT' ? 'CRITICAL' : task.priority ,
           estimatedHours: task.estimatedHours,
           startDate: task.startDate ? new Date(task.startDate) : null,
           dueDate: task.dueDate ? new Date(task.dueDate) : null,

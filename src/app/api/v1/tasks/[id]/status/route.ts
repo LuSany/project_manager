@@ -62,7 +62,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ success: false, error: error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
     }
     console.error('更新任务状态失败:', error)
     return NextResponse.json({ success: false, error: '更新任务状态失败' }, { status: 500 })

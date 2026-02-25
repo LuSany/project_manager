@@ -1,30 +1,30 @@
 // 预览服务路由和降级策略
 
-import type { PreviewServiceType } from '@/types/prisma';
+type PreviewServiceType = 'ONLYOFFICE' | 'KKFILEVIEW' | 'NATIVE'
 
 interface PreviewService {
-  type: PreviewServiceType;
-  priority: number;
-  available: boolean;
-  healthCheck: () => Promise<boolean>;
-  generateUrl: (fileId: string, userId: string) => Promise<string>;
+  type: PreviewServiceType
+  priority: number
+  available: boolean
+  healthCheck: () => Promise<boolean>
+  generateUrl: (fileId: string, userId: string) => Promise<string>
 }
 
 interface PreviewRouterConfig {
   onlyOffice?: {
-    baseUrl: string;
-    enabled: boolean;
-    priority: number;
-  };
+    baseUrl: string
+    enabled: boolean
+    priority: number
+  }
   kkFileView?: {
-    baseUrl: string;
-    enabled: boolean;
-    priority: number;
-  };
+    baseUrl: string
+    enabled: boolean
+    priority: number
+  }
   nativePreview: {
-    enabled: boolean;
-    priority: number;
-  };
+    enabled: boolean
+    priority: number
+  }
 }
 
 /**
@@ -32,12 +32,12 @@ interface PreviewRouterConfig {
  * 按优先级尝试服务，失败时降级
  */
 export class PreviewRouter {
-  private config: PreviewRouterConfig;
-  private services: PreviewService[] = [];
+  private config: PreviewRouterConfig
+  private services: PreviewService[] = []
 
   constructor(config: PreviewRouterConfig) {
-    this.config = config;
-    this.initializeServices();
+    this.config = config
+    this.initializeServices()
   }
 
   private initializeServices() {
@@ -49,15 +49,15 @@ export class PreviewRouter {
         available: true,
         healthCheck: async () => {
           try {
-            const response = await fetch(this.config.onlyOffice!.baseUrl);
-            return response.ok;
+            const response = await fetch(this.config.onlyOffice!.baseUrl)
+            return response.ok
           } catch {
-            return false;
+            return false
           }
         },
         generateUrl: async (fileId: string, userId: string) => {
           // OnlyOffice URL 生成逻辑
-          return `${this.config.onlyOffice?.baseUrl}/editor?fileId=${fileId}&userId=${userId}`;
+          return `${this.config.onlyOffice?.baseUrl}/editor?fileId=${fileId}&userId=${userId}`
         },
       },
       this.config.kkFileView?.enabled && {
@@ -66,22 +66,22 @@ export class PreviewRouter {
         available: true,
         healthCheck: async () => {
           try {
-            const response = await fetch(this.config.kkFileView!.baseUrl);
-            return response.ok;
+            const response = await fetch(this.config.kkFileView!.baseUrl)
+            return response.ok
           } catch {
-            return false;
+            return false
           }
         },
-        generateUrl: async (fileId: string, userId: string) => {
+        generateUrl: async (fileId: string, _userId: string) => {
           // KKFileView URL 生成逻辑
-          const fileUrl = `${this.config.kkFileView?.baseUrl}/files/${fileId}`;
-          return `${this.config.kkFileView?.baseUrl}/onlinePreview?url=${encodeURIComponent(fileUrl)}`;
+          const fileUrl = `${this.config.kkFileView?.baseUrl}/files/${fileId}`
+          return `${this.config.kkFileView?.baseUrl}/onlinePreview?url=${encodeURIComponent(fileUrl)}`
         },
       },
-    ].filter(Boolean) as PreviewService[];
+    ].filter(Boolean) as PreviewService[]
 
     // 按优先级排序
-    this.services = serviceConfigs.sort((a, b) => a.priority - b.priority);
+    this.services = serviceConfigs.sort((a, b) => a.priority - b.priority)
   }
 
   /**
@@ -90,11 +90,11 @@ export class PreviewRouter {
    */
   async getBestAvailableService(): Promise<PreviewServiceType | 'NATIVE'> {
     for (const service of this.services) {
-      if (service.available && await service.healthCheck()) {
-        return service.type;
+      if (service.available && (await service.healthCheck())) {
+        return service.type
       }
     }
-    return 'NATIVE';
+    return 'NATIVE'
   }
 
   /**
@@ -109,30 +109,30 @@ export class PreviewRouter {
     userId: string,
     fileType: string
   ): Promise<{
-    url: string;
-    serviceType: PreviewServiceType | 'NATIVE';
-    fallback: boolean;
+    url: string
+    serviceType: PreviewServiceType | 'NATIVE'
+    fallback: boolean
   }> {
     // 尝试每个服务直到成功
     for (const service of this.services) {
       try {
-        if (!service.available) continue;
+        if (!service.available) continue
 
-        const isHealthy = await service.healthCheck();
+        const isHealthy = await service.healthCheck()
         if (!isHealthy) {
-          service.available = false;
-          continue;
+          service.available = false
+          continue
         }
 
-        const url = await service.generateUrl(fileId, userId);
+        const url = await service.generateUrl(fileId, userId)
         return {
           url,
           serviceType: service.type,
           fallback: false,
-        };
+        }
       } catch (error) {
-        console.error(`预览服务 ${service.type} 失败:`, error);
-        service.available = false;
+        console.error(`预览服务 ${service.type} 失败:`, error)
+        service.available = false
         // 继续尝试下一个服务
       }
     }
@@ -142,17 +142,13 @@ export class PreviewRouter {
       url: this.generateNativePreviewUrl(fileId, userId, fileType),
       serviceType: 'NATIVE',
       fallback: true,
-    };
+    }
   }
 
   /**
    * 生成原生预览 URL
    */
-  private generateNativePreviewUrl(
-    fileId: string,
-    userId: string,
-    fileType: string
-  ): string {
+  private generateNativePreviewUrl(fileId: string, userId: string, fileType: string): string {
     const fileTypes: Record<string, { category: string; handler: string }> = {
       // 图片
       jpg: { category: 'image', handler: 'image' },
@@ -170,26 +166,28 @@ export class PreviewRouter {
       wav: { category: 'audio', handler: 'audio' },
       // PDF
       pdf: { category: 'document', handler: 'pdf' },
-    };
+    }
 
-    const handler = fileTypes[fileType.toLowerCase()];
+    const handler = fileTypes[fileType.toLowerCase()]
     if (handler) {
-      return `/api/v1/files/${fileId}/preview?type=${handler.handler}&userId=${userId}`;
+      return `/api/v1/files/${fileId}/preview?type=${handler.handler}&userId=${userId}`
     }
 
     // 不支持的类型，返回下载链接
-    return `/api/v1/files/${fileId}/download?userId=${userId}`;
+    return `/api/v1/files/${fileId}/download?userId=${userId}`
   }
 
   /**
    * 获取服务状态
    */
-  async getServiceStatus(): Promise<{
-    type: PreviewServiceType;
-    available: boolean;
-    healthy: boolean;
-    priority: number;
-  }[]> {
+  async getServiceStatus(): Promise<
+    {
+      type: PreviewServiceType
+      available: boolean
+      healthy: boolean
+      priority: number
+    }[]
+  > {
     return Promise.all(
       this.services.map(async (service) => ({
         type: service.type,
@@ -197,7 +195,7 @@ export class PreviewRouter {
         healthy: await service.healthCheck(),
         priority: service.priority,
       }))
-    );
+    )
   }
 }
 
@@ -220,5 +218,5 @@ export function createDefaultPreviewRouter(): PreviewRouter {
       enabled: true,
       priority: 3,
     },
-  });
+  })
 }

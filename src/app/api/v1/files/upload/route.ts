@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(success(file));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
+      return error('VALIDATION_ERROR', '参数验证失败', { issues: err.issues }, 400);
     }
     console.error('上传文件失败:', err);
     return error('UPLOAD_FILE_FAILED', '上传文件失败', undefined, 500);

@@ -14,7 +14,7 @@ async function getAuthUser(request: NextRequest) {
 const updateTemplateSchema = z.object({
   title: z.string().min(1, "模板标题不能为空").optional(),
   description: z.string().optional(),
-  templateData: z.record(z.any()).refine((val) => {
+  templateData: z.record(z.string(), z.any()).refine((val) => {
     try {
       JSON.stringify(val);
       return true;

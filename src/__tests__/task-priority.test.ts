@@ -171,7 +171,7 @@ describe('TaskPriority 任务优先级系统', () => {
       const owner = await createTestUser('sort-owner@test.com', 'ADMIN')
       const project = await createTestProject(owner.id)
 
-      const created = await Promise.all([
+      const _created = await Promise.all([
         prisma.task.create({ data: { title: 'Low Task', projectId: project.id, priority: 'LOW' } }),
         prisma.task.create({
           data: { title: 'Critical Task', projectId: project.id, priority: 'CRITICAL' },

@@ -16,7 +16,7 @@ const createTaskSchema = z.object({
   description: z.string().optional(),
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE']).optional(),
   progress: z.number().min(0).max(100).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
   startDate: z.string().datetime().optional(),
   dueDate: z.string().datetime().optional(),
   estimatedHours: z.number().positive().optional(),
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ success: false, error: error.errors[0].message }, { status: 400 })
+      return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
     }
     console.error('创建任务失败:', error)
     return NextResponse.json({ success: false, error: '创建任务失败' }, { status: 500 })

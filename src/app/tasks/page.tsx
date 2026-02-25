@@ -1,109 +1,106 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { TaskKanban } from "@/components/tasks/TaskKanban";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { Plus, List, Columns } from "lucide-react";
+} from '@/components/ui/select'
+import { Plus, List, Columns } from 'lucide-react'
 
 interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  progress: number;
-  priority: string;
-  startDate: string | null;
-  dueDate: string | null;
-  createdAt: string;
+  id: string
+  title: string
+  description: string | null
+  status: string
+  progress: number
+  priority: string
+  startDate: string | null
+  dueDate: string | null
+  createdAt: string
   project?: {
-    name: string;
-    id: string;
-  };
+    name: string
+    id: string
+  }
 }
 
 export default function GlobalTasksPage() {
-  const router = useRouter();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [filterStatus, setFilterStatus] = useState<string>("");
-  const [filterPriority, setFilterPriority] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+  const router = useRouter()
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [filterStatus, setFilterStatus] = useState<string>('')
+  const [filterPriority, setFilterPriority] = useState<string>('')
+  const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
 
   const fetchTasks = async () => {
-    setLoading(true);
+    setLoading(true)
     try {
       const searchParams = new URLSearchParams({
         page: page.toString(),
-        pageSize: "10",
+        pageSize: '10',
         ...(filterStatus && { status: filterStatus }),
         ...(filterPriority && { priority: filterPriority }),
-      });
+      })
 
-      const response = await fetch(`/api/v1/tasks?${searchParams.toString()}`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/tasks?${searchParams.toString()}`)
+      const data = await response.json()
 
       if (data.success) {
-        setTasks(data.data.items || []);
-        setTotalPages(data.data.totalPages || 1);
+        setTasks(data.data.items || [])
+        setTotalPages(data.data.totalPages || 1)
       }
     } catch (err) {
-      console.error("获取任务列表失败:", err);
+      console.error('获取任务列表失败:', err)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   useEffect(() => {
-    fetchTasks();
-  }, [page, filterStatus, filterPriority]);
+    fetchTasks()
+  }, [page, filterStatus, filterPriority])
 
   return (
     <div className="container mx-auto py-6">
       {/* 页面标题 */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold mb-2">任务管理</h1>
-          <p className="text-muted-foreground">
-            查看所有分配给您的任务
-          </p>
+          <h1 className="mb-2 text-3xl font-bold">任务管理</h1>
+          <p className="text-muted-foreground">查看所有分配给您的任务</p>
         </div>
 
         <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === "list" ? "default" : "outline"}
+            variant={viewMode === 'list' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode("list")}
+            onClick={() => setViewMode('list')}
           >
-            <List className="h-4 w-4 mr-2" />
+            <List className="mr-2 h-4 w-4" />
             列表
           </Button>
           <Button
-            variant={viewMode === "kanban" ? "default" : "outline"}
+            variant={viewMode === 'kanban' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => setViewMode("kanban")}
+            onClick={() => setViewMode('kanban')}
           >
-            <Columns className="h-4 w-4 mr-2" />
+            <Columns className="mr-2 h-4 w-4" />
             看板
           </Button>
-          <Button onClick={() => router.push("/tasks/new")}>
-            <Plus className="h-4 w-4 mr-2" />
+          <Button onClick={() => router.push('/tasks/new')}>
+            <Plus className="mr-2 h-4 w-4" />
             新建任务
           </Button>
         </div>
       </div>
 
       {/* 筛选器 */}
-      <div className="flex items-center gap-4 mb-6">
+      <div className="mb-6 flex items-center gap-4">
         <Select value={filterStatus} onValueChange={setFilterStatus}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="状态" />
@@ -134,11 +131,16 @@ export default function GlobalTasksPage() {
 
       {/* 任务列表/看板 */}
       {loading ? (
-        <div className="text-center py-8 text-muted-foreground">加载中...</div>
-      ) : viewMode === "kanban" ? (
-        <TaskKanban tasks={tasks} onChange={fetchTasks} />
+        <div className="text-muted-foreground py-8 text-center">加载中...</div>
+      ) : viewMode === 'kanban' ? (
+        <div className="rounded-lg border p-8 text-center">
+          <p className="text-muted-foreground mb-4">看板视图仅在项目页面可用</p>
+          <Button variant="outline" onClick={() => router.push('/projects')}>
+            查看项目列表
+          </Button>
+        </div>
       ) : (
-        <div className="border rounded-lg">
+        <div className="rounded-lg border">
           <table className="w-full">
             <thead className="bg-muted">
               <tr>
@@ -152,12 +154,12 @@ export default function GlobalTasksPage() {
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr key={task.id} className="border-t hover:bg-muted/50">
+                <tr key={task.id} className="hover:bg-muted/50 border-t">
                   <td className="p-3">
                     <div>
                       <div className="font-medium">{task.title}</div>
                       {task.description && (
-                        <div className="text-xs text-muted-foreground line-clamp-1">
+                        <div className="text-muted-foreground line-clamp-1 text-xs">
                           {task.description}
                         </div>
                       )}
@@ -170,25 +172,23 @@ export default function GlobalTasksPage() {
                     <span className="text-sm">{task.priority}</span>
                   </td>
                   <td className="p-3">
-                    <div className="w-full bg-muted rounded-full h-2">
+                    <div className="bg-muted h-2 w-full rounded-full">
                       <div
                         className="bg-primary h-2 rounded-full"
                         style={{ width: `${task.progress}%` }}
                       />
                     </div>
-                    <span className="text-xs text-muted-foreground">{task.progress}%</span>
+                    <span className="text-muted-foreground text-xs">{task.progress}%</span>
                   </td>
                   <td className="p-3 text-sm">
-                    {task.dueDate
-                      ? new Date(task.dueDate).toLocaleDateString("zh-CN")
-                      : "-"}
+                    {task.dueDate ? new Date(task.dueDate).toLocaleDateString('zh-CN') : '-'}
                   </td>
                   <td className="p-3 text-sm">
                     <a
                       href={`/projects/${task.project?.id}`}
                       className="text-blue-600 hover:underline"
                     >
-                      {task.project?.name || "-"}
+                      {task.project?.name || '-'}
                     </a>
                   </td>
                 </tr>
@@ -200,7 +200,7 @@ export default function GlobalTasksPage() {
 
       {/* 分页 */}
       {totalPages > 1 && (
-        <div className="flex items-center justify-center gap-2 mt-6">
+        <div className="mt-6 flex items-center justify-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -209,7 +209,7 @@ export default function GlobalTasksPage() {
           >
             上一页
           </Button>
-          <span className="text-sm text-muted-foreground">
+          <span className="text-muted-foreground text-sm">
             第 {page} 页 / 共 {totalPages} 页
           </span>
           <Button
@@ -223,5 +223,5 @@ export default function GlobalTasksPage() {
         </div>
       )}
     </div>
-  );
+  )
 }

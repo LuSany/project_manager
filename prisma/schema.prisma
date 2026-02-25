@@ -51,10 +51,9 @@ model User {
 }
 
 enum UserStatus {
-  PENDING // 待审批
-  ACTIVE // 已激活
-  SUSPENDED // 已暂停
-  INACTIVE // 已停用
+  PENDING   // 待审批
+  ACTIVE    // 已激活
+  DISABLED  // 已禁用
 }
 
 enum SystemRole {
@@ -1160,4 +1159,20 @@ enum RiskStatus {
   MONITORING // 监控中
   RESOLVED // 已解决
   CLOSED // 已关闭
+}
+// ============================================================================
+// AI 评审分析
+// ============================================================================
+
+model ReviewAiAnalysis {
+  id           String   @id @default(cuid())
+  reviewId     String
+  analysisType String   // MATERIAL_ANALYSIS, CRITERIA_GENERATION, RISK_IDENTIFICATION, SUMMARY
+  result       String   // JSON 格式存储分析结果
+  aiConfigId   String?
+  duration     Int?     // 毫秒
+  createdAt    DateTime @default(now())
+
+  @@index([reviewId, analysisType])
+  @@map("review_ai_analysis")
 }

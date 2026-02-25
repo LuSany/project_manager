@@ -7,7 +7,7 @@ import { z } from 'zod'
 const testWebhookSchema = z.object({
   url: z.string().url(),
   event: z.string(),
-  payload: z.record(z.unknown()),
+  payload: z.record(z.string(), z.unknown()),
 })
 
 export async function POST(req: NextRequest) {

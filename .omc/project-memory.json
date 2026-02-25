@@ -245,20 +245,20 @@
   "hotPaths": [
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 126,
-      "lastAccessed": 1771948916271,
+      "accessCount": 128,
+      "lastAccessed": 1771950330615,
       "type": "file"
     },
     {
       "path": "docs/TECHNICAL_SPECIFICATION_V4.md",
-      "accessCount": 21,
-      "lastAccessed": 1771946423907,
+      "accessCount": 35,
+      "lastAccessed": 1771950473250,
       "type": "file"
     },
     {
       "path": "src/app/api/v1/risks/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1771942179100,
+      "accessCount": 9,
+      "lastAccessed": 1771950162048,
       "type": "file"
     },
     {
@@ -274,39 +274,45 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/tasks/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771942173284,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/milestones/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771942179149,
-      "type": "file"
-    },
-    {
       "path": "src/types/risk.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771942190217,
+      "accessCount": 5,
+      "lastAccessed": 1771950155630,
       "type": "file"
     },
     {
       "path": "src/app/api/v1/issues/route.ts",
-      "accessCount": 4,
-      "lastAccessed": 1771943179453,
+      "accessCount": 5,
+      "lastAccessed": 1771950162110,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/tasks/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1771950170175,
       "type": "file"
     },
     {
       "path": "src/app/(main)/dashboard/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1771944230766,
+      "accessCount": 5,
+      "lastAccessed": 1771950197823,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/milestones/route.ts",
+      "accessCount": 5,
+      "lastAccessed": 1771950198046,
       "type": "file"
     },
     {
       "path": "src/app/projects/[id]/risks/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1771935407072,
+      "accessCount": 4,
+      "lastAccessed": 1771950176522,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/tasks/page.tsx",
+      "accessCount": 4,
+      "lastAccessed": 1771950176559,
       "type": "file"
     },
     {
@@ -334,15 +340,33 @@
       "type": "file"
     },
     {
-      "path": "src/app/projects/[id]/tasks/page.tsx",
+      "path": "src/types/api.ts",
       "accessCount": 3,
-      "lastAccessed": 1771944336043,
+      "lastAccessed": 1771950155558,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/page.tsx",
+      "accessCount": 3,
+      "lastAccessed": 1771950162275,
       "type": "file"
     },
     {
       "path": "src/app/projects/[id]/requirements/page.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1771935402058,
+      "accessCount": 3,
+      "lastAccessed": 1771950176702,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/reviews/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771950197929,
+      "type": "file"
+    },
+    {
+      "path": "src/types/task-template.ts",
+      "accessCount": 3,
+      "lastAccessed": 1771950198136,
       "type": "file"
     },
     {
@@ -358,27 +382,9 @@
       "type": "file"
     },
     {
-      "path": "src/types/task-template.ts",
-      "accessCount": 2,
-      "lastAccessed": 1771936043587,
-      "type": "file"
-    },
-    {
       "path": "src/lib/auth.ts",
       "accessCount": 2,
       "lastAccessed": 1771936278160,
-      "type": "file"
-    },
-    {
-      "path": "src/types/api.ts",
-      "accessCount": 2,
-      "lastAccessed": 1771936287464,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/reviews/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1771942190129,
       "type": "file"
     },
     {
@@ -394,12 +400,6 @@
       "type": "file"
     },
     {
-      "path": "src/app/projects/page.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1771944534627,
-      "type": "file"
-    },
-    {
       "path": "src/lib",
       "accessCount": 2,
       "lastAccessed": 1771948517729,
@@ -407,14 +407,26 @@
     },
     {
       "path": "src/app/api/v1/projects/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771934725423,
+      "accessCount": 2,
+      "lastAccessed": 1771950161996,
       "type": "file"
     },
     {
       "path": "src/app/api/v1/requirements/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771934725481,
+      "accessCount": 2,
+      "lastAccessed": 1771950170138,
+      "type": "file"
+    },
+    {
+      "path": "src/components/risks/RiskList.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1771950187364,
+      "type": "file"
+    },
+    {
+      "path": "src/types/milestone.ts",
+      "accessCount": 2,
+      "lastAccessed": 1771950187521,
       "type": "file"
     },
     {
@@ -460,12 +472,6 @@
       "type": "file"
     },
     {
-      "path": "src/types/milestone.ts",
-      "accessCount": 1,
-      "lastAccessed": 1771935281000,
-      "type": "file"
-    },
-    {
       "path": "src/components/risks/RiskMatrix.tsx",
       "accessCount": 1,
       "lastAccessed": 1771935284034,
@@ -505,12 +511,6 @@
       "path": "src/components/ui/dialog.tsx",
       "accessCount": 1,
       "lastAccessed": 1771935300134,
-      "type": "file"
-    },
-    {
-      "path": "src/components/risks/RiskList.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1771935357000,
       "type": "file"
     },
     {

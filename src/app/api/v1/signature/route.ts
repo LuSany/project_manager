@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return error('参数验证失败_ERROR', '参数验证失败', { errors: err.errors }, 400);
+      return error('参数验证失败_ERROR', '参数验证失败', { issues: err.issues }, 400);
     }
     console.error('生成URL签名失败:', err);
     return error('生成URL签名失败_ERROR', '生成URL签名失败', undefined, 500);

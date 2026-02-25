@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(success(service));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
+      return error('VALIDATION_ERROR', '参数验证失败', { issues: err.issues }, 400);
     }
     console.error('创建预览服务配置失败:', err);
     return error('CREATE_SERVICE_FAILED', '创建预览服务配置失败', undefined, 500);

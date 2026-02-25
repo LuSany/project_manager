@@ -50,7 +50,7 @@ export async function PUT(request: NextRequest, context: any) {
     return NextResponse.json(success(updatedService));
   } catch (err) {
     if (err instanceof z.ZodError) {
-      return error('VALIDATION_ERROR', '参数验证失败', { errors: err.errors }, 400);
+      return error('VALIDATION_ERROR', '参数验证失败', { issues: err.issues }, 400);
     }
     console.error('更新预览服务配置失败:', err);
     return error('UPDATE_SERVICE_FAILED', '更新预览服务配置失败', undefined, 500);

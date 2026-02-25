@@ -1,21 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 
-// 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
   return db.user.findUnique({ where: { id: userId } });
 }
 
-// GET /api/v1/requirements/[id]/history - 获取需求变更历史
 export async function GET(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id: requirementId } = await context.params;
 
-  // 认证检查
   const user = await getAuthUser(request);
   if (!user) {
     return NextResponse.json(
@@ -27,28 +24,30 @@ export async function GET(
   try {
     const history = await db.requirementHistory.findMany({
       where: { requirementId },
-      include: {
-        changedByUser: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: { createdAt: "desc" },
     });
+
+    // 获取变更用户信息
+    const userIds = [...new Set(history.map(h => h.changedBy))]
+    const users = await db.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, name: true, email: true },
+    })
+    const userMap = Object.fromEntries(users.map(u => [u.id, u]))
+
+    const historyWithUser = history.map(h => ({
+      ...h,
+      changedByUser: userMap[h.changedBy] || null,
+    }))
 
     return NextResponse.json({
       success: true,
-      data: history,
+      data: historyWithUser,
     });
   } catch (error) {
     console.error("获取需求变更历史失败:", error);
     return NextResponse.json(
-      { success: false, error: "获取需求变更历史失败" },
+      { success: false, error: "获取变更历史失败" },
       { status: 500 }
     );
   }

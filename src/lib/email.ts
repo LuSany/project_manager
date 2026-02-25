@@ -33,9 +33,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
 }> {
   const { to, subject, body, templateType, userId, projectId } = options
 
+  let emailLog: { id: string } | null = null
+
   try {
     // 创建邮件日志记录
-    const emailLog = await prisma.emailLog.create({
+    emailLog = await prisma.emailLog.create({
       data: {
         to,
         subject,
@@ -99,7 +101,7 @@ export async function getEmailTemplate(
   type: string,
   variables: EmailTemplateVariables
 ): Promise<{ subject: string; body: string } | null> {
-  const template = await prisma.emailTemplate.findUnique({
+  const template = await prisma.emailTemplate.findFirst({
     where: {
       type,
       isActive: true,
@@ -130,7 +132,7 @@ export async function getEmailTemplate(
 export async function sendPasswordResetEmail(
   email: string,
   resetToken: string,
-  expiresAt: Date
+  _expiresAt: Date
 ): Promise<{ success: boolean; error?: string }> {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`
