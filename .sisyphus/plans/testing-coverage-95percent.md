@@ -33,6 +33,78 @@
 | AI 服务 | 70% | 85% | 30% | 95% |
 | 邮件服务 | 85% | 85% | 40% | 95% |
 
+
+### 1.3 测试数据管理
+
+
+
+#### 目录结构
+
+```
+
+tests/
+
+├── mocks/              # Mock 数据工厂
+
+│   ├── data-factory.ts
+
+├── fixtures/           # 测试固件数据
+
+│   └── base-data.json
+
+├── data/              # 测试数据生成器
+
+│   └── test-db-manager.ts
+
+├── security/          # 安全测试
+
+│   ├── sql-injection.test.ts
+
+│   └── api-security.test.ts
+
+├── performance/       # 性能测试
+
+│   └── api-performance.test.ts
+
+├── integration/       # 集成测试
+
+└── e2e/              # E2E 测试
+
+```
+
+
+
+#### Mock 工厂使用示例
+
+```typescript
+
+import { MockUserFactory, MockProjectFactory, MockTaskFactory } from './data-factory'
+
+
+
+const admin = MockUserFactory.createAdmin()
+
+const owner = MockUserFactory.createOwner()
+
+const project = MockProjectFactory.create()
+
+const task = MockTaskFactory.create({ projectId: project.id })
+
+```
+
+
+
+#### 固件数据
+
+- `tests/fixtures/base-data.json` - 包含基本测试数据（users, projects, tasks）
+
+
+
+#### 环境配置
+
+- `.env.test` - 测试环境变量
+
+- `docker-compose.test.yml` - Docker 测试环境
 ---
 
 ## 二、用户管理模块测试
