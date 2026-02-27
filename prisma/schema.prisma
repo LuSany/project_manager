@@ -21,8 +21,8 @@ model User {
   name         String
   avatar       String?
   phone        String?
-  department   String?    // 部门
-  position     String?    // 职位
+  department   String? // 部门
+  position     String? // 职位
   status       UserStatus @default(PENDING)
   role         SystemRole @default(EMPLOYEE)
   createdAt    DateTime   @default(now())
@@ -51,17 +51,17 @@ model User {
 }
 
 enum UserStatus {
-  PENDING   // 待审批
-  ACTIVE    // 已激活
-  DISABLED  // 已禁用
+  PENDING // 待审批
+  ACTIVE // 已激活
+  DISABLED // 已禁用
 }
 
 enum SystemRole {
-  ADMIN           // 系统管理员
-  PROJECT_ADMIN   // 项目管理员
-  PROJECT_OWNER   // 项目所有者
-  PROJECT_MEMBER  // 项目成员
-  EMPLOYEE        // 普通员工
+  ADMIN // 系统管理员
+  PROJECT_ADMIN // 项目管理员
+  PROJECT_OWNER // 项目所有者
+  PROJECT_MEMBER // 项目成员
+  EMPLOYEE // 普通员工
 }
 
 // ============================================================================
@@ -190,24 +190,24 @@ model Task {
   projectId      String
   milestoneId    String?
   issueId        String?
-  acceptorId     String?      // 验收人 ID
+  acceptorId     String? // 验收人 ID
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   // 关系
-  project         Project                   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  milestone       Milestone?                @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
-  issue           Issue?                    @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
-  assignees       TaskAssignee[]
-  watchers        TaskWatcher[]             @relation("TaskWatcher")
-  subTasks        SubTask[]
-  taskTags        TaskTag[]
-  riskTasks       RiskTask[]                @relation("RiskTaskRelation")
-  acceptor        User?                     @relation("TaskAcceptor", fields: [acceptorId], references: [id], onDelete: SetNull)
-  discussions     RequirementDiscussion[]   @relation("TaskDiscussion")
+  project      Project                 @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  milestone    Milestone?              @relation("TaskMilestone", fields: [milestoneId], references: [id], onDelete: SetNull)
+  issue        Issue?                  @relation("TaskIssue", fields: [issueId], references: [id], onDelete: SetNull)
+  assignees    TaskAssignee[]
+  watchers     TaskWatcher[]           @relation("TaskWatcher")
+  subTasks     SubTask[]
+  taskTags     TaskTag[]
+  riskTasks    RiskTask[]              @relation("RiskTaskRelation")
+  acceptor     User?                   @relation("TaskAcceptor", fields: [acceptorId], references: [id], onDelete: SetNull)
+  discussions  RequirementDiscussion[] @relation("TaskDiscussion")
   // 任务依赖关系
-  dependencies    TaskDependency[]          @relation("TaskDependents") // 当前任务依赖的其他任务
-  dependents      TaskDependency[]          @relation("TaskDependencies") // 依赖当前任务的其他任务
+  dependencies TaskDependency[]        @relation("TaskDependents") // 当前任务依赖的其他任务
+  dependents   TaskDependency[]        @relation("TaskDependencies") // 依赖当前任务的其他任务
 
   @@index([projectId])
   @@index([milestoneId])
@@ -219,21 +219,21 @@ model Task {
 }
 
 enum TaskStatus {
-  TODO          // 未开始
-  IN_PROGRESS   // 进行中
-  REVIEW        // 待评审
-  TESTING       // 测试中
-  DONE          // 已完成
-  CANCELLED     // 已取消
-  DELAYED       // 延期
-  BLOCKED       // 阻塞
+  TODO // 未开始
+  IN_PROGRESS // 进行中
+  REVIEW // 待评审
+  TESTING // 测试中
+  DONE // 已完成
+  CANCELLED // 已取消
+  DELAYED // 延期
+  BLOCKED // 阻塞
 }
 
 enum TaskPriority {
-  LOW       // 低
-  MEDIUM    // 中
-  HIGH      // 高
-  CRITICAL  // 紧急/关键
+  LOW // 低
+  MEDIUM // 中
+  HIGH // 高
+  CRITICAL // 紧急/关键
 }
 
 // 任务执行人关联表
@@ -271,27 +271,27 @@ model TaskWatcher {
 // ============================================================================
 
 model TaskDependency {
-  id             String        @id @default(cuid())
+  id             String         @id @default(cuid())
   taskId         String
   dependsOnId    String
   dependencyType DependencyType @default(FINISH_TO_START)
-  createdAt      DateTime      @default(now())
+  createdAt      DateTime       @default(now())
 
   // 关系
   task      Task @relation("TaskDependents", fields: [taskId], references: [id], onDelete: Cascade)
   dependsOn Task @relation("TaskDependencies", fields: [dependsOnId], references: [id], onDelete: Cascade)
 
+  @@unique([taskId, dependsOnId])
   @@index([taskId])
   @@index([dependsOnId])
-  @@unique([taskId, dependsOnId])
   @@map("task_dependencies")
 }
 
 enum DependencyType {
-  FINISH_TO_START    // 前置任务完成后才能开始当前任务
-  START_TO_START     // 前置任务开始后才能开始当前任务
-  FINISH_TO_FINISH   // 前置任务完成后才能完成当前任务
-  START_TO_FINISH    // 前置任务开始后才能完成当前任务
+  FINISH_TO_START // 前置任务完成后才能开始当前任务
+  START_TO_START // 前置任务开始后才能开始当前任务
+  FINISH_TO_FINISH // 前置任务完成后才能完成当前任务
+  START_TO_FINISH // 前置任务开始后才能完成当前任务
 }
 
 // ============================================================================
@@ -509,13 +509,13 @@ enum AcceptanceResult {
 // ============================================================================
 
 model RequirementDiscussion {
-  id            String    @id @default(cuid())
+  id            String   @id @default(cuid())
   requirementId String
   userId        String
   content       String
   taskId        String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   // 关系
   requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
@@ -532,14 +532,14 @@ model RequirementDiscussion {
 // ============================================================================
 
 model RequirementHistory {
-  id           String   @id @default(cuid())
+  id            String   @id @default(cuid())
   requirementId String
-  changeType   String   // STATUS_CHANGE, CONTENT_UPDATE, PRIORITY_CHANGE
-  oldValue     String?
-  newValue     String?
-  changedBy    String
-  changeReason String?
-  createdAt    DateTime @default(now())
+  changeType    String // STATUS_CHANGE, CONTENT_UPDATE, PRIORITY_CHANGE
+  oldValue      String?
+  newValue      String?
+  changedBy     String
+  changeReason  String?
+  createdAt     DateTime @default(now())
 
   // 关系
   requirement Requirement @relation(fields: [requirementId], references: [id], onDelete: Cascade)
@@ -554,22 +554,22 @@ model RequirementHistory {
 // ============================================================================
 
 model Issue {
-  id             String        @id @default(cuid())
-  title          String
-  description    String?
-  status         IssueStatus   @default(OPEN)
-  priority       IssuePriority @default(MEDIUM)
-  projectId      String
-  requirementId  String?       // 关联的需求 ID
-  autoClose      Boolean       @default(true)
-  resolvedAt     DateTime?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  title         String
+  description   String?
+  status        IssueStatus   @default(OPEN)
+  priority      IssuePriority @default(MEDIUM)
+  projectId     String
+  requirementId String? // 关联的需求 ID
+  autoClose     Boolean       @default(true)
+  resolvedAt    DateTime?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   // 关系
-  project     Project     @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
   requirement Requirement? @relation(fields: [requirementId], references: [id], onDelete: SetNull)
-  tasks       Task[]      @relation("TaskIssue")
+  tasks       Task[]       @relation("TaskIssue")
 
   @@index([projectId])
   @@index([status])
@@ -608,24 +608,60 @@ model ReviewTypeConfig {
   updatedAt   DateTime @updatedAt
 
   // 关系
-  reviews Review[]
+  reviews   Review[]
+  templates ReviewTemplate[]
+}
 
+// ============================================================================
+// 评审模板
+// ============================================================================
+
+model ReviewTemplate {
+  id          String   @id @default(cuid())
+  typeId      String
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // 关系
+  type  ReviewTypeConfig     @relation(fields: [typeId], references: [id], onDelete: Cascade)
+  items ReviewTemplateItem[]
+
+  @@index([typeId])
   @@index([isActive])
-  @@map("review_type_configs")
+  @@map("review_templates")
+}
+
+model ReviewTemplateItem {
+  id         String   @id @default(cuid())
+  templateId String
+  title      String
+  content    String?
+  order      Int      @default(0)
+  required   Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  // 关系
+  template ReviewTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+
+  @@index([templateId])
+  @@map("review_template_items")
 }
 
 model Review {
-  id              String       @id @default(cuid())
-  title           String
-  description     String?
-  projectId       String
-  typeId          String
-  scheduledAt     DateTime?
-  status          ReviewStatus @default(PENDING)
-  passedCriteria  Int          @default(0)
-  totalScore      Float?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
+  id             String       @id @default(cuid())
+  title          String
+  description    String?
+  projectId      String
+  typeId         String
+  scheduledAt    DateTime?
+  status         ReviewStatus @default(PENDING)
+  passedCriteria Int          @default(0)
+  totalScore     Float?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 
   // 关系
   project      Project             @relation(fields: [projectId], references: [id], onDelete: Cascade)
@@ -701,7 +737,6 @@ model ReviewItem {
   @@map("review_items")
 }
 
-
 model ReviewCriterion {
   id          String   @id @default(cuid())
   reviewId    String
@@ -718,6 +753,7 @@ model ReviewCriterion {
   @@index([reviewId])
   @@map("review_criteria")
 }
+
 // ============================================================================
 // 文件存储
 // ============================================================================
@@ -1160,6 +1196,7 @@ enum RiskStatus {
   RESOLVED // 已解决
   CLOSED // 已关闭
 }
+
 // ============================================================================
 // AI 评审分析
 // ============================================================================
@@ -1167,10 +1204,10 @@ enum RiskStatus {
 model ReviewAiAnalysis {
   id           String   @id @default(cuid())
   reviewId     String
-  analysisType String   // MATERIAL_ANALYSIS, CRITERIA_GENERATION, RISK_IDENTIFICATION, SUMMARY
-  result       String   // JSON 格式存储分析结果
+  analysisType String // MATERIAL_ANALYSIS, CRITERIA_GENERATION, RISK_IDENTIFICATION, SUMMARY
+  result       String // JSON 格式存储分析结果
   aiConfigId   String?
-  duration     Int?     // 毫秒
+  duration     Int? // 毫秒
   createdAt    DateTime @default(now())
 
   @@index([reviewId, analysisType])
