@@ -1,9 +1,21 @@
+vi.mock('@/lib/email', () => ({
+  sendEmail: vi.fn().mockResolvedValue(true),
+}))
+
+
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     notification: {
       create: vi.fn().mockResolvedValue({ id: 'notif-1' }),
+    },
+    notificationPreference: {
+      findUnique: vi.fn().mockResolvedValue(null),
+      findMany: vi.fn().mockResolvedValue([]),
+    },
+    user: {
+      findUnique: vi.fn().mockResolvedValue({ email: 'test@example.com', name: 'Test User' }),
     },
     notificationIgnore: {
       findUnique: vi.fn().mockResolvedValue(null),

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
+import { createNotification, shouldSendEmail, sendEmailNotification, NotificationType } from '@/lib/notification';
+
+// GET /api/v1/notifications - 获取通知列表
 
 // GET /api/v1/notifications - 获取通知列表
 export async function GET(request: NextRequest, context: any) {
@@ -47,25 +50,39 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { type, title, content, link, projectId } = body;
+    const { type, title, content, link, projectId, sendEmail } = body;
 
     if (!type || !title || !content) {
       return error('缺少必填字段_ERROR', '缺少必填字段', undefined, 400);
     }
 
-    const notification = await prisma.notification.create({
-      data: {
-        type,
-        title,
-        content,
-        link: link || null,
-        userId, // 使用当前认证用户的ID
-        projectId: projectId || null,
-        isRead: false,
-      },
+    // 使用 createNotification 函数创建通知（包含邮件偏好逻辑）
+    await createNotification({
+      userId,
+      type: type as NotificationType,
+      title,
+      content,
+      link,
+      projectId,
     });
 
-    return NextResponse.json(success(notification));
+    // 如果请求明确指定发送邮件（覆盖用户偏好）
+    if (sendEmail === true) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { email: true },
+      });
+      if (user?.email) {
+        await sendEmailNotification(
+          userId,
+          type as NotificationType,
+          title,
+          content
+        );
+      }
+    }
+
+    return NextResponse.json(success({ message: '通知已创建' }));
   } catch (err) {
     console.error('创建通知失败:', err);
     return error('创建通知失败_ERROR', '创建通知失败', undefined, 500);

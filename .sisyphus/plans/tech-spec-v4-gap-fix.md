@@ -49,14 +49,13 @@
 - [x] 5 角色系统：ADMIN, PROJECT_ADMIN, PROJECT_OWNER, PROJECT_MEMBER, EMPLOYEE
 - [x] 8 任务状态：TODO, IN_PROGRESS, REVIEW, TESTING, DONE, CANCELLED, DELAYED, BLOCKED
 - [x] 真实邮件发送（SMTP 或第三方服务）
-- [x] 任务依赖关系管理
+- [x] 密码重置邮件集成
 
 #### P1 优先级（应该实现）
 - [ ] ReviewTemplate 评审模板模型
 - [ ] 任务优先级命名统一（CRITICAL vs URGENT）
 - [ ] Zod 4.x 升级
 - [ ] 任务优先级命名统一（CRITICAL vs URGENT）
-- [ ] Zod 4.x 升级
 
 ---
 
@@ -66,9 +65,7 @@
 - ❌ 不要破坏现有 API 的向后兼容性
 - ❌ 不要在邮件服务未完成配置时发送真实邮件
 - ❌ 不要跳过 TDD 流程（测试先行）
-- ❌ 不要一次性提交超过 3 个文件的更改
-
----
+#### P1 优先级（应该实现）
 
 ## 验证策略
 
@@ -276,23 +273,37 @@ npm install nodemailer @types/nodemailer
 
 ### 任务 8：密码重置邮件集成 ✅
 
+**状态**：已完成
+
 **文件**：
-- 修改：`src/app/api/v1/auth/forgot-password/route.ts`
-- 修改：`src/lib/auth.ts`
-- 测试：`src/__tests__/password-reset.test.ts`
+- 修改：`src/lib/email.ts:132-157` (sendPasswordResetEmail 函数)
+- 创建：`src/__tests__/password-reset.test.ts`
 
 **实现步骤**：
-1. 更新忘记密码 API，调用真实邮件发送
-2. 验证邮件发送成功后再返回成功响应
-3. 添加邮件发送失败的回退逻辑
+1. 修改 sendPasswordResetEmail 函数，使用 sendSMTPEmail 替代 mock sendEmail
+2. 添加 HTML 邮件模板（包含重置链接）
+3. 添加 SMTP 配置检查，如果未配置则返回友好错误
+4. 保持向后兼容（签名不变）
+
+**详细实现说明**：
+- 当前 sendPasswordResetEmail 在 email.ts 中使用模拟的 sendEmail
+- 需要改为调用 @/lib/email-providers/smtp 中的 sendSMTPEmail
+- 邮件内容应为 HTML 格式，包含密码重置链接
+- 重置链接格式：`${APP_URL}/reset-password?token=${resetToken}`
+- 如果 SMTP 配置不存在，返回 { success: false, error: 'No email configuration found' }
+- 如果 SMTP 发送失败，返回 { success: false, error: errorMessage }
 
 **测试用例**：
-- 验证密码重置邮件成功发送
-- 验证邮件发送失败时用户收到友好提示
+1. 验证 SMTP 配置存在时，邮件发送成功
+2. 验证 SMTP 配置不存在时，返回友好错误
+3. 验证 SMTP 发送失败时，正确返回错误信息
+4. 验证生成的重置 URL 格式正确
+5. 验证使用默认 APP_URL 当环境变量未设置时
 
 **提交**：YES
 - 消息：`feat(auth): 集成真实密码重置邮件发送`
-
+- 文件：`src/lib/email.ts, src/__tests__/password-reset.test.ts`
+- 提交前测试：`bun test src/__tests__/password-reset.test.ts`
 ---
 
 ### 任务 9：邮件通知偏好集成 ✅

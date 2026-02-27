@@ -1,4 +1,6 @@
 import { prisma } from '@/lib/prisma'
+import { sendEmail } from '@/lib/email'
+
 
 export type NotificationType =
   | 'RISK_ALERT'
@@ -9,13 +11,117 @@ export type NotificationType =
   | 'COMMENT_MENTION'
   | 'DAILY_DIGEST'
 
-export interface CreateNotificationOptions {
+// Notification channel types
+export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS'
+
+interface CreateNotificationOptions {
   userId: string
   type: NotificationType
   title: string
   content: string
   link?: string
   projectId?: string
+}
+
+/**
+ * 获取用户的通知偏好设置
+ */
+async function getUserNotificationPreference(
+  userId: string,
+  type: NotificationType
+): Promise<{ enabled: boolean; channel: NotificationChannel } | null> {
+  const preference = await prisma.notificationPreference.findUnique({
+    where: {
+      userId_type_channel: {
+        userId,
+        type,
+        channel: 'IN_APP',
+      },
+    },
+  })
+
+  // 如果没有设置偏好，默认启用站内通知
+  if (!preference) {
+    return { enabled: true, channel: 'IN_APP' }
+  }
+
+  return {
+    enabled: preference.enabled,
+    channel: preference.channel as NotificationChannel,
+  }
+}
+
+/**
+ * 获取用户的所有通知偏好设置
+ */
+async function getAllUserNotificationPreferences(
+  userId: string
+): Promise<Array<{ type: NotificationType; enabled: boolean; channel: NotificationChannel }>> {
+  const preferences = await prisma.notificationPreference.findMany({
+    where: { userId },
+  })
+
+  return preferences.map((p) => ({
+    type: p.type,
+    enabled: p.enabled,
+    channel: p.channel as NotificationChannel,
+  }))
+}
+
+/**
+ * 检查是否应该发送邮件通知
+ */
+async function shouldSendEmail(
+  userId: string,
+  type: NotificationType
+): Promise<boolean> {
+  const preference = await getUserNotificationPreference(userId, type)
+
+  // 如果通知被禁用，不发送
+  if (!preference || !preference.enabled) {
+    return false
+  }
+
+  // 检查是否配置了邮件渠道
+  const emailPreference = await prisma.notificationPreference.findUnique({
+    where: {
+      userId_type_channel: {
+        userId,
+        type,
+        channel: 'EMAIL',
+      },
+    },
+  })
+
+  return emailPreference?.enabled ?? false
+}
+
+/**
+ * 发送邮件通知
+ */
+async function sendEmailNotification(
+  userId: string,
+  type: NotificationType,
+  title: string,
+  content: string
+): Promise<void> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { email: true, name: true },
+  })
+
+  if (!user?.email) {
+    console.warn(`用户 ${userId} 没有邮箱地址，跳过邮件通知`)
+    return
+  }
+
+  await sendEmail({
+    to: user.email,
+    subject: `[项目管理系统] ${title}`,
+    body: content,
+    templateType: type,
+    userId,
+  })
 }
 
 async function shouldSendNotification(userId: string): Promise<boolean> {
@@ -40,6 +146,14 @@ async function isProjectIgnored(userId: string, projectId?: string): Promise<boo
 export async function createNotification(options: CreateNotificationOptions): Promise<void> {
   const { userId, type, title, content, link, projectId } = options
 
+  // 获取用户通知偏好
+  const preference = await getUserNotificationPreference(userId, type)
+  
+  // 如果通知被禁用，直接返回
+  if (!preference || !preference.enabled) {
+    return
+  }
+
   const shouldSend = await shouldSendNotification(userId)
   if (!shouldSend) {
     return
@@ -50,6 +164,7 @@ export async function createNotification(options: CreateNotificationOptions): Pr
     return
   }
 
+  // 创建站内通知
   await prisma.notification.create({
     data: {
       userId,
@@ -61,6 +176,14 @@ export async function createNotification(options: CreateNotificationOptions): Pr
       isRead: false,
     },
   })
+
+  // 根据偏好设置发送邮件通知
+  if (preference.channel === 'EMAIL' || preference.channel === 'IN_APP') {
+    const sendEmail = await shouldSendEmail(userId, type)
+    if (sendEmail) {
+      await sendEmailNotification(userId, type, title, content)
+    }
+  }
 }
 
 export async function notifyTaskAssigned(
