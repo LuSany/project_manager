@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import { sendSMTPEmail } from '@/lib/email-providers/smtp'
 
 /**
  * 邮件服务工具类
@@ -137,18 +138,32 @@ export async function sendPasswordResetEmail(
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   const resetUrl = `${appUrl}/reset-password?token=${resetToken}`
 
-  const result = await sendEmail({
-    to: email,
-    subject: '密码重置请求',
-    body: `
-      您请求重置密码，请在1小时内点击以下链接重置密码：
-      
-      ${resetUrl}
-      
-      如果您没有请求重置密码，请忽略此邮件。
-    `,
-    templateType: 'PASSWORD_RESET',
-  })
+  const htmlBody = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h2 style="color: #333;">密码重置请求</h2>
+      <p style="color: #666; line-height: 1.6;">
+        您请求重置密码，请在1小时内点击以下链接重置密码：
+      </p>
+      <p style="margin: 20px 0;">
+        <a href="${resetUrl}" style="display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px;">
+          重置密码
+        </a>
+      </p>
+      <p style="color: #999; font-size: 12px;">
+        链接有效期：1小时<br/>
+        如果您没有请求重置密码，请忽略此邮件。
+      </p>
+    </div>
+  `
+
+  const textBody = `您请求重置密码，请在1小时内点击以下链接重置密码：\n\n${resetUrl}\n\n如果您没有请求重置密码，请忽略此邮件。`
+
+  const result = await sendSMTPEmail(
+    email,
+    '密码重置请求',
+    htmlBody,
+    textBody
+  )
 
   return {
     success: result.success,
