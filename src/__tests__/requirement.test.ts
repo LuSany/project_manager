@@ -20,15 +20,15 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
@@ -37,8 +37,8 @@ describe('Requirement 需求管理', () => {
           description: 'Test Description',
           projectId: project.id,
           status: 'PENDING',
-          priority: 'HIGH'
-        }
+          priority: 'HIGH',
+        },
       })
 
       expect(requirement.id).toBeDefined()
@@ -53,22 +53,22 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 2',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(requirement.status).toBe('PENDING')
@@ -83,27 +83,27 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 3',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
           projectId: project.id,
-          status: 'PENDING'
-        }
+          status: 'PENDING',
+        },
       })
 
       const updated = await prisma.requirement.update({
         where: { id: requirement.id },
-        data: { status: 'APPROVED' }
+        data: { status: 'APPROVED' },
       })
 
       expect(updated.status).toBe('APPROVED')
@@ -116,27 +116,27 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 4',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
           projectId: project.id,
-          status: 'PENDING'
-        }
+          status: 'PENDING',
+        },
       })
 
       const updated = await prisma.requirement.update({
         where: { id: requirement.id },
-        data: { status: 'REJECTED' }
+        data: { status: 'REJECTED' },
       })
 
       expect(updated.status).toBe('REJECTED')
@@ -149,27 +149,27 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 5',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
           projectId: project.id,
-          status: 'APPROVED'
-        }
+          status: 'APPROVED',
+        },
       })
 
       const updated = await prisma.requirement.update({
         where: { id: requirement.id },
-        data: { status: 'IN_PROGRESS' }
+        data: { status: 'IN_PROGRESS' },
       })
 
       expect(updated.status).toBe('IN_PROGRESS')
@@ -182,27 +182,27 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 6',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
           projectId: project.id,
-          status: 'IN_PROGRESS'
-        }
+          status: 'IN_PROGRESS',
+        },
       })
 
       const updated = await prisma.requirement.update({
         where: { id: requirement.id },
-        data: { status: 'COMPLETED' }
+        data: { status: 'COMPLETED' },
       })
 
       expect(updated.status).toBe('COMPLETED')
@@ -217,23 +217,23 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 7',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
         data: {
           title: 'High Priority Requirement',
           projectId: project.id,
-          priority: 'HIGH'
-        }
+          priority: 'HIGH',
+        },
       })
 
       expect(requirement.priority).toBe('HIGH')
@@ -246,23 +246,23 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 8',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Medium Priority Requirement',
           projectId: project.id,
-          priority: 'MEDIUM'
-        }
+          priority: 'MEDIUM',
+        },
       })
 
       expect(requirement.priority).toBe('MEDIUM')
@@ -275,23 +275,23 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 9',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Low Priority Requirement',
           projectId: project.id,
-          priority: 'LOW'
-        }
+          priority: 'LOW',
+        },
       })
 
       expect(requirement.priority).toBe('LOW')
@@ -306,22 +306,22 @@ describe('Requirement 需求管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 10',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const requirement = await prisma.requirement.create({
         data: {
           title: 'Test Requirement',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(requirement.projectId).toBe(project.id)

@@ -20,15 +20,15 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
@@ -37,8 +37,8 @@ describe('Issue ISSUE 管理', () => {
           description: 'Test Description',
           projectId: project.id,
           status: 'OPEN',
-          priority: 'MEDIUM'
-        }
+          priority: 'MEDIUM',
+        },
       })
 
       expect(issue.id).toBeDefined()
@@ -53,22 +53,22 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 2',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(issue.status).toBe('OPEN')
@@ -81,22 +81,22 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 3',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(issue.priority).toBe('MEDIUM')
@@ -109,22 +109,22 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 4',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(issue.autoClose).toBe(true)
@@ -139,27 +139,27 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 5',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
           projectId: project.id,
-          status: 'OPEN'
-        }
+          status: 'OPEN',
+        },
       })
 
       const updated = await prisma.issue.update({
         where: { id: issue.id },
-        data: { status: 'IN_PROGRESS' }
+        data: { status: 'IN_PROGRESS' },
       })
 
       expect(updated.status).toBe('IN_PROGRESS')
@@ -172,27 +172,27 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 6',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
           projectId: project.id,
-          status: 'OPEN'
-        }
+          status: 'OPEN',
+        },
       })
 
       const updated = await prisma.issue.update({
         where: { id: issue.id },
-        data: { status: 'RESOLVED' }
+        data: { status: 'RESOLVED' },
       })
 
       expect(updated.status).toBe('RESOLVED')
@@ -205,27 +205,27 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 7',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
           projectId: project.id,
-          status: 'OPEN'
-        }
+          status: 'OPEN',
+        },
       })
 
       const updated = await prisma.issue.update({
         where: { id: issue.id },
-        data: { status: 'CLOSED' }
+        data: { status: 'CLOSED' },
       })
 
       expect(updated.status).toBe('CLOSED')
@@ -240,23 +240,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 8',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Low Severity Issue',
           projectId: project.id,
-          severity: 'LOW'
-        }
+          severity: 'LOW',
+        },
       })
 
       expect(issue.severity).toBe('LOW')
@@ -269,23 +269,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 9',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Medium Severity Issue',
           projectId: project.id,
-          severity: 'MEDIUM'
-        }
+          severity: 'MEDIUM',
+        },
       })
 
       expect(issue.severity).toBe('MEDIUM')
@@ -298,23 +298,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 10',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'High Severity Issue',
           projectId: project.id,
-          severity: 'HIGH'
-        }
+          severity: 'HIGH',
+        },
       })
 
       expect(issue.severity).toBe('HIGH')
@@ -327,23 +327,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 11',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Critical Severity Issue',
           projectId: project.id,
-          severity: 'CRITICAL'
-        }
+          severity: 'CRITICAL',
+        },
       })
 
       expect(issue.severity).toBe('CRITICAL')
@@ -358,23 +358,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 12',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Bug Issue',
           projectId: project.id,
-          category: 'BUG'
-        }
+          category: 'BUG',
+        },
       })
 
       expect(issue.category).toBe('BUG')
@@ -387,23 +387,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 13',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Feature Request',
           projectId: project.id,
-          category: 'FEATURE'
-        }
+          category: 'FEATURE',
+        },
       })
 
       expect(issue.category).toBe('FEATURE')
@@ -416,23 +416,23 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 14',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Other Issue',
           projectId: project.id,
-          category: 'OTHER'
-        }
+          category: 'OTHER',
+        },
       })
 
       expect(issue.category).toBe('OTHER')
@@ -447,22 +447,22 @@ describe('Issue ISSUE 管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 15',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const issue = await prisma.issue.create({
         data: {
           title: 'Test Issue',
-          projectId: project.id
-        }
+          projectId: project.id,
+        },
       })
 
       expect(issue.projectId).toBe(project.id)

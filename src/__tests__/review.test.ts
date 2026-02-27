@@ -20,15 +20,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -37,8 +37,8 @@ describe('Review 评审管理', () => {
           projectId: project.id,
           type: 'FEASIBILITY',
           status: 'DRAFT',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.id).toBeDefined()
@@ -54,23 +54,23 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 2',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.status).toBe('DRAFT')
@@ -83,15 +83,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 3',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -99,8 +99,8 @@ describe('Review 评审管理', () => {
           title: 'Feasibility Review',
           projectId: project.id,
           type: 'FEASIBILITY',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.type).toBe('FEASIBILITY')
@@ -113,15 +113,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 4',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -129,8 +129,8 @@ describe('Review 评审管理', () => {
           title: 'Milestone Review',
           projectId: project.id,
           type: 'MILESTONE',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.type).toBe('MILESTONE')
@@ -143,15 +143,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 5',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -159,8 +159,8 @@ describe('Review 评审管理', () => {
           title: 'Test Plan Review',
           projectId: project.id,
           type: 'TEST_PLAN',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.type).toBe('TEST_PLAN')
@@ -173,15 +173,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 6',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -189,8 +189,8 @@ describe('Review 评审管理', () => {
           title: 'Test Release Review',
           projectId: project.id,
           type: 'TEST_RELEASE',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.type).toBe('TEST_RELEASE')
@@ -203,15 +203,15 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 7',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
@@ -219,8 +219,8 @@ describe('Review 评审管理', () => {
           title: 'Test Report Review',
           projectId: project.id,
           type: 'TEST_REPORT',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.type).toBe('TEST_REPORT')
@@ -235,28 +235,28 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 8',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
           status: 'DRAFT',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
-        data: { status: 'SCHEDULED' }
+        data: { status: 'SCHEDULED' },
       })
 
       expect(updated.status).toBe('SCHEDULED')
@@ -269,28 +269,28 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 9',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
           status: 'SCHEDULED',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
-        data: { status: 'IN_PROGRESS' }
+        data: { status: 'IN_PROGRESS' },
       })
 
       expect(updated.status).toBe('IN_PROGRESS')
@@ -303,28 +303,28 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 10',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
           status: 'IN_PROGRESS',
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
-        data: { status: 'COMPLETED' }
+        data: { status: 'COMPLETED' },
       })
 
       expect(updated.status).toBe('COMPLETED')
@@ -339,23 +339,23 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 11',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.projectId).toBe(project.id)
@@ -368,23 +368,23 @@ describe('Review 评审管理', () => {
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
       const project = await prisma.project.create({
         data: {
           name: 'Test Project 12',
           ownerId: owner.id,
-          status: 'ACTIVE'
-        }
+          status: 'ACTIVE',
+        },
       })
 
       const review = await prisma.review.create({
         data: {
           title: 'Test Review',
           projectId: project.id,
-          createdById: owner.id
-        }
+          createdById: owner.id,
+        },
       })
 
       expect(review.createdById).toBe(owner.id)
