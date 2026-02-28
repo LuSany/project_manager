@@ -1,29 +1,36 @@
-# ============================================================================
-# ISSUE 模块单元测试
-# ============================================================================
+// ============================================================================
+// ISSUE 模块单元测试
+// ============================================================================
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('ISSUE 管理', () => {
   beforeEach(async () => {
     await prisma.issue.deleteMany()
+    await prisma.task.deleteMany()
+    await prisma.requirement.deleteMany()
+    await prisma.review.deleteMany()
+    await prisma.milestone.deleteMany()
     await prisma.project.deleteMany()
     await prisma.user.deleteMany()
-    })
+  })
 
   afterEach(async () => {
     await prisma.issue.deleteMany()
+    await prisma.task.deleteMany()
+    await prisma.requirement.deleteMany()
+    await prisma.review.deleteMany()
+    await prisma.milestone.deleteMany()
     await prisma.project.deleteMany()
     await prisma.user.deleteMany()
-    vi.clearAllMocks()
   })
 
   describe('ISSUE 创建', () => {
     it('应该成功创建 ISSUE', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: \`issue-owner-\${Date.now()}@test.com\`,
+          email: `issue-owner-${Date.now()}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',

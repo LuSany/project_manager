@@ -32,12 +32,13 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-          status: 'PENDING',
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+                status: 'PENDING',
+              },
+            })
 
       expect(review.id).toBeDefined()
       expect(review.title).toBe('Test Review')
@@ -64,11 +65,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.status).toBe('PENDING')
     })
@@ -92,11 +94,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Feasibility Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Feasibility Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.type).toBe('FEASIBILITY')
     })
@@ -120,11 +123,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Milestone Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Milestone Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.type).toBe('MILESTONE')
     })
@@ -148,11 +152,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Plan Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Plan Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.type).toBe('TEST_PLAN')
     })
@@ -176,11 +181,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Release Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Release Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.type).toBe('TEST_RELEASE')
     })
@@ -204,11 +210,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Report Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Report Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.type).toBe('TEST_REPORT')
     })
@@ -233,12 +240,13 @@ describe('Review 评审管理', () => {
         },
       })
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-          status: 'PENDING',
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+                status: 'PENDING',
+              },
+            })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
@@ -266,12 +274,13 @@ describe('Review 评审管理', () => {
         },
       })
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-          status: 'IN_PROGRESS',
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+                status: 'IN_PROGRESS',
+              },
+            })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
@@ -299,12 +308,13 @@ describe('Review 评审管理', () => {
         },
       })
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-          status: 'IN_PROGRESS',
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+                status: 'IN_PROGRESS',
+              },
+            })
 
       const updated = await prisma.review.update({
         where: { id: review.id },
@@ -335,11 +345,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
       expect(review.projectId).toBe(project.id)
     })
@@ -363,11 +374,12 @@ describe('Review 评审管理', () => {
       })
 
       const review = await prisma.review.create({
-        data: {
-          title: 'Test Review',
-          projectId: project.id,
-        },
-      })
+              data: {
+                title: 'Test Review',
+                projectId: project.id,
+                typeId: 'feasibility',
+              },
+            })
 
     })
   })
