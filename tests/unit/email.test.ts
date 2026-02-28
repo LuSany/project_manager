@@ -1,5 +1,37 @@
 import { describe, it, expect, vi } from 'vitest'
 
+// Mock sendSMTPEmail
+vi.mock('@/lib/email-providers/smtp', () => ({
+  sendSMTPEmail: vi.fn().mockResolvedValue({ success: true, messageId: 'mock-id' }),
+}))
+
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    emailLog: {
+      create: vi.fn().mockResolvedValue({ id: 'log-1' }),
+      update: vi.fn().mockResolvedValue({ id: 'log-1' }),
+    },
+    emailTemplate: {
+      findFirst: vi.fn().mockImplementation(({ where }) => {
+        if (where.type === 'TEST_TEMPLATE') {
+          return Promise.resolve({
+            id: 'template-1',
+            name: 'Test Template',
+            type: 'TEST_TEMPLATE',
+            subject: '测试邮件 - {{name}}',
+            body: '你好 {{name}}，这是测试内容',
+            isActive: true,
+          })
+        }
+        return Promise.resolve(null)
+      }),
+    },
+    emailConfig: {
+      findFirst: vi.fn().mockResolvedValue(null),
+    },
+  },
+}))
+
 vi.mock('@/lib/prisma', () => ({
   prisma: {
     emailLog: {
