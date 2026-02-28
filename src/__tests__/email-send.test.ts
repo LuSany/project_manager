@@ -7,6 +7,7 @@ describe('SMTP Email Service', () => {
     id: 'config-1',
     name: 'Test SMTP',
     provider: 'SMTP',
+    apiKey: null,
     smtpHost: 'smtp.test.com',
     smtpPort: 587,
     smtpUser: 'test@test.com',
@@ -15,6 +16,8 @@ describe('SMTP Email Service', () => {
     fromName: 'Test',
     isActive: true,
     isDefault: true,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }
 
   beforeEach(async () => {

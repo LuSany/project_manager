@@ -149,8 +149,8 @@ describe('FileStorage 文件管理', () => {
       })
       const afterCreate = new Date()
 
-      expect(file.createdAt).toBeGreaterThanOrEqual(beforeCreate)
-      expect(file.createdAt).toBeLessThanOrEqual(afterCreate)
+      expect(file.createdAt.getTime()).toBeGreaterThanOrEqual(beforeCreate.getTime())
+      expect(file.createdAt.getTime()).toBeLessThanOrEqual(afterCreate.getTime())
     })
   })
 
