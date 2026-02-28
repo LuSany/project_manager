@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { RoleSelect } from "@/components/users/role-select";
 import {
   Dialog,
   DialogContent,
@@ -196,22 +197,15 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   placeholder="请输入用户邮箱"
                   required
-                />
               </div>
               <div>
                 <Label>角色</Label>
-                <Select
+                <RoleSelect
                   value={newMemberRole}
                   onValueChange={(value) => setNewMemberRole(value)}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="PROJECT_MEMBER">项目成员</SelectItem>
-                    <SelectItem value="PROJECT_ADMIN">项目管理员</SelectItem>
-                  </SelectContent>
-                </Select>
+                  showDescription={false}
+                />
+              </div>
               </div>
               <DialogFooter>
                 <Button
