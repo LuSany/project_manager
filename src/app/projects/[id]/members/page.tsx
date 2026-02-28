@@ -197,6 +197,7 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   onChange={(e) => setNewMemberEmail(e.target.value)}
                   placeholder="请输入用户邮箱"
                   required
+                />
               </div>
               <div>
                 <Label>角色</Label>
