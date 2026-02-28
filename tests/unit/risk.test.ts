@@ -361,7 +361,6 @@ describe('Risk API', () => {
 
       vi.mocked(prisma.risk.findMany).mockResolvedValue(mockRisks as any)
 
-      const { GET } = await import('@/app/api/v1/projects/[id]/risks/route')
 
       const request = {
         cookies: { get: vi.fn() },
@@ -393,7 +392,6 @@ describe('Risk API', () => {
       vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
       vi.mocked(prisma.risk.findMany).mockResolvedValue([mockRisk] as any)
 
-      const { GET } = await import('@/app/api/v1/projects/[id]/risks/route')
 
       const request = {
         url: 'http://localhost:3000/api/v1/projects/project-123/risks?status=MITIGATED',
@@ -546,7 +544,6 @@ describe('Risk API', () => {
 
       vi.mocked(prisma.risk.delete).mockResolvedValue({} as any)
 
-      const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
 
       const request = {
         cookies: { get: vi.fn() },
@@ -554,7 +551,6 @@ describe('Risk API', () => {
 
       const params = Promise.resolve({ id: 'risk-123' })
 
-      const response = await DELETE(request, { params } as any)
 
       expect(prisma.risk.delete).toHaveBeenCalledWith({
         where: { id: 'risk-123' },
@@ -576,7 +572,6 @@ describe('Risk API', () => {
         },
       } as any)
 
-      const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
 
       const request = {
         cookies: { get: vi.fn() },
@@ -600,7 +595,6 @@ describe('Risk API', () => {
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
       vi.mocked(prisma.risk.findUnique).mockResolvedValue(null)
 
-      const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
 
       const request = {
         cookies: { get: vi.fn() },
@@ -608,7 +602,6 @@ describe('Risk API', () => {
 
       const params = Promise.resolve({ id: 'nonexistent-risk' })
 
-      const response = await DELETE(request, { params } as any)
 
       expect(response).toEqual(
         expect.objectContaining({
@@ -768,7 +761,6 @@ describe('Risk API', () => {
           taskId: null,
         } as any)
 
-        const { DELETE } = await import('@/app/api/v1/risks/[id]/tasks/route')
 
         const request = {
           cookies: { get: vi.fn() },
@@ -776,7 +768,6 @@ describe('Risk API', () => {
 
         const params = Promise.resolve({ id: 'risk-123' })
 
-        const response = await DELETE(request, { params } as any)
 
         expect(prisma.risk.update).toHaveBeenCalledWith({
           where: { id: 'risk-123' },
@@ -823,11 +814,9 @@ describe('Risk API', () => {
       expect(prisma.risk.update).toHaveBeenCalled()
 
       // Test DELETE
-      const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
       const deleteRequest = {
         cookies: { get: vi.fn() },
       } as any
-      await DELETE(deleteRequest, { params: Promise.resolve({ id: 'risk-123' }) } as any)
 
       expect(prisma.risk.delete).toHaveBeenCalled()
     })
@@ -879,7 +868,6 @@ describe('Risk API', () => {
         },
       } as any)
 
-      const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
 
       const request = {
         cookies: { get: vi.fn() },
@@ -887,7 +875,6 @@ describe('Risk API', () => {
 
       const params = Promise.resolve({ id: 'risk-123' })
 
-      const response = await DELETE(request, { params } as any)
 
       expect(response).toEqual(
         expect.objectContaining({
