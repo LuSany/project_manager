@@ -204,6 +204,14 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                 <RoleSelect
                   value={newMemberRole}
                   onValueChange={(value) => setNewMemberRole(value)}
+                  excludeRoles={["ADMIN"]}
+                  showDescription={false}
+                />
+              </div>
+                <Label>角色</Label>
+                <RoleSelect
+                  value={newMemberRole}
+                  onValueChange={(value) => setNewMemberRole(value)}
                   showDescription={false}
                 />
               </div>
