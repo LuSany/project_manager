@@ -7,10 +7,11 @@ vi.mock('@/lib/prisma', () => ({
       update: vi.fn().mockResolvedValue({ id: 'log-1' }),
     },
     emailTemplate: {
-      findUnique: vi.fn().mockImplementation(({ where }) => {
+      findFirst: vi.fn().mockImplementation(({ where }) => {
         if (where.type === 'TEST_TEMPLATE') {
           return Promise.resolve({
             id: 'template-1',
+            name: 'Test Template',
             type: 'TEST_TEMPLATE',
             subject: '测试邮件 - {{name}}',
             body: '你好 {{name}}，这是测试内容',
@@ -55,7 +56,7 @@ describe('邮件服务模块', () => {
       expect(result.success).toBe(true)
     })
 
-    it('应该支持用户和项目ID', async () => {
+    it('应该支持用户和项目 ID', async () => {
       const result = await sendEmail({
         to: 'test@example.com',
         subject: '测试邮件',
@@ -75,7 +76,7 @@ describe('邮件服务模块', () => {
   })
 
   describe('getEmailTemplate - 获取邮件模板', () => {
-    it('不存在的模板应返回null', async () => {
+    it('不存在的模板应返回 null', async () => {
       const result = await getEmailTemplate('NON_EXISTENT', { name: 'test' })
       expect(result).toBeNull()
     })
@@ -94,7 +95,7 @@ describe('邮件服务模块', () => {
   })
 
   describe('getDefaultEmailConfig - 获取默认邮件配置', () => {
-    it('应该返回null当没有配置', async () => {
+    it('应该返回 null 当没有配置', async () => {
       const result = await getDefaultEmailConfig()
       expect(result).toBeNull()
     })
