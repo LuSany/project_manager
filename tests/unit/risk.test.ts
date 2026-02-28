@@ -12,6 +12,26 @@ vi.mock('@/lib/prisma', () => ({
     },
     project: {
       findUnique: vi.fn(),
+      findMany: vi.fn(),
+    },
+    task: {
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      findFirst: vi.fn(),
+    },
+  },
+}))
+vi.mock('@/lib/prisma', () => ({
+  prisma: {
+    risk: {
+      create: vi.fn(),
+      findMany: vi.fn(),
+      findUnique: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+    },
+    project: {
+      findUnique: vi.fn(),
     },
     task: {
       findUnique: vi.fn(),
