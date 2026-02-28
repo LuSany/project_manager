@@ -207,7 +207,6 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   showDescription={false}
                 />
               </div>
-              </div>
               <DialogFooter>
                 <Button
                   type="button"
