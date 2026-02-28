@@ -18,7 +18,7 @@ import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Calendar, User2 } from 'lucide-react'
 import { Loader2, GripVertical } from 'lucide-react'
-
+import { TaskStatusBadge, TaskStatusDot } from '@/components/tasks/task-status-badge'
 // ============================================================================
 // 类型定义
 // ============================================================================
@@ -254,12 +254,9 @@ function KanbanColumnComponent({ column, tasks, onDragStart }: KanbanColumnCompo
     <div className="flex max-w-[350px] min-w-[300px] flex-col">
       {/* 列头 */}
       <div className="mb-4 flex items-center justify-between px-1">
-        <div className="flex items-center gap-2">
-          <h3 className="text-sm font-semibold">{column.title}</h3>
-          <Badge variant="secondary" className={cn('text-xs', STATUS_COLORS[column.status])}>
+          <TaskStatusBadge status={column.status} showIcon={false} showLabel={false} size="sm">
             {tasks.length}
-          </Badge>
-        </div>
+          </TaskStatusBadge>
       </div>
 
       {/* 任务列表 */}
