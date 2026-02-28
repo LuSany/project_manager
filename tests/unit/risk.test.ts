@@ -21,24 +21,7 @@ vi.mock('@/lib/prisma', () => ({
     },
   },
 }))
-vi.mock('@/lib/prisma', () => ({
-  prisma: {
-    risk: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-    },
-    project: {
-      findUnique: vi.fn(),
-    },
-    task: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-  },
-}))
+
 
 // Mock DB (alternative import used in some routes)
 vi.mock('@/lib/db', () => ({
