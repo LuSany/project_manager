@@ -2,6 +2,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 import { sendSMTPEmail, testSMTPConnection } from '@/lib/email-providers/smtp'
 
+// Mock nodemailer
+vi.mock('nodemailer', () => ({
+  createTransport: vi.fn(() => ({
+    sendMail: vi.fn().mockResolvedValue({ messageId: 'mock-message-id' }),
+  })),
+}))
+
 describe('SMTP Email Service', () => {
   const mockConfig = {
     id: 'config-1',
