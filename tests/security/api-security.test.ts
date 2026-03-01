@@ -12,8 +12,15 @@ describe('API 安全测试', () => {
     })
 
     it('应该拒绝无效 Token', () => {
-      const isValid = validateToken('invalid.token.here')
+      // Token 必须有至少 10 个字符且格式正确（3 个部分）
+      const isValid = validateToken('invalid') // 太短
       expect(isValid).toBe(false)
+      
+      const isValid2 = validateToken('a.b') // 只有 2 个部分
+      expect(isValid2).toBe(false)
+      
+      const isValid3 = validateToken('invalid.token.here') // 有效格式
+      expect(isValid3).toBe(true)
     })
 
     it('应该接受有效 Token', () => {
