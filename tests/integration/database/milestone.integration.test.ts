@@ -7,9 +7,6 @@ import { prisma } from '@/lib/prisma'
 
 describe('Milestone 里程碑管理', () => {
   beforeEach(async () => {
-    await prisma.milestone.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
   })
 
   describe('里程碑创建', () => {

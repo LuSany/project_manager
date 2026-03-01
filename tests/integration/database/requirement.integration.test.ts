@@ -7,9 +7,6 @@ import { prisma } from '@/lib/prisma'
 
 describe('Requirement 需求管理', () => {
   beforeEach(async () => {
-    await prisma.requirement.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
   })
 
   describe('需求创建', () => {

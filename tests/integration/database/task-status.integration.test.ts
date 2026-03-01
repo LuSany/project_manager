@@ -8,9 +8,6 @@ import { prisma } from '@/lib/prisma'
 describe('TaskStatus 任务状态系统', () => {
   beforeEach(async () => {
     // 清理测试数据
-    await prisma.task.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
   })
 
   describe('状态枚举值', () => {

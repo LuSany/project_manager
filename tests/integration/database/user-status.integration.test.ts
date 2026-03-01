@@ -8,7 +8,6 @@ import { prisma } from '@/lib/prisma'
 describe('UserStatus 用户状态系统', () => {
   beforeEach(async () => {
     // 清理测试数据
-    await prisma.user.deleteMany()
   })
 
   describe('状态枚举值', () => {

@@ -7,9 +7,6 @@ import { prisma } from '@/lib/prisma'
 
 describe('Review 评审管理', () => {
   beforeEach(async () => {
-    await prisma.review.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
   })
 
   describe('评审创建', () => {

@@ -8,8 +8,6 @@ import { prisma } from '@/lib/prisma'
 describe('SystemRole 角色系统', () => {
   beforeEach(async () => {
     // 清理测试数据
-    await prisma.user.deleteMany()
-    await prisma.project.deleteMany()
   })
 
   describe('角色枚举值', () => {
