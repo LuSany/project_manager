@@ -3,7 +3,7 @@
 // 任务状态系统测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('TaskStatus 任务状态系统', () => {

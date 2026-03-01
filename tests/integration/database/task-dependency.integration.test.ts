@@ -3,12 +3,20 @@
 // 任务依赖系统测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('TaskDependency 任务依赖系统', () => {
   beforeEach(async () => {
     // 清理测试数据
+  })
+
+  afterEach(async () => {
+    await prisma.taskDependency.deleteMany()
+    await prisma.task.deleteMany()
+    await prisma.milestone.deleteMany()
+    await prisma.project.deleteMany()
+    await prisma.user.deleteMany()
   })
 
   describe('依赖类型枚举', () => {

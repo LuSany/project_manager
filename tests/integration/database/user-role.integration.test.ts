@@ -3,7 +3,7 @@
 // 角色枚举系统测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('SystemRole 角色系统', () => {

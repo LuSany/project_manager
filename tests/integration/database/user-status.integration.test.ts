@@ -3,7 +3,7 @@
 // 用户状态系统测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('UserStatus 用户状态系统', () => {

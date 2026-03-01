@@ -3,7 +3,7 @@
 // 里程碑模块单元测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('Milestone 里程碑管理', () => {
