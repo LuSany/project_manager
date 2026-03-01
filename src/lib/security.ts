@@ -22,6 +22,29 @@ export function sanitizeInput(input: string): string {
     .replace(/'/g, '&#x27;')
 }
 
+// SQL 注入检测
+export function isSQLInjection(input: string): boolean {
+  const patterns = [
+    /\bSELECT\b.*\bFROM\b/i,
+    /\bDROP\b.*\bTABLE\b/i,
+    /\bDELETE\b.*\bFROM\b/i,
+    /\bUPDATE\b.*\bSET\b/i,
+    /\bINSERT\b.*\bINTO\b/i,
+    /--/,
+    /\bUNION\b.*\bSELECT\b/i,
+    /\bOR\b.*\b1\b.*\b=\b.*\b1\b/i,
+    /\bOR\b.*\b'\b.*\b=\b.*\b'\b/i,
+  ]
+
+  for (const pattern of patterns) {
+    if (pattern.test(input)) {
+      return true
+    }
+  }
+
+  return false
+}
+
 // 敏感数据加密
 export function encryptSensitiveData(data: string): string {
   const algorithm = 'aes-256-cbc'
