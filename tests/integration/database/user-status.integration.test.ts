@@ -9,6 +9,8 @@ import { prisma } from '@/lib/prisma'
 describe('UserStatus 用户状态系统', () => {
   beforeEach(async () => {
     // Clean up all test data before each test
+    // IMPORTANT: Delete FileStorage first due to onDelete: Restrict constraint
+    await prisma.fileStorage.deleteMany()
     await prisma.reviewTemplateItem.deleteMany()
     await prisma.reviewTemplate.deleteMany()
     await prisma.review.deleteMany()

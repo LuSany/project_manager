@@ -12,6 +12,13 @@ export default defineConfig({
     setupFiles: ['tests/setup.ts'],
     testTimeout: 30000, // 30 秒超时，适用于集成测试
     hookTimeout: 30000, // 30 秒钩子超时
+    // 集成测试需要串行执行以避免数据库冲突
+    pool: 'threads',
+    poolOptions: {
+      threads: {
+        singleThread: true,
+      },
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
