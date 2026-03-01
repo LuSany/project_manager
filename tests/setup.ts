@@ -2,8 +2,7 @@ import { beforeAll, afterAll } from "vitest";
 import { prisma } from "../src/lib/prisma";
 
 beforeAll(async () => {
-  // 测试数据库初始化
-  process.env.DATABASE_URL = "file:./prisma/test.db";
+  // 使用 .env.test 中的 DATABASE_URL (PostgreSQL)
   await prisma.$connect();
 });
 

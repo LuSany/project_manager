@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
-describe.skip('FileStorage 文件管理', () => {
+describe('FileStorage 文件管理', () => {
   beforeEach(async () => {
   })
 

@@ -5,7 +5,7 @@
 import { describe, it, expect } from 'vitest'
 import bcrypt from 'bcrypt'
 
-describe.skip('AuthService', () => {
+describe('AuthService', () => {
   describe('密码处理', () => {
     it('应该正确哈希密码', async () => {
       const password = 'TestPass123!'

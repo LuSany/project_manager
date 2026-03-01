@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
-describe.skip('ISSUE 管理', () => {
+describe('ISSUE 管理', () => {
   beforeEach(async () => {
   })
 

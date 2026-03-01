@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
-describe.skip('ReviewTemplate 评审模板管理', () => {
+describe('ReviewTemplate 评审模板管理', () => {
   let testUser: any
   let testType: any
 

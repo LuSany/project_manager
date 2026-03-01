@@ -10,7 +10,7 @@ vi.mock('@/lib/email-providers/smtp', () => ({
   sendSMTPEmail: (...args: any[]) => mockSendSMTPEmail(...args),
 }))
 
-describe.skip('sendPasswordResetEmail', () => {
+describe('sendPasswordResetEmail', () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })

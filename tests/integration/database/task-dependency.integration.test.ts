@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
-describe.skip('TaskDependency 任务依赖系统', () => {
+describe('TaskDependency 任务依赖系统', () => {
   beforeEach(async () => {
     // 清理测试数据
   })

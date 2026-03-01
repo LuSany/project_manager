@@ -6,7 +6,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
-describe.skip('SystemRole 角色系统', () => {
+describe('SystemRole 角色系统', () => {
   beforeEach(async () => {
     // 清理测试数据
   })

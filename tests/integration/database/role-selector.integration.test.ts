@@ -19,7 +19,7 @@ import {
   type RoleSearchSelectProps,
 } from '@/components/users/role-select'
 
-describe.skip('RoleConfig 角色配置', () => {
+describe('RoleConfig 角色配置', () => {
   describe('角色枚举值', () => {
     it('应该包含所有 5 种角色', () => {
       expect(ALL_ROLES).toHaveLength(5)
@@ -114,7 +114,7 @@ describe.skip('RoleConfig 角色配置', () => {
   })
 })
 
-describe.skip('类型定义', () => {
+describe('类型定义', () => {
   it('UserRole 应该是联合类型', () => {
     const roles: UserRole[] = [
       'ADMIN',
@@ -174,7 +174,7 @@ describe.skip('类型定义', () => {
   })
 })
 
-describe.skip('权限映射一致性', () => {
+describe('权限映射一致性', () => {
   it('每个角色的权限列表应该非空', () => {
     ALL_ROLES.forEach((role) => {
       expect(ROLE_CONFIG[role].permissions.length).toBeGreaterThan(0)

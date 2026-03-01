@@ -42,7 +42,7 @@ vi.mock('@/lib/email', () => ({
   sendEmail: (...args: any[]) => mockSendEmail(...args),
 }))
 
-describe.skip('Notification Email Integration', () => {
+describe('Notification Email Integration', () => {
   const mockUserId = 'test-user-1'
   const mockEmail = `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`
 
