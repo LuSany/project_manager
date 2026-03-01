@@ -13,11 +13,7 @@ describe('ISSUE 管理', () => {
   afterEach(async () => {
     await prisma.issue.deleteMany()
     await prisma.task.deleteMany()
-    await prisma.requirement.deleteMany()
-    await prisma.review.deleteMany()
     await prisma.milestone.deleteMany()
-    await prisma.fileStorage.deleteMany()
-    await prisma.task.deleteMany()
     await prisma.project.deleteMany()
     await prisma.user.deleteMany()
   })
