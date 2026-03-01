@@ -34,25 +34,13 @@ describe('ReviewTemplate 评审模板管理', () => {
   })
 
   afterEach(async () => {
-    // 清理测试数据
-    await prisma.reviewTemplateItem.deleteMany({
-      where: {
-        template: {
-          typeId: testType.id,
-        },
-      },
-    })
-    await prisma.reviewTemplate.deleteMany({
-      where: {
-        typeId: testType.id,
-      },
-    })
-    await prisma.reviewTypeConfig.delete({
-      where: { id: testType.id },
-    })
-    await prisma.user.delete({
-      where: { id: testUser.id },
-    })
+    // 清理测试数据 - 不删除 ReviewTypeConfig 和用户，只清理关联数据
+    await prisma.reviewTemplateItem.deleteMany()
+    await prisma.reviewTemplate.deleteMany()
+    await prisma.review.deleteMany()
+    await prisma.task.deleteMany()
+    await prisma.milestone.deleteMany()
+    await prisma.project.deleteMany()
   })
 
   describe('评审模板创建', () => {
