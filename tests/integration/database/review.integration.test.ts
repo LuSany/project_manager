@@ -40,7 +40,7 @@ describe('Review 评审管理', () => {
 
       expect(review.id).toBeDefined()
       expect(review.title).toBe('Test Review')
-      expect(review.type).toBe('FEASIBILITY')
+      expect(review.typeId).toBe('1')
       expect(review.status).toBe('PENDING')
     })
 
@@ -95,11 +95,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Feasibility Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
               },
             })
 
-      expect(review.type).toBe('FEASIBILITY')
+      expect(review.typeId).toBe('1')
     })
 
     it('应该支持 MILESTONE 评审类型', async () => {
@@ -124,11 +124,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Milestone Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '2',
               },
             })
 
-      expect(review.type).toBe('MILESTONE')
+      expect(review.typeId).toBe('2')
     })
 
     it('应该支持 TEST_PLAN 评审类型', async () => {
@@ -153,11 +153,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Plan Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '3',
               },
             })
 
-      expect(review.type).toBe('TEST_PLAN')
+      expect(review.typeId).toBe('3')
     })
 
     it('应该支持 TEST_RELEASE 评审类型', async () => {
@@ -182,11 +182,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Release Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '4',
               },
             })
 
-      expect(review.type).toBe('TEST_RELEASE')
+      expect(review.typeId).toBe('5')
     })
 
     it('应该支持 TEST_REPORT 评审类型', async () => {
@@ -211,11 +211,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Report Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '5',
               },
             })
 
-      expect(review.type).toBe('TEST_REPORT')
+      expect(review.typeId).toBe('4')
     })
   })
 
