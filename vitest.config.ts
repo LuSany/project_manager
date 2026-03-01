@@ -5,8 +5,9 @@ export default defineConfig({
   test: {
     include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/*.spec.ts'],
     exclude: ['tests/e2e/**/*', 'tests/**/*.e2e.ts'],
-    environment: 'node',
     setupFiles: ['tests/setup.ts'],
+    testTimeout: 30000, // 30 秒超时，适用于集成测试
+    hookTimeout: 30000, // 30 秒钩子超时
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
