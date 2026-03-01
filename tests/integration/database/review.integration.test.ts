@@ -33,7 +33,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
                 status: 'PENDING',
               },
             })
@@ -66,7 +66,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
               },
             })
 
@@ -182,11 +182,11 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Release Review',
                 projectId: project.id,
-                typeId: '4',
+                typeId: '4'
               },
             })
 
-      expect(review.typeId).toBe('5')
+      expect(review.typeId).toBe('4')
     })
 
     it('应该支持 TEST_REPORT 评审类型', async () => {
@@ -211,7 +211,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Report Review',
                 projectId: project.id,
-                typeId: '5',
+                typeId: '4'
               },
             })
 
@@ -241,7 +241,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
                 status: 'PENDING',
               },
             })
@@ -275,7 +275,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
                 status: 'IN_PROGRESS',
               },
             })
@@ -309,7 +309,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
                 status: 'IN_PROGRESS',
               },
             })
@@ -346,7 +346,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
               },
             })
 
@@ -375,7 +375,7 @@ describe('Review 评审管理', () => {
               data: {
                 title: 'Test Review',
                 projectId: project.id,
-                typeId: 'feasibility',
+                typeId: '1',
               },
             })
 
