@@ -17,9 +17,9 @@ describe('SMTP Email Service', () => {
     apiKey: null,
     smtpHost: 'smtp.test.com',
     smtpPort: 587,
-    smtpUser: 'test@test.com',
+    smtpUser: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
     smtpPassword: 'password123',
-    fromAddress: 'test@test.com',
+    fromAddress: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
     fromName: 'Test',
     isActive: true,
     isDefault: true,
@@ -42,7 +42,7 @@ describe('SMTP Email Service', () => {
     it('应该返回无配置时的错误', async () => {
       await prisma.emailConfig.deleteMany()
 
-      const result = await sendSMTPEmail('recipient@test.com', 'Test Subject', '<p>Test HTML</p>')
+      const result = await sendSMTPEmail(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'Test Subject', '<p>Test HTML</p>')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('No email configuration found')
@@ -50,7 +50,7 @@ describe('SMTP Email Service', () => {
 
     it('应该成功发送邮件', async () => {
       const result = await sendSMTPEmail(
-        'recipient@test.com',
+        `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         'Test Subject',
         '<p>Test HTML</p>',
         'Test Text'
@@ -61,17 +61,17 @@ describe('SMTP Email Service', () => {
 
       //验证邮件日志
       const log = await prisma.emailLog.findFirst({
-        where: { to: 'recipient@test.com' },
+        where: { to: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com` },
       })
       expect(log).toBeDefined()
       expect(log?.status).toBe('SENT')
     })
 
     it('应该记录邮件日志', async () => {
-      await sendSMTPEmail('recipient@test.com', 'Test Subject', '<p>Test HTML</p>')
+      await sendSMTPEmail(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'Test Subject', '<p>Test HTML</p>')
 
       const log = await prisma.emailLog.findFirst({
-        where: { to: 'recipient@test.com' },
+        where: { to: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com` },
       })
       expect(log).toBeDefined()
       expect(log?.subject).toBe('Test Subject')
@@ -90,7 +90,7 @@ describe('SMTP Email Service', () => {
       await prisma.emailConfig.create({ data: customConfig })
 
       const result = await sendSMTPEmail(
-        'recipient@test.com',
+        `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         'Test with custom config',
         '<p>Test HTML</p>',
         undefined,

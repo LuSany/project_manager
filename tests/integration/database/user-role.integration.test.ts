@@ -14,7 +14,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 ADMIN 角色', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'admin@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Admin User',
           role: 'ADMIN',
@@ -27,7 +27,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 EMPLOYEE 角色（普通员工）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'employee@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Employee User',
           role: 'EMPLOYEE',
@@ -40,7 +40,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 PROJECT_OWNER 角色', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'owner@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Owner',
           role: 'PROJECT_OWNER',
@@ -53,7 +53,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 PROJECT_ADMIN 角色', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'projectadmin@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Admin',
           role: 'PROJECT_ADMIN',
@@ -66,7 +66,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 PROJECT_MEMBER 角色', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'member@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Member',
           role: 'PROJECT_MEMBER',
@@ -81,7 +81,7 @@ describe('SystemRole 角色系统', () => {
       await expect(
         prisma.user.create({
           data: {
-            email: 'regular@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hashed_password',
             name: 'Regular User',
             // @ts-expect-error - REGULAR 应该不存在
@@ -150,7 +150,7 @@ describe('SystemRole 角色系统', () => {
       // 先创建用户
       const owner = await prisma.user.create({
         data: {
-          email: 'owner-project@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Owner',
           role: 'PROJECT_OWNER',
@@ -180,7 +180,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 PROJECT_ADMIN 成员角色', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'admin-project@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Owner',
           role: 'ADMIN',
@@ -196,7 +196,7 @@ describe('SystemRole 角色系统', () => {
 
       const admin = await prisma.user.create({
         data: {
-          email: 'project-admin@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Admin',
           role: 'PROJECT_ADMIN',
@@ -217,7 +217,7 @@ describe('SystemRole 角色系统', () => {
     it('应该支持 PROJECT_MEMBER 成员角色', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'owner-member-test@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Owner',
           role: 'ADMIN',
@@ -233,7 +233,7 @@ describe('SystemRole 角色系统', () => {
 
       const memberUser = await prisma.user.create({
         data: {
-          email: 'project-member@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Project Member',
           role: 'PROJECT_MEMBER',

@@ -12,7 +12,7 @@ describe('TaskStatus 任务状态系统', () => {
 
   describe('状态枚举值', () => {
     it('应该支持 TODO 状态（未开始）', async () => {
-      const owner = await createTestUser('todo-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -27,7 +27,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 IN_PROGRESS 状态（进行中）', async () => {
-      const owner = await createTestUser('inprogress-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -42,7 +42,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 REVIEW 状态（待评审）', async () => {
-      const owner = await createTestUser('review-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -57,7 +57,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 TESTING 状态（测试中）', async () => {
-      const owner = await createTestUser('testing-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -72,7 +72,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 DONE 状态（已完成）', async () => {
-      const owner = await createTestUser('done-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -87,7 +87,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 CANCELLED 状态（已取消）', async () => {
-      const owner = await createTestUser('cancelled-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -102,7 +102,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 DELAYED 状态（延期）', async () => {
-      const owner = await createTestUser('delayed-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -117,7 +117,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该支持 BLOCKED 状态（阻塞）', async () => {
-      const owner = await createTestUser('blocked-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -134,7 +134,7 @@ describe('TaskStatus 任务状态系统', () => {
 
   describe('状态流转规则', () => {
     it('应该允许 TODO → IN_PROGRESS 流转', async () => {
-      const owner = await createTestUser('flow1-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -154,7 +154,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 IN_PROGRESS → REVIEW 流转', async () => {
-      const owner = await createTestUser('flow2-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -174,7 +174,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 REVIEW → TESTING 流转', async () => {
-      const owner = await createTestUser('flow3-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -194,7 +194,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 TESTING → DONE 流转', async () => {
-      const owner = await createTestUser('flow4-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -214,7 +214,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许任何状态 → CANCELLED 流转', async () => {
-      const owner = await createTestUser('cancel-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -234,7 +234,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 IN_PROGRESS → DELAYED 流转', async () => {
-      const owner = await createTestUser('delay-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -254,7 +254,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许任何状态 → BLOCKED 流转', async () => {
-      const owner = await createTestUser('block-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -274,7 +274,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 DELAYED → IN_PROGRESS 恢复流转', async () => {
-      const owner = await createTestUser('recover-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -294,7 +294,7 @@ describe('TaskStatus 任务状态系统', () => {
     })
 
     it('应该允许 BLOCKED → IN_PROGRESS 恢复流转', async () => {
-      const owner = await createTestUser('unblock-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -316,7 +316,7 @@ describe('TaskStatus 任务状态系统', () => {
 
   describe('状态统计', () => {
     it('应该正确统计各状态任务数量', async () => {
-      const owner = await createTestUser('stats-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       await Promise.all([

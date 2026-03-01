@@ -14,7 +14,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该支持 PENDING 状态（待审批）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'pending@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Pending User',
           status: 'PENDING',
@@ -27,7 +27,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该支持 ACTIVE 状态（已激活）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'active@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Active User',
           status: 'ACTIVE',
@@ -40,7 +40,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该支持 DISABLED 状态（已禁用）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'disabled@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Disabled User',
           status: 'DISABLED',
@@ -53,7 +53,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该默认使用 PENDING 状态', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'default@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Default User',
         },
@@ -66,7 +66,7 @@ describe('UserStatus 用户状态系统', () => {
       await expect(
         prisma.user.create({
           data: {
-            email: 'suspended@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hashed_password',
             name: 'Suspended User',
             // @ts-expect-error - SUSPENDED 应该不存在
@@ -80,7 +80,7 @@ describe('UserStatus 用户状态系统', () => {
       await expect(
         prisma.user.create({
           data: {
-            email: 'inactive@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hashed_password',
             name: 'Inactive User',
             // @ts-expect-error - INACTIVE 应该不存在
@@ -95,7 +95,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该允许 PENDING → ACTIVE 流转（审批通过）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'approve@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Approve User',
           status: 'PENDING',
@@ -113,7 +113,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该允许 PENDING → DISABLED 流转（审批拒绝）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'reject@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Reject User',
           status: 'PENDING',
@@ -131,7 +131,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该允许 ACTIVE → DISABLED 流转（禁用用户）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'disable@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Disable User',
           status: 'ACTIVE',
@@ -149,7 +149,7 @@ describe('UserStatus 用户状态系统', () => {
     it('应该允许 DISABLED → ACTIVE 流转（重新激活）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'reactivate@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed_password',
           name: 'Reactivate User',
           status: 'DISABLED',
@@ -170,7 +170,7 @@ describe('UserStatus 用户状态系统', () => {
       await Promise.all([
         prisma.user.create({
           data: {
-            email: 'active1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 1',
             status: 'ACTIVE',
@@ -178,7 +178,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'active2@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 2',
             status: 'ACTIVE',
@@ -186,7 +186,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'pending1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 3',
             status: 'PENDING',
@@ -194,7 +194,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'disabled1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 4',
             status: 'DISABLED',
@@ -214,7 +214,7 @@ describe('UserStatus 用户状态系统', () => {
       await Promise.all([
         prisma.user.create({
           data: {
-            email: 'active1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 1',
             status: 'ACTIVE',
@@ -222,7 +222,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'pending1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 2',
             status: 'PENDING',
@@ -230,7 +230,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'disabled1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 3',
             status: 'DISABLED',
@@ -255,7 +255,7 @@ describe('UserStatus 用户状态系统', () => {
       await Promise.all([
         prisma.user.create({
           data: {
-            email: 'active1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 1',
             status: 'ACTIVE',
@@ -263,7 +263,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'active2@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 2',
             status: 'ACTIVE',
@@ -271,7 +271,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'active3@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 3',
             status: 'ACTIVE',
@@ -279,7 +279,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'pending1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 4',
             status: 'PENDING',
@@ -287,7 +287,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'pending2@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 5',
             status: 'PENDING',
@@ -295,7 +295,7 @@ describe('UserStatus 用户状态系统', () => {
         }),
         prisma.user.create({
           data: {
-            email: 'disabled1@test.com',
+            email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
             passwordHash: 'hash',
             name: 'User 6',
             status: 'DISABLED',

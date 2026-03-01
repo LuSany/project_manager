@@ -13,7 +13,7 @@ describe('FileStorage 文件管理', () => {
     it('应该成功创建文件记录', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -41,7 +41,7 @@ describe('FileStorage 文件管理', () => {
     it('应该记录文件大小（字节）', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user2@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -66,7 +66,7 @@ describe('FileStorage 文件管理', () => {
     it('应该记录 MIME 类型', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user3@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -101,7 +101,7 @@ describe('FileStorage 文件管理', () => {
     it('应该记录上传者', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user4@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -126,7 +126,7 @@ describe('FileStorage 文件管理', () => {
     it('应该自动设置上传时间', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user5@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -156,7 +156,7 @@ describe('FileStorage 文件管理', () => {
     it('应该支持按上传者查询', async () => {
       const user1 = await prisma.user.create({
         data: {
-          email: 'file-user6@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User 1',
           role: 'ADMIN',
@@ -165,7 +165,7 @@ describe('FileStorage 文件管理', () => {
       })
       const user2 = await prisma.user.create({
         data: {
-          email: 'file-user7@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User 2',
           role: 'ADMIN',
@@ -206,7 +206,7 @@ describe('FileStorage 文件管理', () => {
     it('应该支持按 MIME 类型查询', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user8@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',
@@ -249,7 +249,7 @@ describe('FileStorage 文件管理', () => {
     it('应该删除文件记录', async () => {
       const user = await prisma.user.create({
         data: {
-          email: 'file-user9@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'User',
           role: 'ADMIN',

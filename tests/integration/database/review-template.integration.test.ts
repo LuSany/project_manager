@@ -13,7 +13,7 @@ describe('ReviewTemplate 评审模板管理', () => {
     // 创建测试用户
     testUser = await prisma.user.create({
       data: {
-        email: 'template-test@test.com',
+        email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         passwordHash: 'hashed',
         name: 'Template Tester',
         role: 'ADMIN',

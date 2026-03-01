@@ -13,7 +13,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该成功创建里程碑', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -44,7 +44,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该设置默认状态为 PLANNED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner2@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -72,7 +72,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该支持设置开始日期', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner3@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -99,7 +99,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该支持设置结束日期', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner4@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -128,7 +128,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该更新状态为 IN_PROGRESS', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner5@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -161,7 +161,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该更新状态为 COMPLETED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner6@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -196,7 +196,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该关联到项目', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner7@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -224,7 +224,7 @@ describe('Milestone 里程碑管理', () => {
     it('应该支持关联多个任务', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'milestone-owner8@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',

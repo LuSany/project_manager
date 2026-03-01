@@ -13,7 +13,7 @@ describe('Requirement 需求管理', () => {
     it('应该成功创建需求', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -46,7 +46,7 @@ describe('Requirement 需求管理', () => {
     it('应该设置默认状态为 PENDING', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner2@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -76,7 +76,7 @@ describe('Requirement 需求管理', () => {
     it('应该更新状态为 APPROVED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner3@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -109,7 +109,7 @@ describe('Requirement 需求管理', () => {
     it('应该更新状态为 REJECTED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner4@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -142,7 +142,7 @@ describe('Requirement 需求管理', () => {
     it('应该更新状态为 IN_PROGRESS', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner5@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -175,7 +175,7 @@ describe('Requirement 需求管理', () => {
     it('应该更新状态为 COMPLETED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner6@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -210,7 +210,7 @@ describe('Requirement 需求管理', () => {
     it('应该支持 HIGH 优先级', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner7@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -239,7 +239,7 @@ describe('Requirement 需求管理', () => {
     it('应该支持 MEDIUM 优先级', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner8@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -268,7 +268,7 @@ describe('Requirement 需求管理', () => {
     it('应该支持 LOW 优先级', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner9@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -299,7 +299,7 @@ describe('Requirement 需求管理', () => {
     it('应该关联到项目', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'req-owner10@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',

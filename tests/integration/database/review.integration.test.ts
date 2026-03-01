@@ -13,7 +13,7 @@ describe('Review 评审管理', () => {
     it('应该成功创建评审', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -46,7 +46,7 @@ describe('Review 评审管理', () => {
     it('应该设置默认状态为 DRAFT', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner2@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -75,7 +75,7 @@ describe('Review 评审管理', () => {
     it('应该支持 FEASIBILITY 评审类型', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner3@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -104,7 +104,7 @@ describe('Review 评审管理', () => {
     it('应该支持 MILESTONE 评审类型', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner4@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -133,7 +133,7 @@ describe('Review 评审管理', () => {
     it('应该支持 TEST_PLAN 评审类型', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner5@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -162,7 +162,7 @@ describe('Review 评审管理', () => {
     it('应该支持 TEST_RELEASE 评审类型', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner6@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -191,7 +191,7 @@ describe('Review 评审管理', () => {
     it('应该支持 TEST_REPORT 评审类型', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner7@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -222,7 +222,7 @@ describe('Review 评审管理', () => {
     it('应该更新状态为 SCHEDULED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner8@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -256,7 +256,7 @@ describe('Review 评审管理', () => {
     it('应该更新状态为 IN_PROGRESS', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner9@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -290,7 +290,7 @@ describe('Review 评审管理', () => {
     it('应该更新状态为 COMPLETED', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner10@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -326,7 +326,7 @@ describe('Review 评审管理', () => {
     it('应该关联到项目', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner11@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',
@@ -355,7 +355,7 @@ describe('Review 评审管理', () => {
     it('应该设置创建人', async () => {
       const owner = await prisma.user.create({
         data: {
-          email: 'review-owner12@test.com',
+          email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
           passwordHash: 'hashed',
           name: 'Owner',
           role: 'ADMIN',

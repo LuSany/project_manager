@@ -148,7 +148,7 @@ describe('TaskDependency 任务依赖系统', () => {
     })
 
     it('应该允许一个任务依赖多个任务', async () => {
-      const owner = await createTestUser('multi-dep-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task1 = await createTestTask(project.id, 'Task 1')
@@ -178,7 +178,7 @@ describe('TaskDependency 任务依赖系统', () => {
     })
 
     it('应该允许一个任务被多个任务依赖', async () => {
-      const owner = await createTestUser('multi-dependent-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task1 = await createTestTask(project.id, 'Task 1')
@@ -210,7 +210,7 @@ describe('TaskDependency 任务依赖系统', () => {
 
   describe('依赖关系统计', () => {
     it('应该能够统计任务的依赖数量', async () => {
-      const owner = await createTestUser('stats-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task1 = await createTestTask(project.id, 'Task 1')
@@ -274,7 +274,7 @@ async function createTestTask(projectId: string, title: string) {
 }
 
 async function createDependencyTestSetup() {
-  const owner = await createTestUser('dep-test-owner@test.com', 'ADMIN')
+  const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
   const project = await createTestProject(owner.id)
   const task1 = await createTestTask(project.id, 'Task 1')
   const task2 = await createTestTask(project.id, 'Task 2')

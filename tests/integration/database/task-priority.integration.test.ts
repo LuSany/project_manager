@@ -12,7 +12,7 @@ describe('TaskPriority 任务优先级系统', () => {
 
   describe('优先级枚举值', () => {
     it('应该支持 LOW 优先级（低）', async () => {
-      const owner = await createTestUser('low-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -27,7 +27,7 @@ describe('TaskPriority 任务优先级系统', () => {
     })
 
     it('应该支持 MEDIUM 优先级（中）', async () => {
-      const owner = await createTestUser('medium-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -42,7 +42,7 @@ describe('TaskPriority 任务优先级系统', () => {
     })
 
     it('应该支持 HIGH 优先级（高）', async () => {
-      const owner = await createTestUser('high-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -57,7 +57,7 @@ describe('TaskPriority 任务优先级系统', () => {
     })
 
     it('应该支持 CRITICAL 优先级（紧急/关键）', async () => {
-      const owner = await createTestUser('critical-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -72,7 +72,7 @@ describe('TaskPriority 任务优先级系统', () => {
     })
 
     it('不应该支持 URGENT 优先级（已废弃，应使用 CRITICAL）', async () => {
-      const owner = await createTestUser('urgent-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       // 尝试创建 URGENT 优先级任务应该失败
@@ -91,7 +91,7 @@ describe('TaskPriority 任务优先级系统', () => {
 
   describe('优先级默认值', () => {
     it('应该默认使用 MEDIUM 优先级', async () => {
-      const owner = await createTestUser('default-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const task = await prisma.task.create({
@@ -107,7 +107,7 @@ describe('TaskPriority 任务优先级系统', () => {
 
   describe('优先级筛选', () => {
     it('应该能够按 CRITICAL 优先级筛选任务', async () => {
-      const owner = await createTestUser('filter-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       await Promise.all([
@@ -135,7 +135,7 @@ describe('TaskPriority 任务优先级系统', () => {
     })
 
     it('应该能够按多个优先级筛选任务', async () => {
-      const owner = await createTestUser('multi-filter-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       await Promise.all([
@@ -165,7 +165,7 @@ describe('TaskPriority 任务优先级系统', () => {
 
   describe('优先级排序', () => {
     it('应该能够查询所有优先级任务', async () => {
-      const owner = await createTestUser('sort-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       const _created = await Promise.all([
@@ -198,7 +198,7 @@ describe('TaskPriority 任务优先级系统', () => {
 
   describe('优先级统计', () => {
     it('应该正确统计各优先级任务数量', async () => {
-      const owner = await createTestUser('stats-owner@test.com', 'ADMIN')
+      const owner = await createTestUser(`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'ADMIN')
       const project = await createTestProject(owner.id)
 
       await Promise.all([
