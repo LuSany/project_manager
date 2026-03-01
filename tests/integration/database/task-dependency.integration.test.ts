@@ -11,14 +11,6 @@ describe('TaskDependency 任务依赖系统', () => {
     // 清理测试数据
   })
 
-  afterEach(async () => {
-    await prisma.taskDependency.deleteMany()
-    await prisma.task.deleteMany()
-    await prisma.milestone.deleteMany()
-    await prisma.project.deleteMany()
-    await prisma.user.deleteMany()
-  })
-
   describe('依赖类型枚举', () => {
     it('应该支持 FINISH_TO_START 依赖类型', async () => {
       const { task1, task2 } = await createDependencyTestSetup()

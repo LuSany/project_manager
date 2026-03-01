@@ -3,7 +3,7 @@
 // 任务优先级系统测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('TaskPriority 任务优先级系统', () => {

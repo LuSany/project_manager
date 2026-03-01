@@ -33,16 +33,6 @@ describe('ReviewTemplate 评审模板管理', () => {
     })
   })
 
-  afterEach(async () => {
-    // 清理测试数据 - 不删除 ReviewTypeConfig 和用户，只清理关联数据
-    await prisma.reviewTemplateItem.deleteMany()
-    await prisma.reviewTemplate.deleteMany()
-    await prisma.review.deleteMany()
-    await prisma.task.deleteMany()
-    await prisma.milestone.deleteMany()
-    await prisma.project.deleteMany()
-  })
-
   describe('评审模板创建', () => {
     it('应该成功创建评审模板', async () => {
       const template = await prisma.reviewTemplate.create({
