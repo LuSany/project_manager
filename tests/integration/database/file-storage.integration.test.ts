@@ -3,11 +3,16 @@
 // 文件管理模块单元测试
 // ============================================================================
 
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach } from 'vitest'
 import { prisma } from '@/lib/prisma'
 
 describe('FileStorage 文件管理', () => {
   beforeEach(async () => {
+  })
+
+  afterEach(async () => {
+    await prisma.fileStorage.deleteMany()
+    await prisma.user.deleteMany()
   })
 
   describe('文件上传', () => {
