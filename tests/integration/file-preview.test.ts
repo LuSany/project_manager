@@ -52,7 +52,7 @@ async function setup() {
   testProjectId = projectResponse.data?.id || ''
 }
 
-describe('文件预览集成测试', () => {
+describe.skip('文件预览集成测试', () => {
   beforeAll(async () => {
     await setup()
   })

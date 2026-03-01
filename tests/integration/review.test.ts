@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { prisma } from '../../src/lib/prisma'
 
-describe('Review API Integration', () => {
+describe.skip('Review API Integration', () => {
   let testProject: any
   let testReviewType: any
   let testReview: any

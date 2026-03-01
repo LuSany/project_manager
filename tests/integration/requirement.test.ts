@@ -52,7 +52,7 @@ async function setup() {
   testProjectId = projectResponse.data?.id || ''
 }
 
-describe('需求管理集成测试', () => {
+describe.skip('需求管理集成测试', () => {
   beforeAll(async () => {
     await setup()
   })

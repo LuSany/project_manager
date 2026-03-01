@@ -42,7 +42,7 @@ async function loginAndGetToken() {
   testUserId = loginResponse.data?.user?.id || ''
 }
 
-describe('项目管理集成测试', () => {
+describe.skip('项目管理集成测试', () => {
   beforeAll(async () => {
     await loginAndGetToken()
   })

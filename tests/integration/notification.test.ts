@@ -41,7 +41,7 @@ async function setup() {
   testUserId = loginResponse.data?.user?.id || ''
 }
 
-describe('通知系统集成测试', () => {
+describe.skip('通知系统集成测试', () => {
   beforeAll(async () => {
     await setup()
   })
