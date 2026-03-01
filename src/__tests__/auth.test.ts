@@ -2,42 +2,45 @@
 // 测试密码哈希、Token 生成和验证功能
 
 import { describe, it, expect } from 'vitest'
+import bcrypt from 'bcrypt'
 
 describe('AuthService', () => {
   describe('密码处理', () => {
     it('应该正确哈希密码', async () => {
       const password = 'TestPass123!'
-      const hash = await hashPassword(password)
+      const hash = await bcrypt.hash(password, 10)
 
       expect(hash).toBeDefined()
       expect(hash).not.toBe(password)
-      // 使用 base64 编码，长度为 16
-      expect(hash.length).toBe(16)
+      // bcrypt 哈希长度为 60
+      expect(hash.length).toBe(60)
     })
 
     it('应该正确验证密码', async () => {
       const password = 'TestPass123!'
-      const hash = await hashPassword(password)
-      const valid = await verifyPassword(password, hash)
+      const hash = await bcrypt.hash(password, 10)
+      const valid = await bcrypt.compare(password, hash)
 
       expect(valid).toBe(true)
     })
 
     it('应该拒绝错误密码', async () => {
-      const hash = await hashPassword('correct')
-      const valid = await verifyPassword('wrong', hash)
+      const hash = await bcrypt.hash('correct', 10)
+      const valid = await bcrypt.compare('wrong', hash)
 
       expect(valid).toBe(false)
     })
 
-    it('相同密码应该生成相同的哈希', async () => {
+    it('相同密码应该生成不同的哈希（因为 bcrypt 使用盐值）', async () => {
       const password = 'TestPass123!'
-      const hash1 = await hashPassword(password)
-      const hash2 = await hashPassword(password)
+      const hash1 = await bcrypt.hash(password, 10)
+      const hash2 = await bcrypt.hash(password, 10)
 
-      // 使用 base64 编码，相同密码生成相同哈希
-      // 验证哈希函数的一致性
-      expect(hash1).toBe(hash2)
+      // bcrypt 每次生成不同的哈希（因为随机盐）
+      expect(hash1).not.toBe(hash2)
+      // 但两个哈希都能验证通过
+      expect(await bcrypt.compare(password, hash1)).toBe(true)
+      expect(await bcrypt.compare(password, hash2)).toBe(true)
     })
   })
 
@@ -119,14 +122,6 @@ describe('AuthService', () => {
     })
   })
 })
-
-function hashPassword(password: string): string {
-  return Buffer.from(password).toString('base64')
-}
-
-async function verifyPassword(password: string, hash: string): Promise<boolean> {
-  return Buffer.from(password).toString('base64') === hash
-}
 
 function generateToken(
   user: { id: string; email: string; role: string },

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-
+import type { MockedFunction } from 'vitest'
 // Mock Prisma
 vi.mock('@/lib/prisma', () => ({
   prisma: {
