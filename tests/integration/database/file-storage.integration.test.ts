@@ -11,8 +11,15 @@ describe('FileStorage 文件管理', () => {
   })
 
   afterEach(async () => {
-    await prisma.fileStorage.deleteMany()
-    await prisma.user.deleteMany()
+    try {
+      await prisma.fileStorage.deleteMany()
+      await prisma.task.deleteMany()
+      await prisma.milestone.deleteMany()
+      await prisma.project.deleteMany()
+      await prisma.user.deleteMany()
+    } catch (error) {
+      // Ignore cleanup errors
+    }
   })
 
   describe('文件上传', () => {
