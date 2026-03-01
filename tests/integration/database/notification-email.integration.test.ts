@@ -44,7 +44,7 @@ vi.mock('@/lib/email', () => ({
 
 describe.skip('Notification Email Integration', () => {
   const mockUserId = 'test-user-1'
-  const mockEmail = 'test@example.com'
+  const mockEmail = `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`
 
   beforeEach(() => {
     vi.clearAllMocks()

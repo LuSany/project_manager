@@ -49,7 +49,7 @@ describe.skip('AuthService', () => {
     it('应该生成有效的 JWT Token', () => {
       const user = {
         id: '1',
-        email: 'test@example.com',
+        email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         role: 'ADMIN',
       }
 
@@ -63,7 +63,7 @@ describe.skip('AuthService', () => {
     it('应该正确验证 Token', () => {
       const user = {
         id: '1',
-        email: 'test@example.com',
+        email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         role: 'ADMIN',
       }
 
@@ -82,7 +82,7 @@ describe.skip('AuthService', () => {
     it('应该拒绝过期的 Token', () => {
       const user = {
         id: '1',
-        email: 'test@example.com',
+        email: `test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`,
         role: 'ADMIN',
       }
 
@@ -97,7 +97,7 @@ describe.skip('AuthService', () => {
 
   describe('用户注册验证', () => {
     it('应该验证邮箱格式', () => {
-      const validEmails = ['test@example.com', 'user.name@domain.co.uk', 'user+tag@example.com']
+      const validEmails = [`test-${Date.now()}-${Math.random().toString(36).substring(7)}@test.com`, 'user.name@domain.co.uk', 'user+tag@example.com']
       const invalidEmails = ['invalid', 'invalid@', '@example.com', 'user@.com']
 
       validEmails.forEach((email) => {
