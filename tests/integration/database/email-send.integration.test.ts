@@ -10,7 +10,7 @@ vi.mock('nodemailer', () => ({
   })),
 }))
 
-describe.skip('SMTP Email Service', () => {
+describe.skip("'SMTP Email Service', () => {
   const mockConfig = {
     id: 'config-1',
     name: 'Test SMTP',
