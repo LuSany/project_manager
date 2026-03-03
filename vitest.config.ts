@@ -21,8 +21,16 @@ export default defineConfig({
     },
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      include: ['src/lib/**/*.ts'],
+      reporter: ['text', 'json', 'html', 'lcov'],
+      include: ['src/lib/**/*.ts', 'src/app/api/**/*.ts', 'src/stores/**/*.ts'],
+      exclude: ['src/types/**', '**/*.d.ts', '**/index.ts'],
+      // 覆盖率目标（Phase 5 目标 90%+）
+      thresholds: {
+        statements: 90,
+        branches: 85,
+        functions: 90,
+        lines: 90,
+      },
     },
   },
   resolve: {

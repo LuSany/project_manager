@@ -1,5 +1,15 @@
+// ============================================
+// 测试环境设置
+// ============================================
+
 import { beforeAll, afterAll } from "vitest";
 import { prisma } from "../src/lib/prisma";
+import { cleanupAllData, resetSequences } from "./helpers/test-db";
+import "./helpers/assertions"; // 加载自定义断言
+
+// ============================================
+// 全局测试环境初始化
+// ============================================
 
 beforeAll(async () => {
   // 使用 .env.test 中的 DATABASE_URL (PostgreSQL)
@@ -25,9 +35,18 @@ beforeAll(async () => {
       rt.id, rt.name, rt.displayName
     );
   }
-});
+}, 30000);
 
 afterAll(async () => {
   // 清理测试数据库
   await prisma.$disconnect();
 });
+
+// ============================================
+// 导出测试工具（便于测试文件直接使用）
+// ============================================
+
+export { testPrisma, setupTestDatabase } from "./helpers/test-db";
+export * from "./helpers/test-data-factory";
+export { createPrismaMock, mockTestData } from "./mocks/prisma-mock";
+export { createMockRequest, createAuthenticatedRequest, createAdminRequest } from "./mocks/request-mock";
