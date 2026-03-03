@@ -93,7 +93,6 @@ describe('里程碑补充集成测试', () => {
           title: 'Task 1', status: 'TODO', progress: 0, priority: 'MEDIUM',
           projectId: testProject.id,
           milestoneId: testMilestone.id,
-          status: 'COMPLETED',
         },
       })
       await testPrisma.task.create({

@@ -42,12 +42,15 @@ describe('报告生成集成测试', () => {
     it('应该能创建评审报告记录', async () => {
       const review = await createTestReview(testProject.id, testReviewType.id)
 
-      const report = await testPrisma.reviewReport.create({
+      const report = await testPrisma.reviewAiAnalysis.create({
         data: {
           reviewId: review.id,
-          generatedBy: testUser.id,
-          content: JSON.stringify({
-            summary: '评审总结',
+          analysisType: 'SUMMARY',
+          result: JSON.stringify({
+            short: '评审总结',
+            standard: '评审总结',
+            detailed: '评审总结',
+            keyPoints: ['要点1'],
             conclusion: '通过',
           }),
         },
@@ -55,45 +58,42 @@ describe('报告生成集成测试', () => {
 
       expect(report).toBeDefined()
       expect(report.reviewId).toBe(review.id)
-    })
 
     it('应该能查询评审的报告', async () => {
       const review = await createTestReview(testProject.id, testReviewType.id)
 
-      await testPrisma.reviewReport.create({
+      await testPrisma.reviewAiAnalysis.create({
         data: {
           reviewId: review.id,
-          generatedBy: testUser.id,
-          content: '{}',
+          analysisType: 'SUMMARY',
+          result: '{}',
         },
       })
 
-      const reports = await testPrisma.reviewReport.findMany({
-        where: { reviewId: review.id },
+      const analyses = await testPrisma.reviewAiAnalysis.findMany({
+        where: { reviewId: review.id, analysisType: 'SUMMARY' },
       })
 
-      expect(reports.length).toBe(1)
-    })
+      expect(analyses.length).toBe(1)
 
     it('应该能更新报告内容', async () => {
       const review = await createTestReview(testProject.id, testReviewType.id)
-      const report = await testPrisma.reviewReport.create({
+      const report = await testPrisma.reviewAiAnalysis.create({
         data: {
           reviewId: review.id,
-          generatedBy: testUser.id,
-          content: '{}',
+          analysisType: 'SUMMARY',
+          result: '{}',
         },
       })
 
-      const updated = await testPrisma.reviewReport.update({
+      const updated = await testPrisma.reviewAiAnalysis.update({
         where: { id: report.id },
         data: {
-          content: JSON.stringify({ updated: true }),
+          result: JSON.stringify({ updated: true }),
         },
       })
 
-      expect(updated.content).toContain('updated')
-    })
+      expect(updated.result).toContain('updated')
   })
 
   // ============================================
@@ -114,15 +114,15 @@ describe('报告生成集成测试', () => {
         conclusion: '建议通过',
       }
 
-      const report = await testPrisma.reviewReport.create({
+      const report = await testPrisma.reviewAiAnalysis.create({
         data: {
           reviewId: review.id,
-          generatedBy: testUser.id,
-          content: JSON.stringify(complexContent),
+          analysisType: 'SUMMARY',
+          result: JSON.stringify(complexContent),
         },
       })
 
-      const parsed = JSON.parse(report.content)
+      const parsed = JSON.parse(report.result)
       expect(parsed.summary).toBe('本次评审通过')
       expect(parsed.items.length).toBe(2)
     })
