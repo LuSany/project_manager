@@ -21,7 +21,7 @@ export async function createTestReviewTypeConfig(
 ) {
   return testPrisma.reviewTypeConfig.create({
     data: {
-      name: overrides.name ?? faker.word.noun().toUpperCase(),
+      name: overrides.name ? `${overrides.name}_${Date.now()}` : `${faker.word.noun().toUpperCase()}_${Date.now()}`,
       displayName: overrides.displayName ?? faker.word.words(2),
       description: overrides.description,
       isSystem: overrides.isSystem ?? false,
@@ -154,7 +154,7 @@ export async function createTestProjectMember(
     data: {
       projectId,
       userId,
-      role: overrides.role ?? 'MEMBER',
+      role: overrides.role ?? 'PROJECT_MEMBER',
     },
   })
 }
@@ -360,7 +360,7 @@ export async function createTestAuditLog(
 export async function createTestProjectStructure(owner?: { id: string }) {
   const user = owner ?? (await createTestUser())
   const project = await createTestProject(user.id)
-  await createTestProjectMember(project.id, user.id, { role: 'OWNER' })
+  await createTestProjectMember(project.id, user.id, { role: 'PROJECT_OWNER' })
 
   const milestone = await createTestMilestone(project.id)
   const task = await createTestTask(project.id, { milestoneId: milestone.id })

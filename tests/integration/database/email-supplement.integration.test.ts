@@ -150,6 +150,7 @@ describe('邮件服务补充集成测试', () => {
           to: 'recipient@example.com',
           subject: '测试邮件',
           status: 'SENT',
+          content: '测试邮件内容',
           sentAt: new Date(),
         },
       })
@@ -164,6 +165,7 @@ describe('邮件服务补充集成测试', () => {
           to: 'failed@example.com',
           subject: '失败的邮件',
           status: 'FAILED',
+          content: '失败的邮件内容',
           errorMessage: 'Connection timeout',
         },
       })
@@ -174,10 +176,10 @@ describe('邮件服务补充集成测试', () => {
 
     it('应该能查询邮件发送历史', async () => {
       await testPrisma.emailLog.create({
-        data: { to: 'user1@example.com', subject: '邮件1', status: 'SENT' },
+        data: { to: 'user1@example.com', subject: '邮件 1', content: '内容 1', status: 'SENT' },
       })
       await testPrisma.emailLog.create({
-        data: { to: 'user2@example.com', subject: '邮件2', status: 'FAILED' },
+        data: { to: 'user2@example.com', subject: '邮件 2', content: '内容 2', status: 'FAILED' },
       })
 
       const sentLogs = await testPrisma.emailLog.findMany({

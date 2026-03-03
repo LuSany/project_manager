@@ -32,7 +32,7 @@ describe('评审管理补充集成测试', () => {
   beforeEach(async () => {
     testUser = await createTestUser()
     testProject = await createTestProject(testUser.id)
-    await createTestProjectMember(testProject.id, testUser.id, { role: 'OWNER' })
+    await createTestProjectMember(testProject.id, testUser.id, { role: 'PROJECT_OWNER' })
     testReviewType = await createTestReviewTypeConfig()
     testReview = await createTestReview(testProject.id, testReviewType.id)
   })

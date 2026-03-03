@@ -29,7 +29,7 @@ describe('文件管理补充集成测试', () => {
   beforeEach(async () => {
     testUser = await createTestUser()
     testProject = await createTestProject(testUser.id)
-    await createTestProjectMember(testProject.id, testUser.id, { role: 'OWNER' })
+    await createTestProjectMember(testProject.id, testUser.id, { role: 'PROJECT_OWNER' })
   })
 
   // ============================================
@@ -42,16 +42,16 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'test-document.pdf',
           filePath: '/uploads/test-document.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024000,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
 
       expect(file).toBeDefined()
       expect(file.fileName).toBe('test-document.pdf')
-      expect(file.fileType).toBe('application/pdf')
+      expect(file.mimeType).toBe('application/pdf')
     })
 
     it('应该能获取项目的文件列表', async () => {
@@ -59,9 +59,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'file1.pdf',
           filePath: '/uploads/file1.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
@@ -69,9 +69,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'file2.docx',
           filePath: '/uploads/file2.docx',
-          fileType: 'application/docx',
+          mimeType: 'application/docx',
           fileSize: 2048,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
@@ -88,9 +88,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'detail-test.pdf',
           filePath: '/uploads/detail-test.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
@@ -108,9 +108,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'to-delete.pdf',
           filePath: '/uploads/to-delete.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
@@ -137,13 +137,13 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'document.pdf',
           filePath: '/uploads/document.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
-      expect(file.fileType).toBe('application/pdf')
+      expect(file.mimeType).toBe('application/pdf')
     })
 
     it('应该支持 Word 文件', async () => {
@@ -151,13 +151,13 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'document.docx',
           filePath: '/uploads/document.docx',
-          fileType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
-      expect(file.fileType).toContain('wordprocessingml')
+      expect(file.mimeType).toContain('wordprocessingml')
     })
 
     it('应该支持 Excel 文件', async () => {
@@ -165,13 +165,13 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'spreadsheet.xlsx',
           filePath: '/uploads/spreadsheet.xlsx',
-          fileType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
-      expect(file.fileType).toContain('spreadsheetml')
+      expect(file.mimeType).toContain('spreadsheetml')
     })
 
     it('应该支持图片文件', async () => {
@@ -179,13 +179,13 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'image.png',
           filePath: '/uploads/image.png',
-          fileType: 'image/png',
+          mimeType: 'image/png',
           fileSize: 512,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
-      expect(file.fileType).toBe('image/png')
+      expect(file.mimeType).toBe('image/png')
     })
   })
 
@@ -197,9 +197,9 @@ describe('文件管理补充集成测试', () => {
     it('应该能创建预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'OnlyOffice',
+          serviceType: "ONLYOFFICE", config: "{}",
           type: 'ONLYOFFICE',
-          url: 'http://onlyoffice:8080',
+          endpoint: 'http://onlyoffice:8080',
           isEnabled: true,
           config: JSON.stringify({ jwtSecret: 'secret' }),
         },
@@ -213,9 +213,9 @@ describe('文件管理补充集成测试', () => {
     it('应该能创建 KKFileView 配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'KKFileView',
+          serviceType: "KKFILEVIEW", config: "{}",
           type: 'KKFILEVIEW',
-          url: 'http://kkfileview:8012',
+          endpoint: 'http://kkfileview:8012',
           isEnabled: true,
         },
       })
@@ -226,17 +226,17 @@ describe('文件管理补充集成测试', () => {
     it('应该能获取启用的预览服务', async () => {
       await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'Enabled Service',
+          serviceType: "ONLYOFFICE", config: "{}",
           type: 'ONLYOFFICE',
-          url: 'http://enabled:8080',
+          endpoint: 'http://enabled:8080',
           isEnabled: true,
         },
       })
       await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'Disabled Service',
+          serviceType: "KKFILEVIEW", config: "{}",
           type: 'KKFILEVIEW',
-          url: 'http://disabled:8012',
+          endpoint: 'http://disabled:8012',
           isEnabled: false,
         },
       })
@@ -251,9 +251,9 @@ describe('文件管理补充集成测试', () => {
     it('应该能更新预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'Test Service',
+          serviceType: "ONLYOFFICE", config: "{}",
           type: 'ONLYOFFICE',
-          url: 'http://test:8080',
+          endpoint: 'http://test:8080',
           isEnabled: true,
         },
       })
@@ -277,9 +277,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'project-file.pdf',
           filePath: '/uploads/project-file.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })
@@ -292,9 +292,9 @@ describe('文件管理补充集成测试', () => {
         data: {
           fileName: 'user-file.pdf',
           filePath: '/uploads/user-file.pdf',
-          fileType: 'application/pdf',
+          mimeType: 'application/pdf',
           fileSize: 1024,
-          projectId: testProject.id,
+          originalName: "test.pdf",
           uploadedBy: testUser.id,
         },
       })

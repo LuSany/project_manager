@@ -213,6 +213,20 @@ describe('审计日志集成测试', () => {
           action: 'UPDATE',
           entityType: 'Task',
           entityId: 'task-1',
+          description: '更新状态从 TODO 到 DONE',
+        },
+      })
+
+      expect(log.action).toBe('UPDATE')
+      expect(log.entityType).toBe('Task')
+      expect(log.description).toContain('TODO')
+    })
+      const log = await testPrisma.auditLog.create({
+        data: {
+          userId: testUser.id,
+          action: 'UPDATE',
+          entityType: 'Task',
+          entityId: 'task-1',
           description: '更新状态',
           oldValue: 'TODO',
           newValue: 'DONE',

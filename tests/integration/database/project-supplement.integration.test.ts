@@ -30,7 +30,7 @@ describe('项目管理补充集成测试', () => {
     ownerUser = await createTestUser({ email: 'owner@example.com' })
     memberUser = await createTestUser({ email: 'member@example.com' })
     testProject = await createTestProject(ownerUser.id)
-    await createTestProjectMember(testProject.id, ownerUser.id, { role: 'OWNER' })
+    await createTestProjectMember(testProject.id, ownerUser.id, { role: 'PROJECT_OWNER' })
   })
 
   // ============================================
@@ -92,7 +92,7 @@ describe('项目管理补充集成测试', () => {
 
   describe('项目成员角色', () => {
     it('应该能添加 OWNER 角色成员', async () => {
-      const member = await createTestProjectMember(testProject.id, ownerUser.id, { role: 'OWNER' })
+      const member = await createTestProjectMember(testProject.id, ownerUser.id, { role: 'PROJECT_OWNER' })
       expect(member.role).toBe('OWNER')
     })
 

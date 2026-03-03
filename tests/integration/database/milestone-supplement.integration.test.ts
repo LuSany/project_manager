@@ -31,7 +31,7 @@ describe('里程碑补充集成测试', () => {
   beforeEach(async () => {
     testUser = await createTestUser()
     testProject = await createTestProject(testUser.id)
-    await createTestProjectMember(testProject.id, testUser.id, { role: 'OWNER' })
+    await createTestProjectMember(testProject.id, testUser.id, { role: 'PROJECT_OWNER' })
     testMilestone = await createTestMilestone(testProject.id)
   })
 

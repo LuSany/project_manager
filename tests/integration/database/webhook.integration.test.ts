@@ -25,6 +25,7 @@ describe('Webhook API 集成测试', () => {
   let normalUser: { id: string }
 
   beforeEach(async () => {
+    await testPrisma.webhook.deleteMany({})
     adminUser = await createTestAdminUser()
     normalUser = await createTestUser({ email: 'normal@example.com' })
   })

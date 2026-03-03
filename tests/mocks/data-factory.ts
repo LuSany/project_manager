@@ -32,7 +32,7 @@ export class MockUserFactory {
       password: 'OwnerPass123!',
       passwordHash: this.hashPassword('OwnerPass123!'),
       name: overrides?.name || 'Project Owner',
-      role: 'OWNER' as UserRole,
+      role: 'PROJECT_OWNER' as UserRole,
       status: 'ACTIVE',
       department: 'Engineering',
       position: 'Project Owner',
