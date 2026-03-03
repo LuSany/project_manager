@@ -55,7 +55,7 @@ describe('里程碑补充集成测试', () => {
 
     it('应该能查询里程碑的所有任务', async () => {
       await testPrisma.task.create({
-        data: { title: 'Task 1', projectId: testProject.id, milestoneId: testMilestone.id },
+        data: { title: 'Task 1', status: 'TODO', progress: 0, priority: 'MEDIUM', projectId: testProject.id, milestoneId: testMilestone.id },
       })
       await testPrisma.task.create({
         data: { title: 'Task 2', projectId: testProject.id, milestoneId: testMilestone.id },
@@ -90,7 +90,7 @@ describe('里程碑补充集成测试', () => {
     it('应该能计算里程碑任务完成率', async () => {
       await testPrisma.task.create({
         data: {
-          title: 'Task 1',
+          title: 'Task 1', status: 'TODO', progress: 0, priority: 'MEDIUM',
           projectId: testProject.id,
           milestoneId: testMilestone.id,
           status: 'COMPLETED',
