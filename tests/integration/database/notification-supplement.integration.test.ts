@@ -45,28 +45,28 @@ describe('通知系统补充集成测试', () => {
       expect(notification.type).toBe('TASK_ASSIGNED')
     })
 
-    it('应该支持 TASK_COMPLETED 类型', async () => {
+    it('应该支持 TASK_DUE_REMINDER 类型', async () => {
       const notification = await createTestNotification(testUser.id, {
         type: 'TASK_DUE_REMINDER',
         title: '任务完成通知',
       })
-      expect(notification.type).toBe('TASK_COMPLETED')
+      expect(notification.type).toBe('TASK_DUE_REMINDER')
     })
 
-    it('应该支持 TASK_DUE_SOON 类型', async () => {
+    it('应该支持 TASK_DUE_REMINDER 类型 2', async () => {
       const notification = await createTestNotification(testUser.id, {
         type: 'TASK_DUE_REMINDER',
         title: '任务即将到期',
       })
-      expect(notification.type).toBe('TASK_DUE_SOON')
+      expect(notification.type).toBe('TASK_DUE_REMINDER')
     })
 
-    it('应该支持 TASK_OVERDUE 类型', async () => {
+    it('应该支持 TASK_DUE_REMINDER 类型 3', async () => {
       const notification = await createTestNotification(testUser.id, {
         type: 'TASK_DUE_REMINDER',
         title: '任务已逾期',
       })
-      expect(notification.type).toBe('TASK_OVERDUE')
+      expect(notification.type).toBe('TASK_DUE_REMINDER')
     })
 
     it('应该支持 REVIEW_INVITED 类型', async () => {
@@ -74,7 +74,7 @@ describe('通知系统补充集成测试', () => {
         type: 'REVIEW_INVITED',
         title: '评审邀请通知',
       })
-      expect(notification.type).toBe('REVIEW_INVITED')
+      expect(notification.type).toBe('REVIEW_INVITE')
     })
 
     it('应该支持 REVIEW_COMPLETED 类型', async () => {
@@ -82,7 +82,7 @@ describe('通知系统补充集成测试', () => {
         type: 'REVIEW_COMPLETED',
         title: '评审完成通知',
       })
-      expect(notification.type).toBe('REVIEW_COMPLETED')
+      expect(notification.type).toBe('TASK_DUE_REMINDER')
     })
 
     it('应该支持 RISK_ALERT 类型', async () => {

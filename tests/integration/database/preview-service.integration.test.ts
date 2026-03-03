@@ -50,7 +50,7 @@ describe('预览服务补充集成测试', () => {
         data: {
           name: 'KKFileView 服务',
           serviceType: 'KKFILEVIEW',
-          endpoint: 'http://kkfileview:8012', config: '{}',
+          endpoint: 'http://kkfileview:8012', config: '{}'$,
           isEnabled: true,
         },
       })

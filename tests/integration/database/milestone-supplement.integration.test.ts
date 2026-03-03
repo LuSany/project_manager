@@ -157,7 +157,7 @@ describe('里程碑补充集成测试', () => {
         where: { id: testMilestone.id },
         data: { status: 'COMPLETED', progress: 100 },
       })
-      expect(updated.status).toBe('DONE')
+      expect(updated.status).toBe('COMPLETED')
       expect(updated.progress).toBe(100)
     })
 
