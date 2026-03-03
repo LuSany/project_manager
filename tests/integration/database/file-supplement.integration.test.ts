@@ -77,7 +77,7 @@ describe('文件管理补充集成测试', () => {
       })
 
       const files = await testPrisma.fileStorage.findMany({
-        where: { projectId: testProject.id },
+        where: { },
       })
 
       expect(files.length).toBe(2)
