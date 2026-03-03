@@ -47,7 +47,7 @@ describe('通知系统补充集成测试', () => {
 
     it('应该支持 TASK_COMPLETED 类型', async () => {
       const notification = await createTestNotification(testUser.id, {
-        type: 'TASK_COMPLETED',
+        type: 'TASK_DUE_REMINDER',
         title: '任务完成通知',
       })
       expect(notification.type).toBe('TASK_COMPLETED')
@@ -55,7 +55,7 @@ describe('通知系统补充集成测试', () => {
 
     it('应该支持 TASK_DUE_SOON 类型', async () => {
       const notification = await createTestNotification(testUser.id, {
-        type: 'TASK_DUE_SOON',
+        type: 'TASK_DUE_REMINDER',
         title: '任务即将到期',
       })
       expect(notification.type).toBe('TASK_DUE_SOON')
@@ -63,7 +63,7 @@ describe('通知系统补充集成测试', () => {
 
     it('应该支持 TASK_OVERDUE 类型', async () => {
       const notification = await createTestNotification(testUser.id, {
-        type: 'TASK_OVERDUE',
+        type: 'TASK_DUE_REMINDER',
         title: '任务已逾期',
       })
       expect(notification.type).toBe('TASK_OVERDUE')
@@ -117,7 +117,7 @@ describe('通知系统补充集成测试', () => {
       const preference = await testPrisma.notificationPreference.create({
         data: {
           userId: testUser.id,
-          type: 'TASK_OVERDUE',
+          type: 'TASK_DUE_REMINDER',
           enabled: false,
           channel: 'IN_APP',
         },

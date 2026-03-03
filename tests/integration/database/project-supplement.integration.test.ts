@@ -97,18 +97,18 @@ describe('项目管理补充集成测试', () => {
     })
 
     it('应该能添加 ADMIN 角色成员', async () => {
-      const member = await createTestProjectMember(testProject.id, memberUser.id, { role: 'ADMIN' })
+      const member = await createTestProjectMember(testProject.id, memberUser.id, { role: 'PROJECT_ADMIN' })
       expect(member.role).toBe('ADMIN')
     })
 
     it('应该能添加 MEMBER 角色成员', async () => {
       const newUser = await createTestUser({ email: 'new-member@example.com' })
-      const member = await createTestProjectMember(testProject.id, newUser.id, { role: 'MEMBER' })
+      const member = await createTestProjectMember(testProject.id, newUser.id, { role: 'PROJECT_MEMBER' })
       expect(member.role).toBe('MEMBER')
     })
 
     it('应该能查询项目的所有成员', async () => {
-      await createTestProjectMember(testProject.id, memberUser.id, { role: 'MEMBER' })
+      await createTestProjectMember(testProject.id, memberUser.id, { role: 'PROJECT_MEMBER' })
 
       const members = await testPrisma.projectMember.findMany({
         where: { projectId: testProject.id },
@@ -118,7 +118,7 @@ describe('项目管理补充集成测试', () => {
 
     it('应该能删除项目成员', async () => {
       const member = await createTestProjectMember(testProject.id, memberUser.id, {
-        role: 'MEMBER',
+        role: 'PROJECT_MEMBER',
       })
 
       await testPrisma.projectMember.delete({
@@ -155,7 +155,7 @@ describe('项目管理补充集成测试', () => {
     })
 
     it('项目成员应该有访问权限', async () => {
-      await createTestProjectMember(testProject.id, memberUser.id, { role: 'MEMBER' })
+      await createTestProjectMember(testProject.id, memberUser.id, { role: 'PROJECT_MEMBER' })
 
       const membership = await testPrisma.projectMember.findUnique({
         where: {
@@ -191,7 +191,7 @@ describe('项目管理补充集成测试', () => {
 
   describe('项目关联数据', () => {
     it('删除项目应该级联删除成员', async () => {
-      await createTestProjectMember(testProject.id, memberUser.id, { role: 'MEMBER' })
+      await createTestProjectMember(testProject.id, memberUser.id, { role: 'PROJECT_MEMBER' })
 
       await testPrisma.project.delete({
         where: { id: testProject.id },

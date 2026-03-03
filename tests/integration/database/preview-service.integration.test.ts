@@ -32,16 +32,16 @@ describe('预览服务补充集成测试', () => {
     it('应该能创建 OnlyOffice 配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          name: 'OnlyOffice 主服务',
-          type: 'ONLYOFFICE',
-          url: 'http://onlyoffice:8080',
+          
+          serviceType: 'ONLYOFFICE',
+          endpoint: 'http://onlyoffice:8080',
           isEnabled: true,
           config: JSON.stringify({ jwtSecret: 'secret-key' }),
         },
       })
 
       expect(config).toBeDefined()
-      expect(config.type).toBe('ONLYOFFICE')
+      expect(config.serviceType).toBe('ONLYOFFICE')
       expect(config.isEnabled).toBe(true)
     })
 
@@ -49,21 +49,21 @@ describe('预览服务补充集成测试', () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
           name: 'KKFileView 服务',
-          type: 'KKFILEVIEW',
-          url: 'http://kkfileview:8012',
+          serviceType: 'KKFILEVIEW',
+          endpoint: 'http://kkfileview:8012', config: '{}',
           isEnabled: true,
         },
       })
 
-      expect(config.type).toBe('KKFILEVIEW')
+      expect(config.serviceType).toBe('KKFILEVIEW')
     })
 
     it('应该能获取所有预览服务', async () => {
       await testPrisma.previewServiceConfig.create({
-        data: { name: '服务1', type: 'ONLYOFFICE', url: 'http://svc1:8080', isEnabled: true },
+        data: { name: '服务1', serviceType: 'ONLYOFFICE', endpoint: 'http://svc1:8080', isEnabled: true },
       })
       await testPrisma.previewServiceConfig.create({
-        data: { name: '服务2', type: 'KKFILEVIEW', url: 'http://svc2:8012', isEnabled: true },
+        data: { name: '服务2', serviceType: 'KKFILEVIEW', endpoint: 'http://svc2:8012', isEnabled: true },
       })
 
       const services = await testPrisma.previewServiceConfig.findMany()
@@ -72,13 +72,13 @@ describe('预览服务补充集成测试', () => {
 
     it('应该能获取启用的预览服务', async () => {
       await testPrisma.previewServiceConfig.create({
-        data: { name: '启用服务', type: 'ONLYOFFICE', url: 'http://enabled:8080', isEnabled: true },
+        data: { name: '启用服务', serviceType: 'ONLYOFFICE', endpoint: 'http://enabled:8080', isEnabled: true },
       })
       await testPrisma.previewServiceConfig.create({
         data: {
           name: '禁用服务',
-          type: 'KKFILEVIEW',
-          url: 'http://disabled:8012',
+          serviceType: 'KKFILEVIEW',
+          endpoint: 'http://disabled:8012',
           isEnabled: false,
         },
       })
@@ -92,12 +92,12 @@ describe('预览服务补充集成测试', () => {
 
     it('应该能更新预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
-        data: { name: '待更新', type: 'ONLYOFFICE', url: 'http://old:8080', isEnabled: true },
+        data: { name: '待更新', serviceType: 'ONLYOFFICE', endpoint: 'http://old:8080', isEnabled: true },
       })
 
       const updated = await testPrisma.previewServiceConfig.update({
         where: { id: config.id },
-        data: { url: 'http://new:8080' },
+        data: { endpoint: 'http://new:8080' },
       })
 
       expect(updated.url).toBe('http://new:8080')
@@ -105,7 +105,7 @@ describe('预览服务补充集成测试', () => {
 
     it('应该能删除预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
-        data: { name: '待删除', type: 'ONLYOFFICE', url: 'http://delete:8080', isEnabled: true },
+        data: { name: '待删除', serviceType: 'ONLYOFFICE', endpoint: 'http://delete:8080', isEnabled: true },
       })
 
       await testPrisma.previewServiceConfig.delete({
@@ -127,28 +127,28 @@ describe('预览服务补充集成测试', () => {
   describe('服务类型', () => {
     it('应该支持 ONLYOFFICE 类型', async () => {
       const config = await testPrisma.previewServiceConfig.create({
-        data: { name: 'OnlyOffice', type: 'ONLYOFFICE', url: 'http://oo:8080', isEnabled: true },
+        data: { name: 'OnlyOffice', serviceType: 'ONLYOFFICE', endpoint: 'http://oo:8080', isEnabled: true },
       })
-      expect(config.type).toBe('ONLYOFFICE')
+      expect(config.serviceType).toBe('ONLYOFFICE')
     })
 
     it('应该支持 KKFILEVIEW 类型', async () => {
       const config = await testPrisma.previewServiceConfig.create({
-        data: { name: 'KKFileView', type: 'KKFILEVIEW', url: 'http://kk:8012', isEnabled: true },
+        data: { name: 'KKFileView', serviceType: 'KKFILEVIEW', endpoint: 'http://kk:8012', isEnabled: true },
       })
-      expect(config.type).toBe('KKFILEVIEW')
+      expect(config.serviceType).toBe('KKFILEVIEW')
     })
 
     it('应该能按类型筛选服务', async () => {
       await testPrisma.previewServiceConfig.create({
-        data: { name: 'OO', type: 'ONLYOFFICE', url: 'http://oo:8080', isEnabled: true },
+        data: { name: 'OO', serviceType: 'ONLYOFFICE', endpoint: 'http://oo:8080', isEnabled: true },
       })
       await testPrisma.previewServiceConfig.create({
-        data: { name: 'KK', type: 'KKFILEVIEW', url: 'http://kk:8012', isEnabled: true },
+        data: { name: 'KK', serviceType: 'KKFILEVIEW', endpoint: 'http://kk:8012', isEnabled: true },
       })
 
       const onlyofficeServices = await testPrisma.previewServiceConfig.findMany({
-        where: { type: 'ONLYOFFICE' },
+        where: { serviceType: 'ONLYOFFICE' },
       })
 
       expect(onlyofficeServices.length).toBe(1)

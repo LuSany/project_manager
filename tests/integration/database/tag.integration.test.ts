@@ -29,6 +29,7 @@ describe('标签管理集成测试', () => {
 
   beforeEach(async () => {
     testUser = await createTestUser()
+    await testPrisma.tag.deleteMany({})
     testProject = await createTestProject(testUser.id)
     await createTestProjectMember(testProject.id, testUser.id, { role: 'PROJECT_OWNER' })
   })
