@@ -7,13 +7,13 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setupTestDatabase, testPrisma } from '../helpers/test-db'
+import { setupTestDatabase, testPrisma } from '../../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
   createTestIssue,
   createTestProjectMember,
-} from '../helpers/test-data-factory'
+} from '../../helpers/test-data-factory'
 
 // ============================================
 // 测试套件

@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setupTestDatabase, testPrisma } from '../helpers/test-db'
-import { createTestUser, createTestAdminUser } from '../helpers/test-data-factory'
+import { setupTestDatabase, testPrisma } from '../../helpers/test-db'
+import { createTestUser, createTestAdminUser } from '../../helpers/test-data-factory'
 
 // ============================================
 // 测试套件

@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { setupTestDatabase, testPrisma } from '../helpers/test-db'
+import { setupTestDatabase, testPrisma } from '../../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
@@ -17,7 +17,7 @@ import {
   createTestRisk,
   createTestMilestone,
   createTestProjectMember,
-} from '../helpers/test-data-factory'
+} from '../../helpers/test-data-factory'
 import { createAuthenticatedRequest } from '../mocks/request-mock'
 
 // 模拟 API 处理函数

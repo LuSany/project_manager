@@ -10,13 +10,13 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { setupTestDatabase, testPrisma } from '../helpers/test-db'
+import { setupTestDatabase, testPrisma } from '../../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
   createTestReview,
   createTestReviewTypeConfig,
-} from '../helpers/test-data-factory'
+} from '../../helpers/test-data-factory'
 
 // Mock AI 服务
 vi.mock('@/lib/ai', () => ({
