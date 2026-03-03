@@ -93,7 +93,7 @@ describe('里程碑补充集成测试', () => {
           title: 'Task 1',
           projectId: testProject.id,
           milestoneId: testMilestone.id,
-          status: 'DONE',
+          status: 'COMPLETED',
         },
       })
       await testPrisma.task.create({
@@ -101,7 +101,7 @@ describe('里程碑补充集成测试', () => {
           title: 'Task 2',
           projectId: testProject.id,
           milestoneId: testMilestone.id,
-          status: 'DONE',
+          status: 'COMPLETED',
         },
       })
       await testPrisma.task.create({
@@ -115,7 +115,7 @@ describe('里程碑补充集成测试', () => {
 
       const total = await testPrisma.task.count({ where: { milestoneId: testMilestone.id } })
       const completed = await testPrisma.task.count({
-        where: { milestoneId: testMilestone.id, status: 'DONE' },
+        where: { milestoneId: testMilestone.id, status: 'COMPLETED' },
       })
       const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0
 
@@ -155,14 +155,14 @@ describe('里程碑补充集成测试', () => {
     it('应该支持 DONE 状态', async () => {
       const updated = await testPrisma.milestone.update({
         where: { id: testMilestone.id },
-        data: { status: 'DONE', progress: 100 },
+        data: { status: 'COMPLETED', progress: 100 },
       })
       expect(updated.status).toBe('DONE')
       expect(updated.progress).toBe(100)
     })
 
     it('应该能按状态筛选里程碑', async () => {
-      await createTestMilestone(testProject.id, { status: 'DONE' })
+      await createTestMilestone(testProject.id, { status: 'COMPLETED' })
 
       const activeMilestones = await testPrisma.milestone.findMany({
         where: { projectId: testProject.id, status: { not: 'DONE' } },
