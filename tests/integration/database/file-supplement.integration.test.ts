@@ -197,8 +197,7 @@ describe('文件管理补充集成测试', () => {
     it('应该能创建预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          serviceType: "ONLYOFFICE", config: "{}",
-          type: 'ONLYOFFICE',
+          serviceType: 'ONLYOFFICE',
           endpoint: 'http://onlyoffice:8080',
           isEnabled: true,
           config: JSON.stringify({ jwtSecret: 'secret' }),
@@ -213,7 +212,6 @@ describe('文件管理补充集成测试', () => {
     it('应该能创建 KKFileView 配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          serviceType: "KKFILEVIEW", config: "{}",
           type: 'KKFILEVIEW',
           endpoint: 'http://kkfileview:8012',
           isEnabled: true,
@@ -226,15 +224,13 @@ describe('文件管理补充集成测试', () => {
     it('应该能获取启用的预览服务', async () => {
       await testPrisma.previewServiceConfig.create({
         data: {
-          serviceType: "ONLYOFFICE", config: "{}",
-          type: 'ONLYOFFICE',
+          serviceType: 'ONLYOFFICE',
           endpoint: 'http://enabled:8080',
           isEnabled: true,
         },
       })
       await testPrisma.previewServiceConfig.create({
         data: {
-          serviceType: "KKFILEVIEW", config: "{}",
           type: 'KKFILEVIEW',
           endpoint: 'http://disabled:8012',
           isEnabled: false,
@@ -251,8 +247,7 @@ describe('文件管理补充集成测试', () => {
     it('应该能更新预览服务配置', async () => {
       const config = await testPrisma.previewServiceConfig.create({
         data: {
-          serviceType: "ONLYOFFICE", config: "{}",
-          type: 'ONLYOFFICE',
+          serviceType: 'ONLYOFFICE',
           endpoint: 'http://test:8080',
           isEnabled: true,
         },
