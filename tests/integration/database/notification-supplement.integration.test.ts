@@ -160,7 +160,7 @@ describe('通知系统补充集成测试', () => {
       })
 
       const updated = await testPrisma.notificationPreference.update({
-        where: { id: preference.id },
+        where: { userId_type_channel: { userId: testUser.id, type: "TASK_ASSIGNED", channel: "IN_APP" } },
         data: { enabled: false },
       })
 
@@ -210,7 +210,7 @@ describe('通知系统补充集成测试', () => {
       })
 
       await testPrisma.notificationIgnore.delete({
-        where: { id: ignore.id },
+        where: { userId_projectId: { userId: testUser.id, projectId: testProject.id } },
       })
 
       const remaining = await testPrisma.notificationIgnore.findMany({

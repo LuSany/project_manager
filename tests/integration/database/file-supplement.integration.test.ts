@@ -205,7 +205,7 @@ describe('文件管理补充集成测试', () => {
       })
 
       expect(config).toBeDefined()
-      expect(config.type).toBe('ONLYOFFICE')
+      expect(config.serviceType).toBe('ONLYOFFICE')
       expect(config.isEnabled).toBe(true)
     })
 
