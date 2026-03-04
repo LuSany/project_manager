@@ -187,7 +187,7 @@ describe('标签管理集成测试', () => {
       })
 
       await testPrisma.taskTag.delete({
-        where: { id: taskTag.id },
+        where: { taskId_tagId: { taskId: testTask.id, tagId: tag.id } },
       })
 
       const remaining = await testPrisma.taskTag.findMany({

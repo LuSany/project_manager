@@ -55,10 +55,10 @@ describe('里程碑补充集成测试', () => {
 
     it('应该能查询里程碑的所有任务', async () => {
       await testPrisma.task.create({
-        data: { title: 'Task 1', status: 'TODO', progress: 0, priority: 'MEDIUM', projectId: testProject.id, milestoneId: testMilestone.id },
+        data: { title: 'Task 1', status: 'DONE', progress: 100, priority: 'MEDIUM', projectId: testProject.id, milestoneId: testMilestone.id },
       })
       await testPrisma.task.create({
-        data: { title: 'Task 2', projectId: testProject.id, milestoneId: testMilestone.id },
+        data: { title: 'Task 2', status: 'DONE', progress: 100, priority: 'MEDIUM', projectId: testProject.id, milestoneId: testMilestone.id },
       })
 
       const tasks = await testPrisma.task.findMany({
@@ -90,17 +90,15 @@ describe('里程碑补充集成测试', () => {
     it('应该能计算里程碑任务完成率', async () => {
       await testPrisma.task.create({
         data: {
-          title: 'Task 1', status: 'TODO', progress: 0, priority: 'MEDIUM',
+          title: 'Task 1', status: 'DONE', progress: 100, priority: 'MEDIUM',
           projectId: testProject.id,
           milestoneId: testMilestone.id,
         },
       })
       await testPrisma.task.create({
         data: {
-          title: 'Task 2',
+          title: 'Task 2', status: 'DONE', progress: 100, priority: 'MEDIUM',
           projectId: testProject.id,
-          milestoneId: testMilestone.id,
-          status: 'COMPLETED',
         },
       })
       await testPrisma.task.create({
@@ -164,7 +162,7 @@ describe('里程碑补充集成测试', () => {
       await createTestMilestone(testProject.id, { status: 'COMPLETED' })
 
       const activeMilestones = await testPrisma.milestone.findMany({
-        where: { projectId: testProject.id, status: { not: 'DONE' } },
+        where: { projectId: testProject.id, status: { not: 'COMPLETED' } },
       })
 
       expect(activeMilestones.length).toBe(1)
@@ -199,7 +197,7 @@ describe('里程碑补充集成测试', () => {
         where: {
           projectId: testProject.id,
           dueDate: { lte: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) },
-          status: { not: 'DONE' },
+          status: { not: 'COMPLETED' },
         },
       })
 

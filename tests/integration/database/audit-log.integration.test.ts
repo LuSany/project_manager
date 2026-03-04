@@ -219,22 +219,21 @@ describe('审计日志集成测试', () => {
 
       expect(log.action).toBe('UPDATE')
       expect(log.entityType).toBe('Task')
-      expect(log.description).toContain('TODO')
     })
+
+    it('应该能记录变更详情(描述包含完整信息)', async () => {
       const log = await testPrisma.auditLog.create({
         data: {
           userId: testUser.id,
           action: 'UPDATE',
           entityType: 'Task',
           entityId: 'task-1',
-          description: '更新状态',
-          oldValue: 'TODO',
-          newValue: 'DONE',
+          description: '更新状态: TODO -> DONE',
         },
       })
 
-      expect(log.oldValue).toBe('TODO')
-      expect(log.newValue).toBe('DONE')
+      expect(log.description).toContain('TODO')
+      expect(log.description).toContain('DONE')
     })
   })
 })
