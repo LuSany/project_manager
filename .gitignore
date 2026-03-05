@@ -66,4 +66,5 @@ coverage/
 .omc/sessions/
 .omc/autopilot/
 .omc/plans/
+.omc/project-memory.json
 .sisyphus/
