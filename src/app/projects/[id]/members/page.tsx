@@ -208,13 +208,6 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   showDescription={false}
                 />
               </div>
-                <Label>角色</Label>
-                <RoleSelect
-                  value={newMemberRole}
-                  onValueChange={(value) => setNewMemberRole(value)}
-                  showDescription={false}
-                />
-              </div>
               <DialogFooter>
                 <Button
                   type="button"

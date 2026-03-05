@@ -120,5 +120,5 @@ export function getStatusDescription(status: string): string {
   return config?.description || '未知状态'
 }
 
-// 导出配置供其他组件使用
-export { TASK_STATUS_CONFIG }
+// 导出配置供其他组件使用（已在顶部使用 export const 声明）
+// export { TASK_STATUS_CONFIG }

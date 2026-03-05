@@ -11,7 +11,7 @@ async function getAuthUser(request: NextRequest) {
 }
 
 const updateStatusSchema = z.object({
-  status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE']).optional(),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE', 'CANCELLED', 'DELAYED', 'BLOCKED']).optional(),
   milestoneId: z.string().optional(),
   issueId: z.string().optional(),
 })
@@ -46,9 +46,21 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, error: '任务不存在或无权访问' }, { status: 404 })
     }
 
+    // 构建更新数据
+    const updateData: Record<string, unknown> = { ...validatedData }
+
+    // 当任务状态变为 DONE 时，设置 completedAt
+    if (validatedData.status === 'DONE') {
+      updateData.completedAt = new Date()
+    }
+    // 当任务状态从 DONE 变为其他状态时，清除 completedAt
+    else if (task.status === 'DONE' && validatedData.status) {
+      updateData.completedAt = null
+    }
+
     const updatedTask = await db.task.update({
       where: { id },
-      data: validatedData,
+      data: updateData,
     })
 
     // 当任务状态变为 DONE 时，检查关联的 Issue 是否应该自动关闭

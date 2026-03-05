@@ -113,6 +113,7 @@ export async function POST(
           },
           data: {
             status: 'DONE',
+            completedAt: new Date(),
           },
         });
       }

@@ -23,7 +23,9 @@ const updateReviewTemplateSchema = z.object({
 export async function POST(req: NextRequest) {
   try {
     const user = await requireAuth(req)
-    if (user instanceof Error) return user
+    if (user instanceof Error) {
+      return ApiResponder.unauthorized(user.message)
+    }
 
     const body = await req.json()
     const validatedData = reviewTemplateSchema.parse(body)

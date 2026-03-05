@@ -151,7 +151,7 @@ export function mockResolvedValue<T>(
   mockFn: MockFunction<(...args: any[]) => Promise<T>>,
   value: T
 ) {
-  return mockFn.mockResolvedValue(value)
+  return mockFn.mockResolvedValue(value as any)
 }
 
 export function mockRejectedValue(

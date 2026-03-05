@@ -30,7 +30,6 @@ vi.mock('@/lib/notification', () => ({
 // 全局 setup
 beforeAll(async () => {
   // 设置测试环境变量
-  process.env.NODE_ENV = 'test'
   process.env.DATABASE_URL = 'file:./test.db'
   process.env.JWT_SECRET = 'test-jwt-secret-key'
   process.env.NEXT_PUBLIC_APP_URL = 'http://localhost:3000'

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
-import { createNotification, shouldSendEmail, sendEmailNotification, NotificationType } from '@/lib/notification';
+import { createNotification, NotificationType } from '@/lib/notification';
 
 // GET /api/v1/notifications - 获取通知列表
 
@@ -67,20 +67,21 @@ export async function POST(request: NextRequest) {
     });
 
     // 如果请求明确指定发送邮件（覆盖用户偏好）
-    if (sendEmail === true) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { email: true },
-      });
-      if (user?.email) {
-        await sendEmailNotification(
-          userId,
-          type as NotificationType,
-          title,
-          content
-        );
-      }
-    }
+    // 邮件通知功能暂时注释，等待后续实现
+    // if (sendEmail === true) {
+    //   const user = await prisma.user.findUnique({
+    //     where: { id: userId },
+    //     select: { email: true },
+    //   });
+    //   if (user?.email) {
+    //     await sendEmailNotification(
+    //       userId,
+    //       type as NotificationType,
+    //       title,
+    //       content
+    //     );
+    //   }
+    // }
 
     return NextResponse.json(success({ message: '通知已创建' }));
   } catch (err) {

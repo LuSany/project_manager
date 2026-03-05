@@ -187,7 +187,7 @@ export async function createTestMilestone(
  */
 export async function createTestTask(
   projectId: string,
-  overrides: Partial<Prisma.TaskCreateInput> = {}
+  overrides: Partial<Prisma.TaskCreateInput> & { milestoneId?: string; acceptorId?: string } = {}
 ) {
   return testPrisma.task.create({
     data: {
@@ -199,10 +199,10 @@ export async function createTestTask(
       startDate: overrides.startDate,
       dueDate: overrides.dueDate,
       estimatedHours: overrides.estimatedHours,
-      projectId,
-      milestoneId: overrides.milestoneId as string | undefined,
-      acceptorId: overrides.acceptorId as string | undefined,
-    },
+      project: { connect: { id: projectId } },
+      ...(overrides.milestoneId ? { milestone: { connect: { id: overrides.milestoneId } } } : {}),
+      ...(overrides.acceptorId ? { acceptor: { connect: { id: overrides.acceptorId } } } : {}),
+    } as any,
   })
 }
 
@@ -211,7 +211,7 @@ export async function createTestTask(
  */
 export async function createTestSubTask(
   taskId: string,
-  overrides: Partial<Prisma.SubTaskCreateInput> = {}
+  overrides: Partial<Prisma.SubTaskCreateInput> & { parentId?: string } = {}
 ) {
   return testPrisma.subTask.create({
     data: {
@@ -219,8 +219,8 @@ export async function createTestSubTask(
       description: overrides.description,
       completed: overrides.completed ?? false,
       taskId,
-      parentId: overrides.parentId as string | undefined,
-    },
+      ...(overrides.parentId ? { parent: { connect: { id: overrides.parentId } } } : {}),
+    } as any,
   })
 }
 
@@ -229,7 +229,7 @@ export async function createTestSubTask(
  */
 export async function createTestRequirement(
   projectId: string,
-  overrides: Partial<Prisma.RequirementCreateInput> = {}
+  overrides: Partial<Prisma.RequirementCreateInput> & { reviewedBy?: string } = {}
 ) {
   return testPrisma.requirement.create({
     data: {
@@ -237,9 +237,9 @@ export async function createTestRequirement(
       description: overrides.description,
       status: overrides.status ?? 'PENDING',
       priority: overrides.priority ?? 'MEDIUM',
-      projectId,
-      reviewedBy: overrides.reviewedBy as string | undefined,
-    },
+      project: { connect: { id: projectId } },
+      ...(overrides.reviewedBy ? { reviewer: { connect: { id: overrides.reviewedBy } } } : {}),
+    } as any,
   })
 }
 
@@ -248,7 +248,7 @@ export async function createTestRequirement(
  */
 export async function createTestIssue(
   projectId: string,
-  overrides: Partial<Prisma.IssueCreateInput> = {}
+  overrides: Partial<Prisma.IssueCreateInput> & { requirementId?: string } = {}
 ) {
   return testPrisma.issue.create({
     data: {
@@ -256,9 +256,9 @@ export async function createTestIssue(
       description: overrides.description,
       status: overrides.status ?? 'OPEN',
       priority: overrides.priority ?? 'MEDIUM',
-      projectId,
-      requirementId: overrides.requirementId as string | undefined,
-    },
+      project: { connect: { id: projectId } },
+      ...(overrides.requirementId ? { requirement: { connect: { id: overrides.requirementId } } } : {}),
+    } as any,
   })
 }
 

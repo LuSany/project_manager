@@ -24,15 +24,17 @@ const updateReviewTemplateSchema = z.object({
 })
 
 // GET /api/v1/review-templates/[id] - 获取单个评审模板
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
       return ApiResponder.unauthorized('未授权，请先登录')
     }
 
+    const { id } = await context.params
+
     const template = await prisma.reviewTemplate.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         type: {
           select: {
@@ -59,19 +61,20 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PUT /api/v1/review-templates/[id] - 更新评审模板
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth(req)
     if (user instanceof Error) {
       return ApiResponder.unauthorized('未授权，请先登录')
     }
 
+    const { id } = await context.params
     const body = await req.json()
     const validatedData = updateReviewTemplateSchema.parse(body)
 
     // 检查模板是否存在
     const existingTemplate = await prisma.reviewTemplate.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         items: true,
       },
@@ -150,7 +153,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const template = await prisma.reviewTemplate.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...templateData,
         ...(itemsUpdate && { items: itemsUpdate }),
@@ -180,16 +183,18 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE /api/v1/review-templates/[id] - 删除评审模板
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const user = await requireAuth(req)
     if (user instanceof Error) {
       return ApiResponder.unauthorized('未授权，请先登录')
     }
 
+    const { id } = await context.params
+
     // 检查模板是否存在
     const template = await prisma.reviewTemplate.findUnique({
-      where: { id: params.id },
+      where: { id },
     })
 
     if (!template) {
@@ -209,7 +214,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     await prisma.reviewTemplate.delete({
-      where: { id: params.id },
+      where: { id },
     })
 
     return ApiResponder.success({ message: '删除成功' })

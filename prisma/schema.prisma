@@ -187,10 +187,12 @@ model Task {
   startDate      DateTime?
   dueDate        DateTime?
   estimatedHours Float?
+  actualHours    Float? // 实际工时
   projectId      String
   milestoneId    String?
   issueId        String?
   acceptorId     String? // 验收人 ID
+  completedAt    DateTime? // 任务完成时间
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
@@ -215,6 +217,7 @@ model Task {
   @@index([status])
   @@index([priority])
   @@index([acceptorId])
+  @@index([completedAt])
   @@map("tasks")
 }
 

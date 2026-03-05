@@ -254,9 +254,8 @@ function KanbanColumnComponent({ column, tasks, onDragStart }: KanbanColumnCompo
     <div className="flex max-w-[350px] min-w-[300px] flex-col">
       {/* 列头 */}
       <div className="mb-4 flex items-center justify-between px-1">
-          <TaskStatusBadge status={column.status} showIcon={false} showLabel={false} size="sm">
-            {tasks.length}
-          </TaskStatusBadge>
+          <TaskStatusBadge status={column.status} showIcon={false} showLabel={true} size="sm" />
+          <span className="text-sm text-muted-foreground ml-2">{tasks.length}</span>
       </div>
 
       {/* 任务列表 */}
