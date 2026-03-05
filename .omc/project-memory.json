@@ -292,8 +292,8 @@
     },
     {
       "path": "docs/TECHNICAL_SPECIFICATION_V4.md",
-      "accessCount": 8,
-      "lastAccessed": 1772719357387,
+      "accessCount": 10,
+      "lastAccessed": 1772744043054,
       "type": "file"
     },
     {
@@ -471,6 +471,12 @@
       "type": "file"
     },
     {
+      "path": "src/app",
+      "accessCount": 2,
+      "lastAccessed": 1772744043007,
+      "type": "directory"
+    },
+    {
       "path": "",
       "accessCount": 1,
       "lastAccessed": 1772719336086,
@@ -531,12 +537,6 @@
       "type": "file"
     },
     {
-      "path": "src/app",
-      "accessCount": 1,
-      "lastAccessed": 1772741285993,
-      "type": "directory"
-    },
-    {
       "path": "src/app/(main)/admin/projects/page.tsx",
       "accessCount": 1,
       "lastAccessed": 1772741518454,
@@ -558,6 +558,30 @@
       "path": "src/app/projects/[id]/settings/page.tsx",
       "accessCount": 1,
       "lastAccessed": 1772741762153,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/notifications/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772744138099,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/reviews/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772744167101,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/issues/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772744208872,
+      "type": "file"
+    },
+    {
+      "path": "src/app/tasks/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772744324486,
       "type": "file"
     }
   ],
