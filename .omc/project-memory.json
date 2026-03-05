@@ -328,8 +328,8 @@
     },
     {
       "path": "prisma/schema.prisma",
-      "accessCount": 4,
-      "lastAccessed": 1772720249814,
+      "accessCount": 5,
+      "lastAccessed": 1772741255601,
       "type": "file"
     },
     {
@@ -528,6 +528,36 @@
       "path": "src/hooks/use-toast.ts",
       "accessCount": 1,
       "lastAccessed": 1772723054513,
+      "type": "file"
+    },
+    {
+      "path": "src/app",
+      "accessCount": 1,
+      "lastAccessed": 1772741285993,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/(main)/admin/projects/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772741518454,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/milestones/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772741589058,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/documents/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772741659962,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/settings/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772741762153,
       "type": "file"
     }
   ],
