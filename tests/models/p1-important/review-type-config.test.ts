@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
-import { createTestReviewTypeConfig } from '../../helpers/test-data-factory'
+import { testPrisma } from '../helpers/test-db'
+import { createTestReviewTypeConfig } from '../helpers/test-data-factory'
 
 describe('ReviewTypeConfig Model - P1 Core', () => {
   describe('Basic CRUD', () => {

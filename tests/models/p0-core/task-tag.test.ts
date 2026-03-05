@@ -11,13 +11,13 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
+import { testPrisma } from '../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
   createTestTask,
   createTestTag,
-} from '../../helpers/test-data-factory'
+} from '../helpers/test-data-factory'
 
 describe('TaskTag Model - P0 Core', () => {
   describe('Basic Operations', () => {

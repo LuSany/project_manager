@@ -12,8 +12,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
-import { createTestUser } from '../../helpers/test-data-factory'
+import { testPrisma } from '../helpers/test-db'
+import { createTestUser } from '../helpers/test-data-factory'
 
 describe('PasswordResetToken Model - P0 Core', () => {
   describe('Basic CRUD', () => {

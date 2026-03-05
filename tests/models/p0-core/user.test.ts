@@ -12,7 +12,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
+import { testPrisma } from '../helpers/test-db'
 import {
   createTestUser,
   createTestAdminUser,
@@ -20,7 +20,7 @@ import {
   createTestProject,
   createTestTask,
   createTestNotification,
-} from '../../helpers/test-data-factory'
+} from '../helpers/test-data-factory'
 import { Prisma } from '@prisma/client'
 
 describe('User Model - P0 Core', () => {

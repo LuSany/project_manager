@@ -11,13 +11,13 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
+import { testPrisma } from '../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
   createTestReviewTypeConfig,
   createTestReviewTemplate,
-} from '../../helpers/test-data-factory'
+} from '../helpers/test-data-factory'
 
 describe('ReviewTemplateItem Model - P1 Core', () => {
   describe('Basic CRUD', () => {

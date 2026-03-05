@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
-import { createTestUser, createTestProject, createTestTask } from '../../helpers/test-data-factory'
+import { testPrisma } from '../helpers/test-db'
+import { createTestUser, createTestProject, createTestTask } from '../helpers/test-data-factory'
 
 describe('TaskDependency Model - P0 Core', () => {
   describe('Basic Operations', () => {

@@ -13,14 +13,14 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { testPrisma } from '../../helpers/test-db'
+import { testPrisma } from '../helpers/test-db'
 import {
   createTestUser,
   createTestProject,
   createTestTask,
   createTestRequirement,
   createTestIssue,
-} from '../../helpers/test-data-factory'
+} from '../helpers/test-data-factory'
 
 describe('Issue Model - P0 Core', () => {
   describe('CRUD Operations', () => {
