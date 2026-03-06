@@ -113,7 +113,7 @@ test.describe('Personal Settings E2E', () => {
     }
   });
 
-  test'用户应能从设置首页导航到各子页面', async ({ page }) => {
+  test('用户应能从设置首页导航到各子页面', async ({ page }) => {
     await page.goto('/settings');
 
     // 点击个人资料卡片

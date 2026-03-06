@@ -43,6 +43,7 @@ test.describe('Review E2E Flow', () => {
       expect(Array.isArray(data.data)).toBe(true)
     }
   })
+})
 
 test.describe('Webhook E2E Flow', () => {
   test('should list webhooks', async ({ request }) => {
