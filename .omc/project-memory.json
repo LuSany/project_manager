@@ -323,6 +323,12 @@
       "type": "file"
     },
     {
+      "path": "tests/e2e/settings.spec.ts",
+      "accessCount": 6,
+      "lastAccessed": 1772814886631,
+      "type": "file"
+    },
+    {
       "path": "tests/e2e/critical-flows/01-user-registration-to-project.spec.ts",
       "accessCount": 5,
       "lastAccessed": 1772805782299,
@@ -446,6 +452,18 @@
       "path": "src/lib/api/response.ts",
       "accessCount": 1,
       "lastAccessed": 1772809138928,
+      "type": "file"
+    },
+    {
+      "path": "test-results/settings-Personal-Settings-E2E-用户应能修改个人资料-chromium/error-context.md",
+      "accessCount": 1,
+      "lastAccessed": 1772814578767,
+      "type": "file"
+    },
+    {
+      "path": "test-results/settings-Personal-Settings-E2E-未登录用户不能访问设置页面-chromium/error-context.md",
+      "accessCount": 1,
+      "lastAccessed": 1772814851803,
       "type": "file"
     }
   ],
