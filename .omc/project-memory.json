@@ -294,8 +294,8 @@
   "hotPaths": [
     {
       "path": "src/app/api/v1/auth/login/route.ts",
-      "accessCount": 8,
-      "lastAccessed": 1772810038183,
+      "accessCount": 9,
+      "lastAccessed": 1772813887172,
       "type": "file"
     },
     {
@@ -312,8 +312,8 @@
     },
     {
       "path": "src/hooks/useAuth.tsx",
-      "accessCount": 6,
-      "lastAccessed": 1772810475041,
+      "accessCount": 7,
+      "lastAccessed": 1772813887218,
       "type": "file"
     },
     {
@@ -368,6 +368,12 @@
       "path": "src/app/(main)/admin/layout.tsx",
       "accessCount": 2,
       "lastAccessed": 1772810375648,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/02-task-workflow.spec.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772811976190,
       "type": "file"
     },
     {
