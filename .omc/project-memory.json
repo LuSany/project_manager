@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lastScanned": 1772717436705,
+  "lastScanned": 1772804214112,
   "projectRoot": "/home/sany/projects/project_manager",
   "techStack": {
     "languages": [
@@ -94,10 +94,7 @@
       "src",
       "tests"
     ],
-    "gitBranches": {
-      "defaultBranch": "main",
-      "branchingStrategy": null
-    }
+    "gitBranches": null
   },
   "customNotes": [],
   "directoryMap": {
@@ -105,14 +102,14 @@
       "path": "docker",
       "purpose": null,
       "fileCount": 0,
-      "lastAccessed": 1772717436689,
+      "lastAccessed": 1772804214094,
       "keyFiles": []
     },
     "docs": {
       "path": "docs",
       "purpose": "Documentation",
       "fileCount": 7,
-      "lastAccessed": 1772717436690,
+      "lastAccessed": 1772804214094,
       "keyFiles": [
         "CLARIFICATION_ANSWERS.md",
         "CLARIFICATION_QUESTIONS.md",
@@ -125,7 +122,7 @@
       "path": "playwright-report",
       "purpose": null,
       "fileCount": 1,
-      "lastAccessed": 1772717436698,
+      "lastAccessed": 1772804214102,
       "keyFiles": [
         "index.html"
       ]
@@ -134,7 +131,7 @@
       "path": "prisma",
       "purpose": null,
       "fileCount": 7,
-      "lastAccessed": 1772717436700,
+      "lastAccessed": 1772804214105,
       "keyFiles": [
         "dev.db",
         "password-reset-token.prisma",
@@ -147,7 +144,7 @@
       "path": "scripts",
       "purpose": "Build/utility scripts",
       "fileCount": 1,
-      "lastAccessed": 1772717436700,
+      "lastAccessed": 1772804214105,
       "keyFiles": [
         "start-test-fix.sh"
       ]
@@ -156,7 +153,7 @@
       "path": "src",
       "purpose": "Source code",
       "fileCount": 1,
-      "lastAccessed": 1772717436700,
+      "lastAccessed": 1772804214105,
       "keyFiles": [
         "middleware.ts"
       ]
@@ -165,7 +162,7 @@
       "path": "test-results",
       "purpose": null,
       "fileCount": 2,
-      "lastAccessed": 1772717436701,
+      "lastAccessed": 1772804214106,
       "keyFiles": [
         "junit.xml"
       ]
@@ -174,7 +171,7 @@
       "path": "tests",
       "purpose": "Test files",
       "fileCount": 5,
-      "lastAccessed": 1772717436701,
+      "lastAccessed": 1772804214106,
       "keyFiles": [
         "infrastructure.test.ts",
         "mock-tools.test.ts",
@@ -183,11 +180,22 @@
         "setup.ts"
       ]
     },
+    "playwright-report/data": {
+      "path": "playwright-report/data",
+      "purpose": "Data files",
+      "fileCount": 49,
+      "lastAccessed": 1772804214107,
+      "keyFiles": [
+        "050e19c448997cf8031f96f4438fe7ac154fed7c.png",
+        "0a35cfd0f9707c22972d922789bbf9278426abbe.md",
+        "192aa6623d463ee93d836a4b2e80eed487e1dc46.png"
+      ]
+    },
     "prisma/migrations": {
       "path": "prisma/migrations",
       "purpose": "Database migrations",
       "fileCount": 1,
-      "lastAccessed": 1772717436701,
+      "lastAccessed": 1772804214108,
       "keyFiles": [
         "migration_lock.toml"
       ]
@@ -196,21 +204,21 @@
       "path": "prisma/tests",
       "purpose": "Test files",
       "fileCount": 0,
-      "lastAccessed": 1772717436702,
+      "lastAccessed": 1772804214108,
       "keyFiles": []
     },
     "src/__tests__": {
       "path": "src/__tests__",
       "purpose": "Test files",
       "fileCount": 0,
-      "lastAccessed": 1772717436702,
+      "lastAccessed": 1772804214109,
       "keyFiles": []
     },
     "src/app": {
       "path": "src/app",
       "purpose": "Application code",
       "fileCount": 4,
-      "lastAccessed": 1772717436702,
+      "lastAccessed": 1772804214109,
       "keyFiles": [
         "globals.css",
         "layout.tsx",
@@ -221,14 +229,14 @@
       "path": "src/components",
       "purpose": "UI components",
       "fileCount": 0,
-      "lastAccessed": 1772717436703,
+      "lastAccessed": 1772804214109,
       "keyFiles": []
     },
     "src/lib": {
       "path": "src/lib",
       "purpose": "Library code",
       "fileCount": 10,
-      "lastAccessed": 1772717436703,
+      "lastAccessed": 1772804214110,
       "keyFiles": [
         "ai.ts",
         "auth.ts",
@@ -239,14 +247,14 @@
       "path": "src/middleware",
       "purpose": "Middleware",
       "fileCount": 0,
-      "lastAccessed": 1772717436703,
+      "lastAccessed": 1772804214110,
       "keyFiles": []
     },
     "src/types": {
       "path": "src/types",
       "purpose": "Type definitions",
       "fileCount": 10,
-      "lastAccessed": 1772717436704,
+      "lastAccessed": 1772804214110,
       "keyFiles": [
         "api.ts",
         "issue.ts",
@@ -257,7 +265,7 @@
       "path": "tests/data",
       "purpose": "Data files",
       "fileCount": 1,
-      "lastAccessed": 1772717436705,
+      "lastAccessed": 1772804214112,
       "keyFiles": [
         "test-db-manager.ts"
       ]
@@ -266,7 +274,7 @@
       "path": "tests/fixtures",
       "purpose": "Test fixtures",
       "fileCount": 1,
-      "lastAccessed": 1772717436705,
+      "lastAccessed": 1772804214112,
       "keyFiles": [
         "base-data.json"
       ]
@@ -275,7 +283,7 @@
       "path": "tests/helpers",
       "purpose": "Helper functions",
       "fileCount": 3,
-      "lastAccessed": 1772717436705,
+      "lastAccessed": 1772804214112,
       "keyFiles": [
         "assertions.ts",
         "test-data-factory.ts",
@@ -285,303 +293,153 @@
   },
   "hotPaths": [
     {
-      "path": "tests/helpers/test-data-factory.ts",
-      "accessCount": 11,
-      "lastAccessed": 1772727754284,
-      "type": "file"
-    },
-    {
-      "path": "docs/TECHNICAL_SPECIFICATION_V4.md",
-      "accessCount": 10,
-      "lastAccessed": 1772744043054,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/review-templates/[id]/route.ts",
+      "path": "src/app/api/v1/auth/login/route.ts",
       "accessCount": 8,
-      "lastAccessed": 1772723834714,
+      "lastAccessed": 1772810038183,
       "type": "file"
     },
     {
-      "path": "src/app/(main)/risks/page.tsx",
+      "path": "src/app/(auth)/login/page.tsx",
+      "accessCount": 8,
+      "lastAccessed": 1772810158891,
+      "type": "file"
+    },
+    {
+      "path": "test-results/admin-users-Admin-Users-Management-E2E-管理员应能访问用户管理页面-chromium/error-context.md",
       "accessCount": 7,
-      "lastAccessed": 1772728908303,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/notifications/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772726148952,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/tasks/[id]/status/route.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772726322190,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/settings/preferences/page.tsx",
-      "accessCount": 5,
-      "lastAccessed": 1772728874202,
-      "type": "file"
-    },
-    {
-      "path": "prisma/schema.prisma",
-      "accessCount": 5,
-      "lastAccessed": 1772741255601,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/preview/degradation.ts",
-      "accessCount": 4,
-      "lastAccessed": 1772723428091,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/logs/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772725213557,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/settings/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772728763332,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/settings/profile/page.tsx",
-      "accessCount": 4,
-      "lastAccessed": 1772728951780,
-      "type": "file"
-    },
-    {
-      "path": "src/app/projects/[id]/members/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772722171780,
-      "type": "file"
-    },
-    {
-      "path": "src",
-      "accessCount": 3,
-      "lastAccessed": 1772722589813,
-      "type": "directory"
-    },
-    {
-      "path": "src/components/tasks/task-status-badge.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772723166024,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/ai/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772724069995,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/email/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772724203354,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/templates/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772725308503,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/users/page.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772725407823,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/admin/layout.tsx",
-      "accessCount": 3,
-      "lastAccessed": 1772729051438,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/issues/[id]/resolve/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772720321066,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/notifications/preferences/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772720812275,
-      "type": "file"
-    },
-    {
-      "path": "src/components/ui/switch.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1772723213465,
-      "type": "file"
-    },
-    {
-      "path": "src/components/ui/tabs.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1772723272957,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/review-templates/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772723966736,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/notification.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772725992315,
-      "type": "directory"
-    },
-    {
-      "path": "src/components/tasks/TaskKanban.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1772726448410,
+      "lastAccessed": 1772810671946,
       "type": "file"
     },
     {
       "path": "src/hooks/useAuth.tsx",
+      "accessCount": 6,
+      "lastAccessed": 1772810475041,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/admin-users.spec.ts",
+      "accessCount": 6,
+      "lastAccessed": 1772810972837,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/01-user-registration-to-project.spec.ts",
+      "accessCount": 5,
+      "lastAccessed": 1772805782299,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/auth.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772805810327,
+      "type": "file"
+    },
+    {
+      "path": ".env.local",
       "accessCount": 2,
-      "lastAccessed": 1772726582355,
+      "lastAccessed": 1772804946999,
       "type": "file"
     },
     {
-      "path": "tests/mocks/prisma-mock.ts",
+      "path": "src/app/api/v1/auth/register/route.ts",
       "accessCount": 2,
-      "lastAccessed": 1772727923173,
+      "lastAccessed": 1772805810401,
       "type": "file"
     },
     {
-      "path": "tests/setup.mock.ts",
+      "path": "src/components/layout/Header.tsx",
       "accessCount": 2,
-      "lastAccessed": 1772728059493,
-      "type": "file"
-    },
-    {
-      "path": "src/app/providers.tsx",
-      "accessCount": 2,
-      "lastAccessed": 1772729223535,
-      "type": "file"
-    },
-    {
-      "path": "src/app",
-      "accessCount": 2,
-      "lastAccessed": 1772744043007,
-      "type": "directory"
-    },
-    {
-      "path": "",
-      "accessCount": 1,
-      "lastAccessed": 1772719336086,
-      "type": "directory"
-    },
-    {
-      "path": "src/app/api/v1/users/me/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772720730557,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/admin/users/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772721085719,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/admin/users/[id]/status/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772721124537,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/admin/users/[id]/role/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772721173559,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/ai/logs/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772721703541,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/preview/health/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772721875423,
-      "type": "file"
-    },
-    {
-      "path": "src/app/api/v1/risks/route.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772722031711,
+      "lastAccessed": 1772808283212,
       "type": "file"
     },
     {
       "path": "src/lib/api/client.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772722362139,
+      "accessCount": 2,
+      "lastAccessed": 1772808585926,
       "type": "file"
     },
     {
-      "path": "src/hooks/use-toast.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772723054513,
+      "path": "src/app/api/v1/users/me/route.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772810003169,
       "type": "file"
     },
     {
-      "path": "src/app/(main)/admin/projects/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772741518454,
+      "path": "src/app/(main)/admin/layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772810375648,
       "type": "file"
     },
     {
-      "path": "src/app/projects/[id]/milestones/page.tsx",
+      "path": "playwright.config.ts",
       "accessCount": 1,
-      "lastAccessed": 1772741589058,
+      "lastAccessed": 1772804314419,
       "type": "file"
     },
     {
-      "path": "src/app/projects/[id]/documents/page.tsx",
+      "path": "tests/setup.ts",
       "accessCount": 1,
-      "lastAccessed": 1772741659962,
+      "lastAccessed": 1772804883219,
       "type": "file"
     },
     {
-      "path": "src/app/projects/[id]/settings/page.tsx",
+      "path": "src/lib/prisma.ts",
       "accessCount": 1,
-      "lastAccessed": 1772741762153,
+      "lastAccessed": 1772804897398,
       "type": "file"
     },
     {
-      "path": "src/app/(main)/notifications/page.tsx",
+      "path": "src/app/(auth)/register/page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1772744138099,
+      "lastAccessed": 1772805483917,
       "type": "file"
     },
     {
-      "path": "src/app/(main)/reviews/page.tsx",
+      "path": "test-results/auth-用户注册-应该成功注册新用户-chromium/error-context.md",
       "accessCount": 1,
-      "lastAccessed": 1772744167101,
+      "lastAccessed": 1772805548263,
       "type": "file"
     },
     {
-      "path": "src/app/(main)/issues/page.tsx",
+      "path": "tests/seed.ts",
       "accessCount": 1,
-      "lastAccessed": 1772744208872,
+      "lastAccessed": 1772805566704,
       "type": "file"
     },
     {
-      "path": "src/app/tasks/page.tsx",
+      "path": "src/app/(main)/admin/users/page.tsx",
       "accessCount": 1,
-      "lastAccessed": 1772744324486,
+      "lastAccessed": 1772806964442,
+      "type": "file"
+    },
+    {
+      "path": "src/app/providers.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772808144146,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/layout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772808197426,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/AppLayout.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772808214168,
+      "type": "file"
+    },
+    {
+      "path": "test-results/auth-用户登录-应该拒绝无效凭据-chromium/error-context.md",
+      "accessCount": 1,
+      "lastAccessed": 1772809093169,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api/response.ts",
+      "accessCount": 1,
+      "lastAccessed": 1772809138928,
       "type": "file"
     }
   ],

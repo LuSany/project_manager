@@ -1,10 +1,18 @@
 import { test, expect } from "@playwright/test";
 
+// 生成唯一邮箱地址
+function generateUniqueEmail() {
+  const timestamp = Date.now();
+  const random = Math.random().toString(36).substring(7);
+  return `test-${timestamp}-${random}@example.com`;
+}
+
 // 测试用户注册流程
 test.describe("用户注册", () => {
   test("应该成功注册新用户", async ({ page }) => {
+    const uniqueEmail = generateUniqueEmail();
     await page.goto("/register");
-    await page.fill('input[name="email"]', "test@example.com");
+    await page.fill('input[name="email"]', uniqueEmail);
     await page.fill('input[name="password"]', "password123");
     await page.fill('input[name="confirmPassword"]', "password123");
     await page.fill('input[name="name"]', "测试用户");
@@ -22,8 +30,8 @@ test.describe("用户注册", () => {
     await page.fill('input[name="name"]', "重复用户");
     await page.click('button[type="submit"]');
 
-    // 应该显示错误消息
-    const errorMessage = page.getByText("邮箱已存在");
+    // 应该显示错误消息 - API返回"该邮箱已被注册"
+    const errorMessage = page.getByText("该邮箱已被注册");
     await expect(errorMessage).toBeVisible();
   });
 });

@@ -3,9 +3,11 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function LoginPage() {
   const router = useRouter()
+  const { login } = useAuth()
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -57,32 +59,14 @@ export default function LoginPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await fetch('/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (data.success) {
-        setSubmitSuccess(true)
-        // 保存token到localStorage（占位）
-        localStorage.setItem('token', data.token)
-        // 2秒后跳转到工作台
-        setTimeout(() => {
-          router.push('/dashboard')
-        }, 2000)
-      } else {
-        setErrors({ general: data.error?.message || '登录失败' })
-      }
-    } catch {
-      setErrors({ general: '网络错误，请稍后重试' })
+      await login(formData.email, formData.password)
+      setSubmitSuccess(true)
+      // 短暂延迟让 cookie 生效
+      await new Promise(resolve => setTimeout(resolve, 500))
+      // 跳转到工作台
+      router.push('/dashboard')
+    } catch (error) {
+      setErrors({ general: error instanceof Error ? error.message : '登录失败' })
     } finally {
       setIsSubmitting(false)
     }

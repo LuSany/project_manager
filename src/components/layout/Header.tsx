@@ -1,6 +1,11 @@
+"use client";
+
 import { Bell, Menu, Search, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export function Header() {
+  const { user } = useAuth();
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-blur] sticky top-0 z-50">
       {/* 顶部工具栏 */}
@@ -27,8 +32,13 @@ export function Header() {
             <User className="h-6 w-6" />
           </div>
           <div className="text-sm">
-            <p className="font-medium">张三</p>
-            <p className="text-muted-foreground text-xs">管理员</p>
+            <p className="font-medium">{user?.name || "未登录"}</p>
+            <p className="text-muted-foreground text-xs">
+              {user?.role === "ADMIN" ? "管理员" :
+               user?.role === "PROJECT_ADMIN" ? "项目管理员" :
+               user?.role === "PROJECT_OWNER" ? "项目所有者" :
+               user?.role === "PROJECT_MEMBER" ? "项目成员" : "普通员工"}
+            </p>
           </div>
         </div>
 

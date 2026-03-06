@@ -13,8 +13,8 @@ import * as path from 'path'
 test.describe('E2E-06: Complete File Management Workflow', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/login')
-    await page.fill('[name="email"]', 'test-admin@example.com')
-    await page.fill('[name="password"]', 'AdminPassword123!')
+    await page.fill('[name="email"]', 'admin@example.com')
+    await page.fill('[name="password"]', 'admin123')
     await page.click('button[type="submit"]')
   })
 

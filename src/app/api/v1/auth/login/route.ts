@@ -1,4 +1,4 @@
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
@@ -56,16 +56,39 @@ export async function POST(req: NextRequest) {
       .setExpirationTime("24h")
       .sign(secret);
 
-    // 返回成功响应
-    return ApiResponder.success({
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+    // 返回成功响应，并设置 cookie
+    const response = NextResponse.json({
+      success: true,
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+        },
+        token,
       },
-      token,
     });
+
+    // 设置 user-id cookie 用于后续认证
+    response.cookies.set('user-id', user.id, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    });
+
+    // 设置 token cookie（可选，用于双重认证）
+    response.cookies.set('auth-token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24, // 24 hours
+      path: '/',
+    });
+
+    return response;
   } catch (error) {
     // 处理验证错误
     if (error instanceof z.ZodError) {

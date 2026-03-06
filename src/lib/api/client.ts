@@ -16,6 +16,7 @@ export class ApiClient {
     const url = `${API_BASE}${endpoint}`;
 
     const response = await fetch(url, {
+      credentials: "include", // 确保包含 cookie
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,

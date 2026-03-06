@@ -4,8 +4,8 @@ test.describe('Project Features E2E', () => {
   test.beforeEach(async ({ page }) => {
     // 登录
     await page.goto('/login');
-    await page.fill('input[name="email"]', 'user@example.com');
-    await page.fill('input[name="password"]', 'user123');
+    await page.fill('input[name="email"]', 'test@example.com');
+    await page.fill('input[name="password"]', 'test123');
     await page.click('button[type="submit"]');
     await page.waitForURL('/dashboard');
   });
