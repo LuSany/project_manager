@@ -383,6 +383,12 @@
       "type": "file"
     },
     {
+      "path": "tests/e2e/project-features.spec.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772815837587,
+      "type": "file"
+    },
+    {
       "path": "playwright.config.ts",
       "accessCount": 1,
       "lastAccessed": 1772804314419,
