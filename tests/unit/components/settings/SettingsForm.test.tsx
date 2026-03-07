@@ -86,7 +86,7 @@ describe('ProfileForm', () => {
     });
   });
 
-  it'应能修改姓名', async () => {
+  it('应能修改姓名', async () => {
     const ProfilePage = (await import('@/app/(main)/settings/profile/page')).default;
     render(<ProfilePage />);
 
@@ -100,7 +100,7 @@ describe('ProfileForm', () => {
     expect(nameInput).toHaveValue('New Name');
   });
 
-  it'应能修改部门', async () => {
+  it('应能修改部门', async () => {
     const ProfilePage = (await import('@/app/(main)/settings/profile/page')).default;
     render(<ProfilePage />);
 
@@ -114,7 +114,7 @@ describe('ProfileForm', () => {
     expect(deptInput).toHaveValue('产品部');
   });
 
-  it'应能提交表单', async () => {
+  it('应能提交表单', async () => {
     const ProfilePage = (await import('@/app/(main)/settings/profile/page')).default;
     render(<ProfilePage />);
 
@@ -133,7 +133,7 @@ describe('ProfileForm', () => {
     });
   });
 
-  it'应显示加载状态', async () => {
+  it('应显示加载状态', async () => {
     const { api } = await import('@/lib/api/client');
     vi.mocked(api.put).mockImplementationOnce(() => new Promise(resolve => setTimeout(() => resolve({ success: true }), 100)));
 
@@ -196,7 +196,7 @@ describe('NotificationPreferences', () => {
     expect(screen.getByRole('switch', { name: /站内通知/i })).toBeInTheDocument();
   });
 
-  it'应能切换通知开关', async () => {
+  it('应能切换通知开关', async () => {
     const PreferencesPage = (await import('@/app/(main)/settings/preferences/page')).default;
     render(<PreferencesPage />);
 
@@ -214,7 +214,7 @@ describe('NotificationPreferences', () => {
     });
   });
 
-  it'应显示任务通知类型开关', async () => {
+  it('应显示任务通知类型开关', async () => {
     const PreferencesPage = (await import('@/app/(main)/settings/preferences/page')).default;
     render(<PreferencesPage />);
 
@@ -225,7 +225,7 @@ describe('NotificationPreferences', () => {
     expect(screen.getByText('任务分配通知')).toBeInTheDocument();
   });
 
-  it'应显示摘要通知选项', async () => {
+  it('应显示摘要通知选项', async () => {
     const PreferencesPage = (await import('@/app/(main)/settings/preferences/page')).default;
     render(<PreferencesPage />);
 

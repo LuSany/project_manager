@@ -293,21 +293,39 @@
   },
   "hotPaths": [
     {
+      "path": "tests/e2e/critical-flows/01-user-registration-to-project.spec.ts",
+      "accessCount": 12,
+      "lastAccessed": 1772858231199,
+      "type": "file"
+    },
+    {
       "path": "tests/e2e/admin-users.spec.ts",
       "accessCount": 11,
       "lastAccessed": 1772842764209,
       "type": "file"
     },
     {
+      "path": "tests/e2e/project-features.spec.ts",
+      "accessCount": 11,
+      "lastAccessed": 1772864491654,
+      "type": "file"
+    },
+    {
       "path": "src/app/api/v1/auth/login/route.ts",
-      "accessCount": 9,
-      "lastAccessed": 1772813887172,
+      "accessCount": 10,
+      "lastAccessed": 1772857952395,
       "type": "file"
     },
     {
       "path": "src/app/(auth)/login/page.tsx",
+      "accessCount": 9,
+      "lastAccessed": 1772857376809,
+      "type": "file"
+    },
+    {
+      "path": "src/hooks/useAuth.tsx",
       "accessCount": 8,
-      "lastAccessed": 1772810158891,
+      "lastAccessed": 1772857800856,
       "type": "file"
     },
     {
@@ -317,9 +335,9 @@
       "type": "file"
     },
     {
-      "path": "src/hooks/useAuth.tsx",
+      "path": "tests/e2e/critical-flows/02-task-workflow.spec.ts",
       "accessCount": 7,
-      "lastAccessed": 1772813887218,
+      "lastAccessed": 1772858669875,
       "type": "file"
     },
     {
@@ -329,15 +347,63 @@
       "type": "file"
     },
     {
-      "path": "tests/e2e/critical-flows/01-user-registration-to-project.spec.ts",
-      "accessCount": 5,
-      "lastAccessed": 1772805782299,
+      "path": "tests/e2e/auth.spec.ts",
+      "accessCount": 4,
+      "lastAccessed": 1772857372389,
       "type": "file"
     },
     {
-      "path": "tests/e2e/auth.spec.ts",
+      "path": "tests/e2e/critical-flows/03-requirement-workflow.spec.ts",
+      "accessCount": 4,
+      "lastAccessed": 1772858637661,
+      "type": "file"
+    },
+    {
+      "path": "src/lib/api/client.ts",
       "accessCount": 3,
-      "lastAccessed": 1772805810327,
+      "lastAccessed": 1772858070465,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/04-review-workflow.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772858350550,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/05-risk-workflow.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772858367197,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/06-file-management.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772858386053,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/07-email-workflow.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772858403375,
+      "type": "file"
+    },
+    {
+      "path": "tests/e2e/critical-flows/08-ai-analysis-workflow.spec.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772858439177,
+      "type": "file"
+    },
+    {
+      "path": "playwright.config.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772863931776,
+      "type": "file"
+    },
+    {
+      "path": "src/app/api/v1/auth/register/route.ts",
+      "accessCount": 3,
+      "lastAccessed": 1772864205716,
       "type": "file"
     },
     {
@@ -347,21 +413,9 @@
       "type": "file"
     },
     {
-      "path": "src/app/api/v1/auth/register/route.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772805810401,
-      "type": "file"
-    },
-    {
       "path": "src/components/layout/Header.tsx",
       "accessCount": 2,
       "lastAccessed": 1772808283212,
-      "type": "file"
-    },
-    {
-      "path": "src/lib/api/client.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772808585926,
       "type": "file"
     },
     {
@@ -377,27 +431,45 @@
       "type": "file"
     },
     {
-      "path": "tests/e2e/critical-flows/02-task-workflow.spec.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772811976190,
-      "type": "file"
-    },
-    {
-      "path": "tests/e2e/project-features.spec.ts",
-      "accessCount": 2,
-      "lastAccessed": 1772815837587,
-      "type": "file"
-    },
-    {
       "path": "test-results/admin-users-Admin-Users-Management-E2E-管理员应能查看用户列表-chromium/error-context.md",
       "accessCount": 2,
       "lastAccessed": 1772842303826,
       "type": "file"
     },
     {
-      "path": "playwright.config.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772804314419,
+      "path": "src/app/(auth)/register/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772857783181,
+      "type": "file"
+    },
+    {
+      "path": "tests/seed.ts",
+      "accessCount": 2,
+      "lastAccessed": 1772857974408,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/[id]/tasks/new/page.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772858650913,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/layout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772864295785,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/AppLayout.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772864304897,
+      "type": "file"
+    },
+    {
+      "path": "src/app/providers.tsx",
+      "accessCount": 2,
+      "lastAccessed": 1772864304968,
       "type": "file"
     },
     {
@@ -413,45 +485,15 @@
       "type": "file"
     },
     {
-      "path": "src/app/(auth)/register/page.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772805483917,
-      "type": "file"
-    },
-    {
       "path": "test-results/auth-用户注册-应该成功注册新用户-chromium/error-context.md",
       "accessCount": 1,
       "lastAccessed": 1772805548263,
       "type": "file"
     },
     {
-      "path": "tests/seed.ts",
-      "accessCount": 1,
-      "lastAccessed": 1772805566704,
-      "type": "file"
-    },
-    {
       "path": "src/app/(main)/admin/users/page.tsx",
       "accessCount": 1,
       "lastAccessed": 1772806964442,
-      "type": "file"
-    },
-    {
-      "path": "src/app/providers.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772808144146,
-      "type": "file"
-    },
-    {
-      "path": "src/app/(main)/layout.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772808197426,
-      "type": "file"
-    },
-    {
-      "path": "src/components/layout/AppLayout.tsx",
-      "accessCount": 1,
-      "lastAccessed": 1772808214168,
       "type": "file"
     },
     {
@@ -482,6 +524,72 @@
       "path": "test-results/admin-users-Admin-Users-Management-E2E-管理员应能修改用户角色-chromium/error-context.md",
       "accessCount": 1,
       "lastAccessed": 1772842682850,
+      "type": "file"
+    },
+    {
+      "path": "src/app/tasks/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772846226448,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/dashboard/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857377087,
+      "type": "file"
+    },
+    {
+      "path": "src/app/projects/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857383121,
+      "type": "file"
+    },
+    {
+      "path": "src/components/ui",
+      "accessCount": 1,
+      "lastAccessed": 1772857383232,
+      "type": "directory"
+    },
+    {
+      "path": "src/app",
+      "accessCount": 1,
+      "lastAccessed": 1772857389069,
+      "type": "directory"
+    },
+    {
+      "path": "src/app/projects/[id]/tasks/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857389156,
+      "type": "file"
+    },
+    {
+      "path": "src/components/layout/Sidebar.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857396516,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/reviews/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857401805,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/risks/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857401887,
+      "type": "file"
+    },
+    {
+      "path": "src/app/(main)/admin/ai/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857408192,
+      "type": "file"
+    },
+    {
+      "path": "src/app/requirements/page.tsx",
+      "accessCount": 1,
+      "lastAccessed": 1772857541156,
       "type": "file"
     }
   ],
