@@ -293,6 +293,12 @@
   },
   "hotPaths": [
     {
+      "path": "tests/e2e/admin-users.spec.ts",
+      "accessCount": 11,
+      "lastAccessed": 1772842764209,
+      "type": "file"
+    },
+    {
       "path": "src/app/api/v1/auth/login/route.ts",
       "accessCount": 9,
       "lastAccessed": 1772813887172,
@@ -314,12 +320,6 @@
       "path": "src/hooks/useAuth.tsx",
       "accessCount": 7,
       "lastAccessed": 1772813887218,
-      "type": "file"
-    },
-    {
-      "path": "tests/e2e/admin-users.spec.ts",
-      "accessCount": 6,
-      "lastAccessed": 1772810972837,
       "type": "file"
     },
     {
@@ -386,6 +386,12 @@
       "path": "tests/e2e/project-features.spec.ts",
       "accessCount": 2,
       "lastAccessed": 1772815837587,
+      "type": "file"
+    },
+    {
+      "path": "test-results/admin-users-Admin-Users-Management-E2E-管理员应能查看用户列表-chromium/error-context.md",
+      "accessCount": 2,
+      "lastAccessed": 1772842303826,
       "type": "file"
     },
     {
@@ -470,6 +476,12 @@
       "path": "test-results/settings-Personal-Settings-E2E-未登录用户不能访问设置页面-chromium/error-context.md",
       "accessCount": 1,
       "lastAccessed": 1772814851803,
+      "type": "file"
+    },
+    {
+      "path": "test-results/admin-users-Admin-Users-Management-E2E-管理员应能修改用户角色-chromium/error-context.md",
+      "accessCount": 1,
+      "lastAccessed": 1772842682850,
       "type": "file"
     }
   ],
