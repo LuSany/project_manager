@@ -58,6 +58,7 @@ describe('报告生成集成测试', () => {
 
       expect(report).toBeDefined()
       expect(report.reviewId).toBe(review.id)
+    })
 
     it('应该能查询评审的报告', async () => {
       const review = await createTestReview(testProject.id, testReviewType.id)
@@ -75,6 +76,7 @@ describe('报告生成集成测试', () => {
       })
 
       expect(analyses.length).toBe(1)
+    })
 
     it('应该能更新报告内容', async () => {
       const review = await createTestReview(testProject.id, testReviewType.id)
@@ -94,6 +96,7 @@ describe('报告生成集成测试', () => {
       })
 
       expect(updated.result).toContain('updated')
+    })
   })
 
   // ============================================
