@@ -51,7 +51,8 @@ test.describe('E2E-01: User Registration → Login → Create Project', () => {
 
     // Wait for redirect to dashboard
     await page.waitForURL(/\/dashboard/, { timeout: 15000 })
-    await expect(page.locator('h1')).toContainText('工作台')
+    // 新仪表盘 h1 显示问候语，验证页面已加载即可
+    await expect(page.locator('h1')).toBeVisible()
   })
 
   test('should create new project after login', async ({ page }) => {
@@ -120,8 +121,8 @@ test.describe('E2E-01: User Registration → Login → Create Project', () => {
     await page.click('button[type="submit"]')
     await page.waitForURL(/\/dashboard/, { timeout: 15000 })
 
-    // Verify dashboard loaded
-    await expect(page.locator('h1')).toContainText('工作台')
+    // Verify dashboard loaded - 新仪表盘 h1 显示问候语
+    await expect(page.locator('h1')).toBeVisible()
 
     // Create project
     await page.goto('/projects/new')
