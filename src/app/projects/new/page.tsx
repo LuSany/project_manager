@@ -64,7 +64,14 @@ export default function NewProjectPage() {
       if (data.success) {
         router.push(`/projects/${data.data.id}`);
       } else {
-        setError(data.error || "创建项目失败");
+        // 处理错误对象 - 可能是字符串或 { code, message } 对象
+        let errorMsg = "创建项目失败";
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (data.error && typeof data.error === 'object' && 'message' in data.error) {
+          errorMsg = (data.error as { message: string }).message;
+        }
+        setError(errorMsg);
       }
     } catch (error) {
       console.error("创建项目失败:", error);
