@@ -48,8 +48,9 @@ export default function ReviewsPage() {
 
   const fetchReviews = async () => {
     try {
-      const response = await api.get('/reviews?scope=mine')
-      setReviews((response as { data?: Review[] }).data || [])
+      const response = await api.get('/reviews')
+      const result = response as { data?: Review[]; meta?: { total: number } }
+      setReviews(result.data || [])
     } catch (error) {
       console.error('获取评审列表失败:', error)
     } finally {
