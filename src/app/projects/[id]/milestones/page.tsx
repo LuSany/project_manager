@@ -23,8 +23,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Calendar, CheckCircle2, ArrowLeft, Home, Edit, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Calendar, CheckCircle2, ArrowLeft, Home, Edit, Trash2, Link2 } from 'lucide-react'
 import Link from 'next/link'
 
 interface Task {
@@ -48,6 +49,13 @@ interface Milestone {
   }
 }
 
+interface ProjectTask {
+  id: string
+  title: string
+  status: string
+  milestoneId?: string | null
+}
+
 const statusColors: Record<string, string> = {
   NOT_STARTED: 'bg-gray-100 text-gray-800',
   IN_PROGRESS: 'bg-blue-100 text-blue-800',
@@ -62,6 +70,15 @@ const statusLabels: Record<string, string> = {
   CANCELLED: '已取消',
 }
 
+const taskStatusLabels: Record<string, string> = {
+  TODO: '待办',
+  IN_PROGRESS: '进行中',
+  REVIEW: '待审核',
+  TESTING: '测试中',
+  DONE: '已完成',
+  CANCELLED: '已取消',
+}
+
 export default function ProjectMilestonesPage({
   params,
 }: {
@@ -72,7 +89,11 @@ export default function ProjectMilestonesPage({
   const [projectId, setProjectId] = useState<string>('')
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [linkTaskDialogOpen, setLinkTaskDialogOpen] = useState(false)
   const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null)
+  const [linkingMilestone, setLinkingMilestone] = useState<Milestone | null>(null)
+  const [projectTasks, setProjectTasks] = useState<ProjectTask[]>([])
+  const [selectedTaskIds, setSelectedTaskIds] = useState<string[]>([])
   const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
@@ -102,6 +123,15 @@ export default function ProjectMilestonesPage({
       console.error('获取里程碑失败:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const fetchProjectTasks = async (pid: string) => {
+    try {
+      const response = await api.get(`/projects/${pid}/tasks`)
+      setProjectTasks((response as { data?: ProjectTask[] }).data || [])
+    } catch (error) {
+      console.error('获取项目任务失败:', error)
     }
   }
 
@@ -177,6 +207,57 @@ export default function ProjectMilestonesPage({
     } catch (error) {
       console.error('删除里程碑失败:', error)
       alert('删除里程碑失败')
+    }
+  }
+
+  const handleOpenLinkTaskDialog = async (milestone: Milestone) => {
+    setLinkingMilestone(milestone)
+    await fetchProjectTasks(projectId)
+    // 预选已关联的任务
+    const linkedTaskIds = milestone.tasks?.map(t => t.id) || []
+    setSelectedTaskIds(linkedTaskIds)
+    setLinkTaskDialogOpen(true)
+  }
+
+  const handleTaskSelection = (taskId: string, checked: boolean) => {
+    if (checked) {
+      setSelectedTaskIds(prev => [...prev, taskId])
+    } else {
+      setSelectedTaskIds(prev => prev.filter(id => id !== taskId))
+    }
+  }
+
+  const handleLinkTasks = async () => {
+    if (!linkingMilestone) return
+
+    setSubmitting(true)
+    try {
+      // 获取需要关联和取消关联的任务
+      const currentLinkedIds = linkingMilestone.tasks?.map(t => t.id) || []
+      const toLink = selectedTaskIds.filter(id => !currentLinkedIds.includes(id))
+      const toUnlink = currentLinkedIds.filter(id => !selectedTaskIds.includes(id))
+
+      // 并行执行关联和取消关联
+      const promises = [
+        ...toLink.map(taskId =>
+          api.post(`/milestones/${linkingMilestone.id}/tasks`, { taskId })
+        ),
+        ...toUnlink.map(taskId =>
+          api.delete(`/milestones/${linkingMilestone.id}/tasks?taskId=${taskId}`)
+        ),
+      ]
+
+      await Promise.all(promises)
+
+      setLinkTaskDialogOpen(false)
+      setLinkingMilestone(null)
+      setSelectedTaskIds([])
+      fetchMilestones(projectId)
+    } catch (error) {
+      console.error('关联任务失败:', error)
+      alert('关联任务失败')
+    } finally {
+      setSubmitting(false)
     }
   }
 
@@ -361,6 +442,64 @@ export default function ProjectMilestonesPage({
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* 关联任务对话框 */}
+        <Dialog open={linkTaskDialogOpen} onOpenChange={setLinkTaskDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>关联任务</DialogTitle>
+              <DialogDescription>
+                选择要关联到里程碑「{linkingMilestone?.title}」的任务
+              </DialogDescription>
+            </DialogHeader>
+            <div className="py-4">
+              {projectTasks.length === 0 ? (
+                <div className="text-center text-muted-foreground py-8">
+                  项目暂无任务，请先创建任务
+                </div>
+              ) : (
+                <div className="max-h-96 overflow-y-auto space-y-2">
+                  {projectTasks.map((task) => (
+                    <div
+                      key={task.id}
+                      className="flex items-center space-x-3 p-3 border rounded-lg hover:bg-gray-50"
+                    >
+                      <Checkbox
+                        id={`task-${task.id}`}
+                        checked={selectedTaskIds.includes(task.id)}
+                        onCheckedChange={(checked) => handleTaskSelection(task.id, checked as boolean)}
+                      />
+                      <label
+                        htmlFor={`task-${task.id}`}
+                        className="flex-1 cursor-pointer"
+                      >
+                        <div className="font-medium">{task.title}</div>
+                        <div className="text-sm text-muted-foreground">
+                          状态: {taskStatusLabels[task.status] || task.status}
+                        </div>
+                      </label>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setLinkTaskDialogOpen(false)}>
+                取消
+              </Button>
+              <Button onClick={handleLinkTasks} disabled={submitting || projectTasks.length === 0}>
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    处理中...
+                  </>
+                ) : (
+                  '确定'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {milestones.length === 0 ? (
@@ -399,6 +538,26 @@ export default function ProjectMilestonesPage({
                         </span>
                       )}
                     </div>
+                    {/* 显示关联的任务列表 */}
+                    {milestone.tasks && milestone.tasks.length > 0 && (
+                      <div className="mt-3 pt-3 border-t">
+                        <div className="text-sm font-medium mb-2">关联任务:</div>
+                        <div className="flex flex-wrap gap-2">
+                          {milestone.tasks.map((task) => (
+                            <Link
+                              key={task.id}
+                              href={`/projects/${projectId}/tasks/${task.id}`}
+                              className="inline-flex items-center px-2 py-1 bg-gray-100 rounded text-sm hover:bg-gray-200 transition-colors"
+                            >
+                              {task.title}
+                              <Badge variant="outline" className="ml-2 text-xs">
+                                {task.progress}%
+                              </Badge>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                   <div className="flex items-center gap-4">
                     <div className="text-right">
@@ -406,6 +565,14 @@ export default function ProjectMilestonesPage({
                       <p className="text-sm text-muted-foreground">完成进度</p>
                     </div>
                     <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleOpenLinkTaskDialog(milestone)}
+                        title="关联任务"
+                      >
+                        <Link2 className="h-4 w-4" />
+                      </Button>
                       <Button variant="outline" size="sm" onClick={() => handleEdit(milestone)}>
                         <Edit className="h-4 w-4" />
                       </Button>

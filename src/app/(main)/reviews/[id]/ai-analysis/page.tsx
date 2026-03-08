@@ -5,9 +5,6 @@ import { useParams } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, Home } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { ArrowLeft, Home } from 'lucide-react'
 
 interface AnalysisResult {
   completenessScore: number

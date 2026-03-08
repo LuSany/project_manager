@@ -1,0 +1,4 @@
+[    1333ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/api/v1/dashboard/activity?range=7d:0
+[    1367ms] [ERROR] 获取活动数据失败: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[    1531ms] [ERROR] 获取快捷数据失败: TypeError: _projectsData_data.slice is not a function
+    at QuickActions.useEffect.fetchData (http://localhost:3000/_next/static/chunks/src_74a1b703._.js:2395:161) @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
