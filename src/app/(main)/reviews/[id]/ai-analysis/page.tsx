@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, Home } from 'lucide-react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, Home } from 'lucide-react'
 
 interface AnalysisResult {
   completenessScore: number
@@ -119,6 +125,27 @@ export default function ReviewAiAnalysisPage() {
 
   return (
     <div className="mx-auto max-w-6xl p-8">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2 mb-4">
+        <Link href={`/reviews/${reviewId}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回评审
+          </Button>
+        </Link>
+        <Link href="/reviews">
+          <Button variant="ghost" size="sm" className="gap-1">
+            返回评审列表
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <Home className="h-4 w-4" />
+            工作台
+          </Button>
+        </Link>
+      </div>
+
       <h1 className="mb-8 text-3xl font-bold">AI 评审分析</h1>
 
       {error && <div className="mb-6 rounded bg-red-50 p-4 text-red-700">{error}</div>}

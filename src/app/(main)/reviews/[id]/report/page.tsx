@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { ArrowLeft, Home } from 'lucide-react'
 
 interface ReportData {
   review: {
@@ -59,6 +62,27 @@ export default function ReviewReportPage() {
 
   return (
     <div className="mx-auto max-w-4xl p-8">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2 mb-4">
+        <Link href={`/reviews/${reviewId}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回评审
+          </Button>
+        </Link>
+        <Link href="/reviews">
+          <Button variant="ghost" size="sm" className="gap-1">
+            返回评审列表
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <Home className="h-4 w-4" />
+            工作台
+          </Button>
+        </Link>
+      </div>
+
       <div className="mb-8">
         <h1 className="mb-2 text-3xl font-bold">{data.review.title}</h1>
         <p className="text-gray-600">
