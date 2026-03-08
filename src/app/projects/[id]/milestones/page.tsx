@@ -17,7 +17,8 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Calendar, CheckCircle2 } from 'lucide-react'
+import { Loader2, Plus, Calendar, CheckCircle2, ArrowLeft, Home } from 'lucide-react'
+import Link from 'next/link'
 
 interface Milestone {
   id: string
@@ -113,6 +114,22 @@ export default function ProjectMilestonesPage({
 
   return (
     <div className="space-y-6">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2">
+        <Link href={`/projects/${projectId}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回项目
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <Home className="h-4 w-4" />
+            工作台
+          </Button>
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">里程碑管理</h1>
