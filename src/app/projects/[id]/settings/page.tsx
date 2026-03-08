@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { api } from '@/lib/api/client'
-import { Loader2, Save } from 'lucide-react'
+import { Loader2, Save, ArrowLeft, Home } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
 
 interface Project {
@@ -116,6 +117,22 @@ export default function ProjectSettingsPage({
 
   return (
     <div className="space-y-6">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2">
+        <Link href={`/projects/${project?.id}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回项目
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <Home className="h-4 w-4" />
+            工作台
+          </Button>
+        </Link>
+      </div>
+
       <div>
         <h1 className="text-2xl font-bold">项目设置</h1>
         <p className="text-muted-foreground">管理项目基本信息和配置</p>

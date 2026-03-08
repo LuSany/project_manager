@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Home } from "lucide-react";
 
 interface Requirement {
   id: string;
@@ -118,6 +120,24 @@ export default function RequirementsPage({ params }: { params: Promise<{ id: str
   return (
     <div className="flex min-h-screen bg-background">
       <div className="flex-1 overflow-y-auto">
+        {/* 返回导航 */}
+        <div className="border-b bg-card px-6 py-2">
+          <div className="flex items-center gap-2">
+            <Link href={`/projects/${projectId}`}>
+              <Button variant="ghost" size="sm" className="gap-1">
+                <ArrowLeft className="h-4 w-4" />
+                返回项目
+              </Button>
+            </Link>
+            <Link href="/dashboard">
+              <Button variant="ghost" size="sm" className="gap-1">
+                <Home className="h-4 w-4" />
+                工作台
+              </Button>
+            </Link>
+          </div>
+        </div>
+
         <div className="border-b bg-card px-6 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold">需求列表</h1>

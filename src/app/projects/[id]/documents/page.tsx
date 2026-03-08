@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { api } from '@/lib/api/client'
-import { Loader2, Upload, Download, FileText, Image, File } from 'lucide-react'
+import { Loader2, Upload, Download, FileText, Image, File, ArrowLeft, Home } from 'lucide-react'
 
 interface Document {
   id: string
@@ -50,9 +51,11 @@ export default function ProjectDocumentsPage({
 }) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [loading, setLoading] = useState(true)
+  const [projectId, setProjectId] = useState<string>('')
 
   useEffect(() => {
     params.then((p) => {
+      setProjectId(p.id)
       fetchDocuments(p.id)
     })
   }, [params])
@@ -78,6 +81,22 @@ export default function ProjectDocumentsPage({
 
   return (
     <div className="space-y-6">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2">
+        <Link href={`/projects/${projectId}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回项目
+          </Button>
+        </Link>
+        <Link href="/dashboard">
+          <Button variant="ghost" size="sm" className="gap-1">
+            <Home className="h-4 w-4" />
+            工作台
+          </Button>
+        </Link>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">文档管理</h1>
