@@ -16,9 +16,23 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Calendar, CheckCircle2, ArrowLeft, Home } from 'lucide-react'
+import { Loader2, Plus, Calendar, CheckCircle2, ArrowLeft, Home, Edit, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+
+interface Task {
+  id: string
+  title: string
+  status: string
+  progress: number
+}
 
 interface Milestone {
   id: string
@@ -28,6 +42,7 @@ interface Milestone {
   progress: number
   dueDate?: string
   createdAt: string
+  tasks?: Task[]
   _count?: {
     tasks: number
   }
@@ -56,10 +71,19 @@ export default function ProjectMilestonesPage({
   const [loading, setLoading] = useState(true)
   const [projectId, setProjectId] = useState<string>('')
   const [dialogOpen, setDialogOpen] = useState(false)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    dueDate: '',
+  })
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    status: 'NOT_STARTED',
+    progress: 0,
     dueDate: '',
   })
 
@@ -101,6 +125,58 @@ export default function ProjectMilestonesPage({
       alert('创建里程碑失败')
     } finally {
       setSubmitting(false)
+    }
+  }
+
+  const handleEdit = (milestone: Milestone) => {
+    setEditingMilestone(milestone)
+    setEditFormData({
+      title: milestone.title,
+      description: milestone.description || '',
+      status: milestone.status,
+      progress: milestone.progress,
+      dueDate: milestone.dueDate ? milestone.dueDate.split('T')[0] : '',
+    })
+    setEditDialogOpen(true)
+  }
+
+  const handleUpdateMilestone = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editingMilestone) return
+
+    setSubmitting(true)
+    try {
+      const response = await api.put(`/milestones/${editingMilestone.id}`, {
+        title: editFormData.title,
+        description: editFormData.description,
+        status: editFormData.status,
+        progress: editFormData.progress,
+        dueDate: editFormData.dueDate ? new Date(editFormData.dueDate).toISOString() : undefined,
+      })
+      if ((response as { success?: boolean }).success) {
+        setEditDialogOpen(false)
+        setEditingMilestone(null)
+        fetchMilestones(projectId)
+      }
+    } catch (error) {
+      console.error('更新里程碑失败:', error)
+      alert('更新里程碑失败')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDeleteMilestone = async (id: string) => {
+    if (!confirm('确定要删除此里程碑吗？')) return
+
+    try {
+      const response = await api.delete(`/milestones/${id}`)
+      if ((response as { success?: boolean }).success) {
+        fetchMilestones(projectId)
+      }
+    } catch (error) {
+      console.error('删除里程碑失败:', error)
+      alert('删除里程碑失败')
     }
   }
 
@@ -198,6 +274,93 @@ export default function ProjectMilestonesPage({
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* 编辑里程碑对话框 */}
+        <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>编辑里程碑</DialogTitle>
+              <DialogDescription>
+                修改里程碑信息和状态
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdateMilestone}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-title">标题 *</Label>
+                  <Input
+                    id="edit-title"
+                    value={editFormData.title}
+                    onChange={(e) => setEditFormData({ ...editFormData, title: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-description">描述</Label>
+                  <Textarea
+                    id="edit-description"
+                    value={editFormData.description}
+                    onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+                    rows={3}
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-status">状态</Label>
+                    <Select
+                      value={editFormData.status}
+                      onValueChange={(value) => setEditFormData({ ...editFormData, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="NOT_STARTED">未开始</SelectItem>
+                        <SelectItem value="IN_PROGRESS">进行中</SelectItem>
+                        <SelectItem value="COMPLETED">已完成</SelectItem>
+                        <SelectItem value="CANCELLED">已取消</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="edit-progress">进度 (%)</Label>
+                    <Input
+                      id="edit-progress"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={editFormData.progress}
+                      onChange={(e) => setEditFormData({ ...editFormData, progress: parseInt(e.target.value) || 0 })}
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="edit-dueDate">截止日期</Label>
+                  <Input
+                    id="edit-dueDate"
+                    type="date"
+                    value={editFormData.dueDate}
+                    onChange={(e) => setEditFormData({ ...editFormData, dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setEditDialogOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      保存中...
+                    </>
+                  ) : (
+                    '保存'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {milestones.length === 0 ? (
@@ -227,7 +390,7 @@ export default function ProjectMilestonesPage({
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <CheckCircle2 className="h-4 w-4" />
-                        {milestone._count?.tasks || 0} 个任务
+                        {milestone._count?.tasks || milestone.tasks?.length || 0} 个任务
                       </span>
                       {milestone.dueDate && (
                         <span className="flex items-center gap-1">
@@ -237,9 +400,19 @@ export default function ProjectMilestonesPage({
                       )}
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-2xl font-bold">{milestone.progress}%</div>
-                    <p className="text-sm text-muted-foreground">完成进度</p>
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <div className="text-2xl font-bold">{milestone.progress}%</div>
+                      <p className="text-sm text-muted-foreground">完成进度</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" onClick={() => handleEdit(milestone)}>
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteMilestone(milestone.id)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </CardContent>
