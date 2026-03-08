@@ -22,7 +22,7 @@ interface RiskCardProps {
 
 export function RiskCard({ risk, onEdit, onDelete }: RiskCardProps) {
   const riskScore = risk.probability * risk.impact;
-  const isOverdue = risk.dueDate && new Date(risk.dueDate) < new Date() && risk.status !== "CLOSED" && risk.status !== "ACCEPTED";
+  const isOverdue = risk.dueDate && new Date(risk.dueDate) < new Date() && risk.status !== "RESOLVED" && risk.status !== "CLOSED";
 
   return (
     <Card className="p-4 hover:shadow-md transition-shadow">
@@ -110,7 +110,7 @@ export function RiskCard({ risk, onEdit, onDelete }: RiskCardProps) {
             编辑
           </Button>
         )}
-        {onDelete && risk.status !== "CLOSED" && risk.status !== "ACCEPTED" && (
+        {onDelete && risk.status !== "CLOSED" && risk.status !== "RESOLVED" && (
           <Button
             variant="ghost"
             size="sm"
