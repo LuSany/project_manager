@@ -15,7 +15,7 @@ const createRiskSchema = z.object({
   status: z.enum(['IDENTIFIED', 'ANALYZING', 'MITIGATING', 'MONITORING', 'RESOLVED', 'CLOSED']).optional(),
   mitigation: z.string().optional(),
   contingency: z.string().optional(),
-  dueDate: z.string().datetime().optional(),
+  dueDate: z.string().optional(), // 接受日期字符串或 ISO datetime
 })
 
 // GET /api/v1/projects/[id]/risks - 获取项目风险列表

@@ -9,8 +9,8 @@ const createProjectSchema = z.object({
   name: z.string().min(2, '项目名称至少 2 位').max(100, '项目名称最多 100 位'),
   description: z.string().optional(),
   status: z.enum(['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED']).default('PLANNING'),
-  startDate: z.string().datetime().optional(),
-  endDate: z.string().datetime().optional(),
+  startDate: z.string().optional(), // 接受日期字符串
+  endDate: z.string().optional(), // 接受日期字符串
 });
 
 export async function GET(request: NextRequest, context: any) {
@@ -34,22 +34,27 @@ export async function GET(request: NextRequest, context: any) {
   const page = parseInt(searchParams.get('page') || '1');
   const pageSize = parseInt(searchParams.get('pageSize') || '10');
   const status = searchParams.get('status') as any;
-  const ownerId = searchParams.get('ownerId');
 
+  // 构建查询条件：用户只能看到自己作为所有者或成员的项目，或者管理员可以看到所有项目
   const where: any = {};
+
   if (status) {
     where.status = status;
   }
-  // 只允许用户查看自己的项目
-  if (ownerId) {
-    where.ownerId = userId;
+
+  // 非管理员只能看到自己有权限的项目
+  if (user.role !== 'ADMIN') {
+    where.OR = [
+      { ownerId: userId },
+      { members: { some: { userId: userId } } }
+    ];
   }
 
   const skip = (page - 1) * pageSize;
   const take = pageSize;
 
   try {
-    const [projects, total] = await Promise.all([
+    const [total, projects] = await Promise.all([
       prisma.project.count({ where }),
       prisma.project.findMany({
         where,
@@ -62,6 +67,10 @@ export async function GET(request: NextRequest, context: any) {
               id: true,
               name: true,
             },
+          },
+          members: {
+            where: { userId: userId },
+            select: { role: true },
           },
         },
       }),
