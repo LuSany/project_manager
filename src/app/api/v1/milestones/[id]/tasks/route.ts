@@ -126,7 +126,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (task.projectId !== milestone.projectId) {
-      return ApiResponder.error('任务不属于此里程碑所在项目', 400)
+      return ApiResponder.error('INVALID_PROJECT', '任务不属于此里程碑所在项目')
     }
 
     // 更新任务的milestoneId
@@ -167,7 +167,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const taskId = searchParams.get('taskId')
 
     if (!taskId) {
-      return ApiResponder.error('缺少任务ID', 400)
+      return ApiResponder.error('MISSING_TASK_ID', '缺少任务ID')
     }
 
     const milestone = await prisma.milestone.findUnique({

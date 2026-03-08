@@ -1,1 +1,23 @@
 [    7127ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:3000/favicon.ico:0
+[ 9196425ms] [ERROR] ./src/app/projects/[id]/page.tsx:270:27
+Parsing ecmascript source code failed
+  268 |         </div>
+  269 |
+> 270 |         /* 快速操作 */}
+      |                           ^
+  271 |         <div className="flex flex-wrap gap-2 mb-6">
+  272 |           <Button asChild>
+  273 |             <Link href={`/projects/${projectId}/tasks/new`}>
+
+Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+
+Import traces:
+  Client Component Browser:
+    ./src/app/projects/[id]/page.tsx [Client Component Browser]
+    ./src/app/projects/[id]/page.tsx [Server Component]
+
+  Client Component SSR:
+    ./src/app/projects/[id]/page.tsx [Client Component SSR]
+    ./src/app/projects/[id]/page.tsx [Server Component] @ http://localhost:3000/_next/static/chunks/node_modules_next_dist_b0daae9a._.js:2359
+[ 9325679ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/projects/cmmhhbk3x000fk9b1fzscpbow?_rsc=18uux:0
+[ 9326174ms] [ERROR] Failed to load resource: the server responded with a status of 500 (Internal Server Error) @ http://localhost:3000/projects/cmmhhbk3x000fk9b1fzscpbow:0

@@ -6,13 +6,14 @@ import { z } from "zod";
 const updateTaskSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE', 'CANCELLED']).optional(),
+  status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE', 'CANCELLED', 'DELAYED', 'BLOCKED']).optional(),
   progress: z.number().min(0).max(100).optional(),
-  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'URGENT']).optional(),
-  startDate: z.string().optional(),
-  dueDate: z.string().optional(),
-  estimatedHours: z.number().optional(),
-  actualHours: z.number().optional(),
+  priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
+  startDate: z.string().optional().nullable(),
+  dueDate: z.string().optional().nullable(),
+  estimatedHours: z.number().optional().nullable(),
+  actualHours: z.number().optional().nullable(),
+  milestoneId: z.string().optional().nullable(),
 });
 
 // 辅助函数：获取已认证用户
@@ -58,6 +59,20 @@ export async function GET(
             name: true,
             ownerId: true,
           },
+        },
+        milestone: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        subTasks: {
+          select: {
+            id: true,
+            title: true,
+            completed: true,
+          },
+          orderBy: { createdAt: 'asc' },
         },
       },
     });
@@ -279,6 +294,7 @@ export async function PUT(
     if (validatedData.dueDate !== undefined) updateData.dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
     if (validatedData.estimatedHours !== undefined) updateData.estimatedHours = validatedData.estimatedHours;
     if (validatedData.actualHours !== undefined) updateData.actualHours = validatedData.actualHours;
+    if (validatedData.milestoneId !== undefined) updateData.milestoneId = validatedData.milestoneId || null;
 
     // 更新任务
     const updatedTask = await db.task.update({
@@ -300,6 +316,19 @@ export async function PUT(
           select: {
             id: true,
             name: true,
+          },
+        },
+        milestone: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },
+        subTasks: {
+          select: {
+            id: true,
+            title: true,
+            completed: true,
           },
         },
       },

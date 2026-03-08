@@ -16,7 +16,10 @@ import {
   Flag,
   FolderOpen,
   ListTodo,
-  TriangleAlert
+  TriangleAlert,
+  Users,
+  ClipboardCheck,
+  FileQuestion
 } from "lucide-react";
 
 interface Project {
@@ -275,19 +278,37 @@ export default function ProjectDetailPage() {
           <Button asChild variant="outline">
             <Link href={`/projects/${projectId}/milestones`}>
               <Flag className="h-4 w-4 mr-2" />
-              管理里程碑
+              里程碑
             </Link>
           </Button>
           <Button asChild variant="outline">
-            <Link href={`/projects/${projectId}/requirements/new`}>
+            <Link href={`/projects/${projectId}/requirements`}>
               <FileText className="h-4 w-4 mr-2" />
-              新建需求
+              需求管理
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/projects/${projectId}/reviews`}>
+              <ClipboardCheck className="h-4 w-4 mr-2" />
+              评审管理
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/projects/${projectId}/issues`}>
+              <FileQuestion className="h-4 w-4 mr-2" />
+              问题管理
             </Link>
           </Button>
           <Button asChild variant="outline">
             <Link href={`/projects/${projectId}/risks`}>
               <TriangleAlert className="h-4 w-4 mr-2" />
-              管理风险
+              风险管理
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href={`/projects/${projectId}/members`}>
+              <Users className="h-4 w-4 mr-2" />
+              成员管理
             </Link>
           </Button>
         </div>

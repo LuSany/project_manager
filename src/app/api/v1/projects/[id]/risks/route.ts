@@ -9,7 +9,7 @@ import { calculateRiskLevel } from '@/types/risk'
 const createRiskSchema = z.object({
   title: z.string().min(1, '风险标题不能为空'),
   description: z.string().optional(),
-  category: z.enum(['TECHNICAL', 'RESOURCE', 'SCHEDULE', 'BUDGET', 'EXTERNAL', 'MANAGEMENT', 'OTHER']).optional(),
+  category: z.enum(['TECHNICAL', 'RESOURCE', 'SCHEDULE', 'BUDGET', 'EXTERNAL', 'MANAGEMENT']).optional(),
   probability: z.number().int().min(1).max(5).optional(),
   impact: z.number().int().min(1).max(5).optional(),
   status: z.enum(['IDENTIFIED', 'ANALYZING', 'MITIGATING', 'MONITORING', 'RESOLVED', 'CLOSED']).optional(),

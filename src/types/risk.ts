@@ -19,7 +19,7 @@ export interface Risk {
   };
 }
 
-export type RiskCategory = "TECHNICAL" | "RESOURCE" | "SCHEDULE" | "BUDGET" | "EXTERNAL" | "MANAGEMENT" | "OTHER";
+export type RiskCategory = "TECHNICAL" | "RESOURCE" | "SCHEDULE" | "BUDGET" | "EXTERNAL" | "MANAGEMENT";
 
 export type RiskStatus = "IDENTIFIED" | "ANALYZING" | "MITIGATING" | "MONITORING" | "RESOLVED" | "CLOSED";
 
@@ -31,7 +31,7 @@ export const RISK_CATEGORY_LABELS: Record<RiskCategory, string> = {
   SCHEDULE: "进度风险",
   BUDGET: "预算风险",
   EXTERNAL: "外部风险",
-  OTHER: "其他",
+  MANAGEMENT: "管理风险",
 };
 
 export const RISK_STATUS_LABELS: Record<RiskStatus, string> = {

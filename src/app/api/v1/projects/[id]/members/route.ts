@@ -135,7 +135,7 @@ export async function POST(
     });
 
     if (existingMember) {
-      return ApiResponder.error("该用户已是项目成员", 400);
+      return ApiResponder.error("ALREADY_MEMBER", "该用户已是项目成员");
     }
 
     // 添加成员
@@ -193,7 +193,7 @@ export async function DELETE(
     const { userId } = body;
 
     if (!userId) {
-      return ApiResponder.error("缺少用户ID", 400);
+      return ApiResponder.error("MISSING_USER_ID", "缺少用户ID");
     }
 
     // 验证项目存在
@@ -219,7 +219,7 @@ export async function DELETE(
 
     // 不能移除项目所有者
     if (project.ownerId === userId) {
-      return ApiResponder.error("不能移除项目所有者", 400);
+      return ApiResponder.error("CANNOT_REMOVE_OWNER", "不能移除项目所有者");
     }
 
     // 删除成员关系
