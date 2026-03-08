@@ -24,7 +24,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Trash2, Loader2 } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, Search, User } from "lucide-react";
 
 interface Member {
   userId: string;
@@ -40,6 +40,15 @@ interface Project {
   ownerId: string;
 }
 
+interface SystemUser {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  department?: string;
+  position?: string;
+}
+
 export default function ProjectMembersPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: projectId } = use(params);
   const router = useRouter();
@@ -48,7 +57,12 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
   const [members, setMembers] = useState<Member[]>([]);
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [addingMember, setAddingMember] = useState(false);
-  const [newMemberEmail, setNewMemberEmail] = useState("");
+
+  // 用户选择相关状态
+  const [systemUsers, setSystemUsers] = useState<SystemUser[]>([]);
+  const [selectedUserId, setSelectedUserId] = useState("");
+  const [userSearch, setUserSearch] = useState("");
+  const [loadingUsers, setLoadingUsers] = useState(false);
   const [newMemberRole, setNewMemberRole] = useState("PROJECT_MEMBER");
 
   const fetchMembers = async () => {
@@ -76,20 +90,70 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
     }
   };
 
+  const fetchSystemUsers = async (search: string = "") => {
+    setLoadingUsers(true);
+    try {
+      const params = new URLSearchParams();
+      if (search) params.append("search", search);
+      params.append("excludeProjectId", projectId);
+      params.append("pageSize", "20");
+
+      const response = await fetch(`/api/v1/users?${params.toString()}`);
+      const data = await response.json();
+
+      if (data.success) {
+        setSystemUsers(data.data.data || []);
+      }
+    } catch (err) {
+      console.error("获取用户列表失败:", err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
   useEffect(() => {
     fetchMembers();
   }, [projectId]);
 
+  // 当对话框打开时加载用户列表
+  useEffect(() => {
+    if (addDialogOpen) {
+      fetchSystemUsers("");
+      setSelectedUserId("");
+      setUserSearch("");
+      setNewMemberRole("PROJECT_MEMBER");
+    }
+  }, [addDialogOpen]);
+
+  // 搜索防抖
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (addDialogOpen) {
+        fetchSystemUsers(userSearch);
+      }
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [userSearch, addDialogOpen]);
+
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!selectedUserId) {
+      alert("请选择要添加的用户");
+      return;
+    }
+
     setAddingMember(true);
 
     try {
+      const selectedUser = systemUsers.find(u => u.id === selectedUserId);
+
       const response = await fetch(`/api/v1/projects/${projectId}/members`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email: newMemberEmail,
+          email: selectedUser?.email,
           role: newMemberRole,
         }),
       });
@@ -99,10 +163,11 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
       if (data.success) {
         fetchMembers();
         setAddDialogOpen(false);
-        setNewMemberEmail("");
+        setSelectedUserId("");
+        setUserSearch("");
         setNewMemberRole("PROJECT_MEMBER");
       } else {
-        alert(data.error || "添加成员失败");
+        alert(data.error?.message || data.error || "添加成员失败");
       }
     } catch (error) {
       console.error("添加成员失败:", error);
@@ -127,7 +192,7 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
       if (data.success) {
         fetchMembers();
       } else {
-        alert(data.error || "移除成员失败");
+        alert(data.error?.message || data.error || "移除成员失败");
       }
     } catch (error) {
       console.error("移除成员失败:", error);
@@ -180,26 +245,75 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
               添加成员
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md">
             <DialogHeader>
               <DialogTitle>添加项目成员</DialogTitle>
               <DialogDescription>
-                添加新成员到项目并分配角色
+                从系统已注册用户中选择成员并分配角色
               </DialogDescription>
             </DialogHeader>
             <form onSubmit={handleAddMember} className="space-y-4">
-              <div>
-                <Label htmlFor="email">用户邮箱</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={newMemberEmail}
-                  onChange={(e) => setNewMemberEmail(e.target.value)}
-                  placeholder="请输入用户邮箱"
-                  required
-                />
+              {/* 用户搜索 */}
+              <div className="space-y-2">
+                <Label>搜索用户</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="输入姓名或邮箱搜索..."
+                    value={userSearch}
+                    onChange={(e) => setUserSearch(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
               </div>
-              <div>
+
+              {/* 用户选择 */}
+              <div className="space-y-2">
+                <Label>选择用户 *</Label>
+                {loadingUsers ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : systemUsers.length === 0 ? (
+                  <div className="text-center py-4 text-muted-foreground text-sm">
+                    {userSearch ? "未找到匹配的用户" : "暂无可添加的用户"}
+                  </div>
+                ) : (
+                  <div className="max-h-48 overflow-y-auto border rounded-md">
+                    {systemUsers.map((user) => (
+                      <div
+                        key={user.id}
+                        className={`flex items-center gap-3 p-3 cursor-pointer hover:bg-accent transition-colors ${
+                          selectedUserId === user.id ? "bg-accent" : ""
+                        }`}
+                        onClick={() => setSelectedUserId(user.id)}
+                      >
+                        <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
+                          {user.avatar ? (
+                            <img src={user.avatar} alt={user.name} className="w-8 h-8 rounded-full" />
+                          ) : (
+                            <User className="h-4 w-4 text-primary" />
+                          )}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium truncate">{user.name}</div>
+                          <div className="text-sm text-muted-foreground truncate">{user.email}</div>
+                        </div>
+                        {selectedUserId === user.id && (
+                          <div className="w-4 h-4 rounded-full bg-primary flex items-center justify-center">
+                            <svg className="w-3 h-3 text-primary-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* 角色选择 */}
+              <div className="space-y-2">
                 <Label>角色</Label>
                 <RoleSelect
                   value={newMemberRole}
@@ -208,6 +322,7 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   showDescription={false}
                 />
               </div>
+
               <DialogFooter>
                 <Button
                   type="button"
@@ -217,7 +332,7 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                 >
                   取消
                 </Button>
-                <Button type="submit" disabled={addingMember}>
+                <Button type="submit" disabled={addingMember || !selectedUserId}>
                   {addingMember && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {addingMember ? "添加中..." : "添加"}
                 </Button>
@@ -254,16 +369,21 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                   key={member.userId}
                   className="flex items-center justify-between p-4 border rounded-lg"
                 >
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-1">
-                      <span className="font-medium">{member.userName || member.userEmail}</span>
-                      {getRoleBadge(member.role)}
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-5 w-5 text-primary" />
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {member.userEmail}
-                    </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      加入时间：{new Date(member.joinedAt).toLocaleDateString("zh-CN")}
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-1">
+                        <span className="font-medium">{member.userName || member.userEmail}</span>
+                        {getRoleBadge(member.role)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {member.userEmail}
+                      </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        加入时间：{new Date(member.joinedAt).toLocaleDateString("zh-CN")}
+                      </div>
                     </div>
                   </div>
                   {member.role !== "PROJECT_OWNER" && (
