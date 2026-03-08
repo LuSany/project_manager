@@ -27,7 +27,8 @@ export default function ProjectsPage() {
       const data = await response.json();
 
       if (data.success) {
-        setProjects((prev) => [...prev, ...data.data.items]);
+        // 替换列表而不是追加，避免重复显示
+        setProjects(data.data.items);
       }
     } catch (error) {
       console.error("获取项目列表失败:", error);

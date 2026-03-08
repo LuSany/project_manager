@@ -1,12 +1,23 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Calendar, CheckCircle2, Clock } from 'lucide-react'
-import Link from 'next/link'
+import { Loader2, Plus, Calendar, CheckCircle2 } from 'lucide-react'
 
 interface Milestone {
   id: string
@@ -43,6 +54,13 @@ export default function ProjectMilestonesPage({
   const [milestones, setMilestones] = useState<Milestone[]>([])
   const [loading, setLoading] = useState(true)
   const [projectId, setProjectId] = useState<string>('')
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [submitting, setSubmitting] = useState(false)
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    dueDate: '',
+  })
 
   useEffect(() => {
     params.then((p) => {
@@ -62,6 +80,29 @@ export default function ProjectMilestonesPage({
     }
   }
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formData.title.trim()) {
+      alert('请输入里程碑标题')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      const response = await api.post(`/projects/${projectId}/milestones`, formData)
+      if ((response as { success?: boolean }).success) {
+        setDialogOpen(false)
+        setFormData({ title: '', description: '', dueDate: '' })
+        fetchMilestones(projectId)
+      }
+    } catch (error) {
+      console.error('创建里程碑失败:', error)
+      alert('创建里程碑失败')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -77,16 +118,75 @@ export default function ProjectMilestonesPage({
           <h1 className="text-2xl font-bold">里程碑管理</h1>
           <p className="text-muted-foreground">管理项目里程碑和关键节点</p>
         </div>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          新建里程碑
-        </Button>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              新建里程碑
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>新建里程碑</DialogTitle>
+              <DialogDescription>
+                为项目创建一个新的里程碑
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSubmit}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="title">标题 *</Label>
+                  <Input
+                    id="title"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="输入里程碑标题"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">描述</Label>
+                  <Textarea
+                    id="description"
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    placeholder="输入里程碑描述（可选）"
+                    rows={3}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="dueDate">截止日期</Label>
+                  <Input
+                    id="dueDate"
+                    type="date"
+                    value={formData.dueDate}
+                    onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setDialogOpen(false)}>
+                  取消
+                </Button>
+                <Button type="submit" disabled={submitting}>
+                  {submitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      创建中...
+                    </>
+                  ) : (
+                    '创建'
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {milestones.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground">
-            暂无里程碑数据
+            暂无里程碑数据，点击"新建里程碑"创建第一个里程碑
           </CardContent>
         </Card>
       ) : (
