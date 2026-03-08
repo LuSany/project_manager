@@ -28,7 +28,7 @@ export function WelcomeSection() {
 
   useEffect(() => {
     // 获取用户信息
-    const userInfo = localStorage.getItem('user')
+    const userInfo = localStorage.getItem('pm_user')
     if (userInfo) {
       try {
         setUser(JSON.parse(userInfo))

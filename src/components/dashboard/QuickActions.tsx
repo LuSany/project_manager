@@ -44,8 +44,8 @@ export function QuickActions() {
         // 获取最近项目
         const projectsRes = await fetch('/api/v1/projects?limit=3&sort=updatedAt')
         const projectsData = await projectsRes.json()
-        if (projectsData.success) {
-          setRecentProjects(projectsData.data?.slice(0, 3) || [])
+        if (projectsData.success && projectsData.data?.items) {
+          setRecentProjects(projectsData.data.items.slice(0, 3) || [])
         }
 
         // 获取即将到来的里程碑

@@ -180,8 +180,8 @@ export function StatsGrid({ loading }: StatsGridProps) {
           setStats({
             totalProjects: data.data.totalProjects || 0,
             activeProjects: data.data.activeProjects || 0,
-            completedTasks: data.data.completedTasks || 0,
-            highRisks: data.data.highRisks || 0
+            completedTasks: data.data.myTasksCount || 0,
+            highRisks: data.data.highRisksCount || 0
           })
         }
       } catch (e) {

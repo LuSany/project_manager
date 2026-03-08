@@ -76,13 +76,13 @@ export async function GET(request: NextRequest, context: any) {
       }),
     ]);
 
-    return NextResponse.json(success({
+    return success({
       items: projects,
       total: Number(total),
       page,
       pageSize,
       totalPages: Math.ceil(Number(total) / pageSize),
-    }));
+    });
   } catch (err) {
     console.error('获取项目列表失败:', err);
     return error('获取项目列表失败_ERROR', '获取项目列表失败', undefined, 500);
@@ -145,12 +145,12 @@ export async function POST(request: NextRequest) {
       },
       message: '项目创建成功',
     });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      console.error('项目创建验证失败:', error.issues);
-      return error('VALIDATION_ERROR', '请求数据验证失败', { issues: error.issues }, 400);
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      console.error('项目创建验证失败:', err.issues);
+      return error('VALIDATION_ERROR', '请求数据验证失败', { issues: err.issues }, 400);
     }
-    console.error('创建项目错误:', error);
+    console.error('创建项目错误:', err);
     return error('INTERNAL_ERROR', '创建项目失败', undefined, 500);
   }
 }
