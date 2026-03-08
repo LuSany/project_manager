@@ -63,7 +63,14 @@ export function RiskList({ projectId }: RiskListProps) {
       if (data.success) {
         setRisks((prev) => prev.filter((r) => r.id !== id));
       } else {
-        alert(data.error || "删除失败");
+        // 处理错误对象
+        let errorMsg = "删除失败";
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (data.error && typeof data.error === 'object' && 'message' in data.error) {
+          errorMsg = (data.error as { message: string }).message;
+        }
+        alert(errorMsg);
       }
     } catch (error) {
       console.error("删除风险失败:", error);

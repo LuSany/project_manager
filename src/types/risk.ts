@@ -19,9 +19,9 @@ export interface Risk {
   };
 }
 
-export type RiskCategory = "TECHNICAL" | "RESOURCE" | "SCHEDULE" | "BUDGET" | "EXTERNAL" | "OTHER";
+export type RiskCategory = "TECHNICAL" | "RESOURCE" | "SCHEDULE" | "BUDGET" | "EXTERNAL" | "MANAGEMENT" | "OTHER";
 
-export type RiskStatus = "OPEN" | "ANALYZING" | "MITIGATING" | "CLOSED" | "ACCEPTED";
+export type RiskStatus = "IDENTIFIED" | "ANALYZING" | "MITIGATING" | "MONITORING" | "RESOLVED" | "CLOSED";
 
 export type RiskLevel = "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
 
@@ -35,11 +35,12 @@ export const RISK_CATEGORY_LABELS: Record<RiskCategory, string> = {
 };
 
 export const RISK_STATUS_LABELS: Record<RiskStatus, string> = {
-  OPEN: "未处理",
+  IDENTIFIED: "已识别",
   ANALYZING: "分析中",
   MITIGATING: "缓解中",
+  MONITORING: "监控中",
+  RESOLVED: "已解决",
   CLOSED: "已关闭",
-  ACCEPTED: "已接受",
 };
 
 export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
@@ -50,11 +51,12 @@ export const RISK_LEVEL_LABELS: Record<RiskLevel, string> = {
 };
 
 export const RISK_STATUS_COLORS: Record<RiskStatus, string> = {
-  OPEN: "bg-gray-100 text-gray-800 border-gray-200",
+  IDENTIFIED: "bg-gray-100 text-gray-800 border-gray-200",
   ANALYZING: "bg-blue-100 text-blue-800 border-blue-200",
   MITIGATING: "bg-yellow-100 text-yellow-800 border-yellow-200",
+  MONITORING: "bg-purple-100 text-purple-800 border-purple-200",
+  RESOLVED: "bg-green-100 text-green-800 border-green-200",
   CLOSED: "bg-green-100 text-green-800 border-green-200",
-  ACCEPTED: "bg-purple-100 text-purple-800 border-purple-200",
 };
 
 export const RISK_LEVEL_COLORS: Record<RiskLevel, string> = {

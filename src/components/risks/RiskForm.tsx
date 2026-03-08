@@ -45,10 +45,10 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
   const [formData, setFormData] = useState({
     title: risk?.title || "",
     description: risk?.description || "",
-    category: risk?.category || "OTHER" as RiskCategory,
+    category: risk?.category || "TECHNICAL" as RiskCategory,
     probability: risk?.probability || 1,
     impact: risk?.impact || 1,
-    status: risk?.status || "OPEN" as RiskStatus,
+    status: risk?.status || "IDENTIFIED" as RiskStatus,
     owner: risk?.owner || "",
     dueDate: risk?.dueDate ? new Date(risk.dueDate).toISOString().split("T")[0] : "",
   });
@@ -62,10 +62,10 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
       setFormData({
         title: risk?.title || "",
         description: risk?.description || "",
-        category: risk?.category || "OTHER",
+        category: risk?.category || "TECHNICAL",
         probability: risk?.probability || 1,
         impact: risk?.impact || 1,
-        status: risk?.status || "OPEN",
+        status: risk?.status || "IDENTIFIED",
         owner: risk?.owner || "",
         dueDate: risk?.dueDate ? new Date(risk.dueDate).toISOString().split("T")[0] : "",
       });
@@ -95,14 +95,13 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
     try {
       const url = risk
         ? `/api/v1/risks/${risk.id}`
-        : "/api/v1/risks";
+        : `/api/v1/projects/${projectId}/risks`;
 
       const response = await fetch(url, {
         method: risk ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...formData,
-          projectId: risk ? undefined : projectId,
           dueDate: formData.dueDate || undefined,
           owner: formData.owner || undefined,
         }),
@@ -114,7 +113,21 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
         onOpenChange(false);
         onSuccess?.();
       } else {
-        alert(data.error || "操作失败");
+        // 处理错误对象 - 可能是字符串或 { code, message, details } 对象
+        let errorMsg = "操作失败";
+        if (typeof data.error === 'string') {
+          errorMsg = data.error;
+        } else if (data.error && typeof data.error === 'object' && 'message' in data.error) {
+          errorMsg = (data.error as { message: string }).message;
+        } else if (data.error && typeof data.error === 'object') {
+          // 如果是验证错误，显示详细信息
+          const details = data.error as Record<string, string>;
+          const messages = Object.values(details);
+          if (messages.length > 0) {
+            errorMsg = messages.join('\\n');
+          }
+        }
+        alert(errorMsg);
       }
     } catch (error) {
       console.error("提交失败:", error);
