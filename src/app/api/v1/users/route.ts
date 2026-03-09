@@ -19,8 +19,9 @@ export async function GET(req: NextRequest) {
     const pageSize = parseInt(searchParams.get("pageSize") || "50");
 
     // 构建查询条件
+    // 显示所有非禁用状态的用户（ACTIVE 和 PENDING）
     const where: any = {
-      status: "ACTIVE", // 只显示已激活的用户
+      status: { not: "DISABLED" },
     };
 
     if (search) {
