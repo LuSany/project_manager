@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, Home, Save, Loader2, History, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Save, Loader2, Plus, Trash2, TrendingUp } from "lucide-react";
 
 interface Task {
   id: string;
@@ -74,6 +74,20 @@ interface SubTask {
   completed: boolean;
 }
 
+interface ProgressHistory {
+  id: string;
+  progress: number;
+  status: string | null;
+  comment: string | null;
+  previousProgress: number | null;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+  };
+  createdAt: string;
+}
+
 const statusLabels: Record<string, string> = {
   TODO: "待办",
   IN_PROGRESS: "进行中",
@@ -112,9 +126,13 @@ export default function TaskDetailPage() {
   const [members, setMembers] = useState<Member[]>([]);
   const [milestones, setMilestones] = useState<Milestone[]>([]);
   const [subTasks, setSubTasks] = useState<SubTask[]>([]);
+  const [progressHistory, setProgressHistory] = useState<ProgressHistory[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
+  const [newProgress, setNewProgress] = useState("");
+  const [newComment, setNewComment] = useState("");
+  const [showProgressForm, setShowProgressForm] = useState(false);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -135,6 +153,7 @@ export default function TaskDetailPage() {
       fetchTask();
       fetchMembers();
       fetchMilestones();
+      fetchProgressHistory();
     }
   }, [taskId]);
 
@@ -187,6 +206,43 @@ export default function TaskDetailPage() {
       }
     } catch (error) {
       console.error("获取里程碑失败:", error);
+    }
+  };
+
+  const fetchProgressHistory = async () => {
+    try {
+      const response = await fetch(`/api/v1/tasks/${taskId}/progress-history`);
+      const data = await response.json();
+      if (data.success) {
+        setProgressHistory(data.data || []);
+      }
+    } catch (error) {
+      console.error("获取进展历史失败:", error);
+    }
+  };
+
+  const handleAddProgress = async () => {
+    if (!newProgress) return;
+
+    try {
+      const response = await fetch(`/api/v1/tasks/${taskId}/progress-history`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          progress: parseInt(newProgress),
+          comment: newComment || undefined,
+        }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setProgressHistory([data.data, ...progressHistory]);
+        setNewProgress("");
+        setNewComment("");
+        setShowProgressForm(false);
+        fetchTask(); // 刷新任务数据
+      }
+    } catch (error) {
+      console.error("添加进展记录失败:", error);
     }
   };
 
@@ -303,7 +359,6 @@ export default function TaskDetailPage() {
         </Link>
         <Link href="/dashboard">
           <Button variant="ghost" size="sm" className="gap-1">
-            <Home className="h-4 w-4" />
             工作台
           </Button>
         </Link>
@@ -594,13 +649,94 @@ export default function TaskDetailPage() {
       {/* 更新历史 */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="h-5 w-5" />
-            更新历史
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              进展记录
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowProgressForm(!showProgressForm)}
+            >
+              <Plus className="h-4 w-4 mr-1" />
+              添加进展
+            </Button>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 text-sm">
+          {/* 添加进展表单 */}
+          {showProgressForm && (
+            <div className="mb-4 p-4 border rounded-lg bg-slate-50 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="newProgress">进度 (%)</Label>
+                  <Input
+                    id="newProgress"
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={newProgress}
+                    onChange={(e) => setNewProgress(e.target.value)}
+                    placeholder="输入进度百分比"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="newComment">说明</Label>
+                  <Input
+                    id="newComment"
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="进展说明（可选）"
+                  />
+                </div>
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={handleAddProgress} disabled={!newProgress}>
+                  保存进展
+                </Button>
+                <Button variant="outline" onClick={() => setShowProgressForm(false)}>
+                  取消
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 进展历史列表 */}
+          <div className="space-y-3">
+            {progressHistory.length === 0 ? (
+              <div className="text-center py-4 text-muted-foreground">
+                暂无进展记录
+              </div>
+            ) : (
+              progressHistory.map((record) => (
+                <div
+                  key={record.id}
+                  className="flex items-start gap-3 p-3 border rounded-lg hover:bg-slate-50"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-blue-600">
+                        {record.previousProgress !== null
+                          ? `${record.previousProgress}% → ${record.progress}%`
+                          : `${record.progress}%`}
+                      </span>
+                      {record.status && (
+                        <Badge variant="outline">{statusLabels[record.status] || record.status}</Badge>
+                      )}
+                    </div>
+                    {record.comment && (
+                      <p className="text-sm text-muted-foreground mt-1">{record.comment}</p>
+                    )}
+                    <div className="text-xs text-muted-foreground mt-1">
+                      {record.user.name} · {new Date(record.createdAt).toLocaleString("zh-CN")}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+
+            {/* 任务创建记录 */}
             <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
               <div className="flex-1">
                 <div className="font-medium">任务创建</div>
@@ -609,16 +745,6 @@ export default function TaskDetailPage() {
                 </div>
               </div>
             </div>
-            {task.updatedAt !== task.createdAt && (
-              <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium">最后更新</div>
-                  <div className="text-muted-foreground">
-                    {new Date(task.updatedAt).toLocaleString("zh-CN")}
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
         </CardContent>
       </Card>

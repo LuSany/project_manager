@@ -46,6 +46,7 @@ model User {
   notificationIgnores     NotificationIgnore[]
   acceptedTasks           Task[]                   @relation("TaskAcceptor")
   requirementDiscussions  RequirementDiscussion[]
+  progressRecords         TaskProgressHistory[]    @relation("ProgressRecorder")
 
   @@index([email])
   @@map("users")
@@ -211,6 +212,8 @@ model Task {
   // 任务依赖关系
   dependencies TaskDependency[]        @relation("TaskDependents") // 当前任务依赖的其他任务
   dependents   TaskDependency[]        @relation("TaskDependencies") // 依赖当前任务的其他任务
+  // 任务进展历史
+  progressHistory TaskProgressHistory[]
 
   @@index([projectId])
   @@index([milestoneId])
@@ -296,6 +299,29 @@ enum DependencyType {
   START_TO_START // 前置任务开始后才能开始当前任务
   FINISH_TO_FINISH // 前置任务完成后才能完成当前任务
   START_TO_FINISH // 前置任务开始后才能完成当前任务
+}
+
+// ============================================================================
+// 任务进展历史
+// ============================================================================
+
+model TaskProgressHistory {
+  id          String   @id @default(cuid())
+  taskId      String
+  progress    Int      // 进度百分比 0-100
+  status      String?  // 状态变更（可选）
+  comment     String?  // 进展说明
+  previousProgress Int? // 之前的进度
+  userId      String   // 记录人
+  createdAt   DateTime @default(now())
+
+  // 关系
+  task Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user User @relation("ProgressRecorder", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+  @@map("task_progress_history")
 }
 
 // ============================================================================
