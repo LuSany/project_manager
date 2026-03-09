@@ -133,41 +133,31 @@ export default function RequirementDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   if (!requirement) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <div className="flex-1 overflow-y-auto">
-          <div className="flex items-center justify-center h-64">
-            <p className="text-muted-foreground">需求不存在</p>
-          </div>
-        </div>
+      <div className="flex items-center justify-center h-64">
+        <p className="text-muted-foreground">需求不存在</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">需求详情</h1>
-            <button
-              onClick={() => router.back()}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              ← 返回
-            </button>
-          </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">需求详情</h1>
+        <button
+          onClick={() => router.back()}
+          className="text-muted-foreground hover:text-foreground text-sm"
+        >
+          ← 返回
+        </button>
+      </div>
 
           <Card>
             <CardHeader>
@@ -286,8 +276,6 @@ export default function RequirementDetailPage() {
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
     </div>
   );
 }

@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Home } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 
 interface Requirement {
   id: string;
@@ -118,70 +118,61 @@ export default function RequirementsPage({ params }: { params: Promise<{ id: str
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <div className="flex-1 overflow-y-auto">
-        {/* 返回导航 */}
-        <div className="border-b bg-card px-6 py-2">
-          <div className="flex items-center gap-2">
-            <Link href={`/projects/${projectId}`}>
-              <Button variant="ghost" size="sm" className="gap-1">
-                <ArrowLeft className="h-4 w-4" />
-                返回项目
-              </Button>
-            </Link>
-            <Link href="/dashboard">
-              <Button variant="ghost" size="sm" className="gap-1">
-                <Home className="h-4 w-4" />
-                工作台
-              </Button>
-            </Link>
-          </div>
-        </div>
+    <div className="space-y-6">
+      {/* 返回导航 */}
+      <div className="flex items-center gap-2">
+        <Link href={`/projects/${projectId}`}>
+          <Button variant="ghost" size="sm" className="gap-1">
+            <ArrowLeft className="h-4 w-4" />
+            返回项目
+          </Button>
+        </Link>
+      </div>
 
-        <div className="border-b bg-card px-6 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold">需求列表</h1>
-            <Button
-              onClick={() => router.push(`/projects/${projectId}/requirements/new`)}
-            >
-              新建需求
-            </Button>
-          </div>
+      {/* 标题和操作 */}
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">需求列表</h1>
+        <Button
+          onClick={() => router.push(`/projects/${projectId}/requirements/new`)}
+        >
+          新建需求
+        </Button>
+      </div>
 
-          <div className="flex items-center gap-4 mt-4">
-            <select
-              value={filterStatus}
-              onChange={(e) => {
-                setFilterStatus(e.target.value);
-                setPage(1);
-              }}
-              className="border border-border rounded-md px-3 py-2 bg-background"
-            >
-              <option value="">全部状态</option>
-              <option value="PENDING">待审批</option>
-              <option value="APPROVED">已批准</option>
-              <option value="REJECTED">已拒绝</option>
-              <option value="IN_PROGRESS">进行中</option>
-              <option value="COMPLETED">已完成</option>
-            </select>
+      {/* 筛选器 */}
+      <div className="flex items-center gap-4">
+        <select
+          value={filterStatus}
+          onChange={(e) => {
+            setFilterStatus(e.target.value);
+            setPage(1);
+          }}
+          className="border border-border rounded-md px-3 py-2 bg-background"
+        >
+          <option value="">全部状态</option>
+          <option value="PENDING">待审批</option>
+          <option value="APPROVED">已批准</option>
+          <option value="REJECTED">已拒绝</option>
+          <option value="IN_PROGRESS">进行中</option>
+          <option value="COMPLETED">已完成</option>
+        </select>
 
-            <select
-              value={filterPriority}
-              onChange={(e) => {
-                setFilterPriority(e.target.value);
-                setPage(1);
-              }}
-              className="border border-border rounded-md px-3 py-2 bg-background"
-            >
-              <option value="">全部优先级</option>
-              <option value="LOW">低</option>
-              <option value="MEDIUM">中</option>
-              <option value="HIGH">高</option>
-            </select>
-          </div>
-        </div>
+        <select
+          value={filterPriority}
+          onChange={(e) => {
+            setFilterPriority(e.target.value);
+            setPage(1);
+          }}
+          className="border border-border rounded-md px-3 py-2 bg-background"
+        >
+          <option value="">全部优先级</option>
+          <option value="LOW">低</option>
+          <option value="MEDIUM">中</option>
+          <option value="HIGH">高</option>
+        </select>
+      </div>
 
-        <div className="p-6">
+      {/* 内容区 */}
           {loading ? (
             <div className="flex items-center justify-center h-64">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -261,7 +252,5 @@ export default function RequirementsPage({ params }: { params: Promise<{ id: str
             </div>
           )}
         </div>
-      </div>
-    </div>
   );
 }

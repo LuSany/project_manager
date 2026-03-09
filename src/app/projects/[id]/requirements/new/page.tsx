@@ -56,18 +56,16 @@ export default function NewRequirementPage({ params }: { params: Promise<{ id: s
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-2xl mx-auto p-6">
-          <div className="mb-6">
-            <h1 className="text-3xl font-bold mb-2">新建需求</h1>
-            <button
-              onClick={() => router.back()}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              ← 返回
-            </button>
-          </div>
+    <div className="max-w-2xl mx-auto space-y-6">
+      <div className="flex items-center justify-between">
+        <h1 className="text-2xl font-bold">新建需求</h1>
+        <button
+          onClick={() => router.back()}
+          className="text-muted-foreground hover:text-foreground text-sm"
+        >
+          ← 返回
+        </button>
+      </div>
 
           <Card>
             <CardHeader>
@@ -136,8 +134,6 @@ export default function NewRequirementPage({ params }: { params: Promise<{ id: s
               </form>
             </CardContent>
           </Card>
-        </div>
-      </div>
     </div>
   );
 }
