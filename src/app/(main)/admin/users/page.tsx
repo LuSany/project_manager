@@ -104,9 +104,14 @@ export default function UsersAdminPage() {
       const data = await response.json()
       if (data.success) {
         setUsers(data.data || [])
+      } else {
+        console.error('获取用户列表失败:', data.error)
+        // 如果API返回错误，显示错误信息
+        alert(data.error?.message || '获取用户列表失败')
       }
     } catch (error) {
       console.error('获取用户列表失败:', error)
+      alert('获取用户列表失败，请检查网络连接')
     } finally {
       setLoading(false)
     }

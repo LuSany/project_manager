@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    return NextResponse.json(success(users))
+    return success(users)
   } catch (err) {
     console.error('获取用户列表失败:', err)
     return error('GET_USERS_ERROR', '获取用户列表失败', undefined, 500)
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json(success(user))
+    return success(user)
   } catch (err) {
     if (err instanceof z.ZodError) {
       return error('VALIDATION_ERROR', '数据验证失败', err.issues as any, 400)
