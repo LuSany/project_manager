@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  Calendar,
   CheckCircle2,
   Circle,
   Clock,
@@ -136,7 +135,7 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <div className="flex flex-col items-center gap-4">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
           <p className="text-muted-foreground">加载中...</p>
@@ -147,7 +146,7 @@ export default function ProjectDetailPage() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle className="text-destructive">加载失败</CardTitle>
@@ -165,7 +164,7 @@ export default function ProjectDetailPage() {
 
   if (!project) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex items-center justify-center py-12">
         <Card className="max-w-md">
           <CardHeader>
             <CardTitle>项目不存在</CardTitle>
@@ -182,39 +181,38 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="space-y-6">
       {/* 顶部导航栏 */}
-      <div className="border-b bg-card px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => window.history.back()}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              返回
-            </Button>
-            <div>
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              <div className="flex items-center gap-2 mt-1">
-                {getStatusBadge(project.status)}
-                <span className="text-sm text-muted-foreground">
-                  所有者：{project.owner.name}
-                </span>
-              </div>
-            </div>
-          </div>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" size="sm" onClick={() => router.push('/projects')}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            返回项目列表
+          </Button>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/projects/${projectId}/settings`}>设置</Link>
+          </Button>
+        </div>
+      </div>
 
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/projects/${projectId}/settings`}>设置</Link>
-            </Button>
-          </div>
+      {/* 项目标题 */}
+      <div>
+        <h1 className="text-2xl font-bold">{project.name}</h1>
+        <div className="flex items-center gap-2 mt-1">
+          {getStatusBadge(project.status)}
+          <span className="text-sm text-muted-foreground">
+            所有者：{project.owner.name}
+          </span>
         </div>
       </div>
 
       {/* 主要内容 */}
-      <div className="container mx-auto py-6 px-6">
+      <div className="space-y-6">
         {/* 项目描述 */}
         {project.description && (
-          <Card className="mb-6">
+          <Card>
             <CardHeader>
               <CardTitle>项目描述</CardTitle>
             </CardHeader>
@@ -225,7 +223,7 @@ export default function ProjectDetailPage() {
         )}
 
         {/* 统计卡片 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium">任务</CardTitle>
@@ -268,7 +266,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* 快速操作 */}
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div className="flex flex-wrap gap-2">
           <Button asChild>
             <Link href={`/projects/${projectId}/tasks/new`}>
               <ListTodo className="h-4 w-4 mr-2" />
@@ -314,7 +312,7 @@ export default function ProjectDetailPage() {
         </div>
 
         {/* 最近任务 */}
-        <Card className="mb-6">
+        <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>最近任务</CardTitle>

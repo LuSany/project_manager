@@ -4,11 +4,8 @@ import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CreateReviewDialog } from '@/components/views/CreateReviewDialog';
-import { MaterialUpload } from '@/components/views/MaterialUpload';
-import { AddParticipant } from '@/components/views/AddParticipant';
-import { ReviewItemForm } from '@/components/views/ReviewItemForm';
 import { ReviewList } from '@/components/views/ReviewList';
-import { ArrowLeft, Home } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 
 interface Review {
   id: string;
@@ -82,24 +79,18 @@ export default function ReviewsPage({
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
+    <div className="space-y-6">
       {/* 返回导航 */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-4">
         <Link href={`/projects/${id}`}>
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="h-4 w-4" />
             返回项目
           </Button>
         </Link>
-        <Link href="/dashboard">
-          <Button variant="ghost" size="sm" className="gap-1">
-            <Home className="h-4 w-4" />
-            工作台
-          </Button>
-        </Link>
       </div>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">评审管理</h1>
         <div className="flex gap-2">
           <CreateReviewDialog projectId={id} onSuccess={fetchReviews} />

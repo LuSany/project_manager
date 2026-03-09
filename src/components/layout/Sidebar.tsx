@@ -1,7 +1,5 @@
 import { useState, useEffect } from "react";
 import {
-  LayoutDashboard,
-  LayoutList,
   Folder,
   Calendar,
   Settings,
@@ -10,9 +8,12 @@ import {
   CheckSquare,
   AlertCircle,
   Menu,
-  Shield,
+  Clock,
+  LayoutDashboard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 interface NavItem {
   title: string;
@@ -55,6 +56,11 @@ const navItems: NavItem[] = [
     path: "/issues",
   },
   {
+    title: "机时管理",
+    icon: Clock,
+    path: "/timesheet",
+  },
+  {
     title: "用户管理",
     icon: Users,
     path: "/admin/users",
@@ -72,6 +78,7 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
   const [internalCollapsed, setInternalCollapsed] = useState(false);
   const [userRole, setUserRole] = useState<string | null>(null);
   const collapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed;
+  const pathname = usePathname();
 
   // 获取当前用户角色
   useEffect(() => {
@@ -91,6 +98,13 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
 
   const isAdmin = userRole === 'ADMIN';
 
+  const isActive = (path: string) => {
+    if (path === '/dashboard') {
+      return pathname === '/dashboard' || pathname === '/';
+    }
+    return pathname.startsWith(path);
+  };
+
   return (
     <aside
       className={cn(
@@ -101,12 +115,12 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
     >
       {/* 侧边栏头部 */}
       <div className="flex h-16 items-center justify-between px-4 border-b">
-        <div className="flex items-center gap-2">
+        <Link href="/dashboard" className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
             <span className="text-xl font-bold">PM</span>
           </div>
           {!collapsed && <span className="font-semibold text-foreground">项目管理</span>}
-        </div>
+        </Link>
         <button
           onClick={() => {
             const newCollapsed = !collapsed;
@@ -124,10 +138,15 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
         {navItems
           .filter((item) => !item.adminOnly || isAdmin)
           .map((item) => (
-            <a
+            <Link
               key={item.path}
               href={item.path}
-              className="flex items-center gap-3 px-3 py-2 rounded-md hover:bg-accent text-sm transition-colors"
+              className={cn(
+                "flex items-center gap-3 px-3 py-2 rounded-md text-sm transition-colors",
+                isActive(item.path)
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "hover:bg-accent"
+              )}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
               <span className={collapsed ? "hidden" : "block"}>
@@ -138,19 +157,24 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
                   {item.badge}
                 </span>
               )}
-            </a>
+            </Link>
           ))}
       </nav>
 
       {/* 侧边栏底部 */}
       <div className="mt-auto border-t p-4">
-        <a
+        <Link
           href="/settings"
-          className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent text-sm transition-colors"
+          className={cn(
+            "flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors",
+            pathname.startsWith('/settings')
+              ? "bg-primary/10 text-primary font-medium"
+              : "hover:bg-accent"
+          )}
         >
           <Settings className="h-5 w-5 flex-shrink-0" />
           <span className={collapsed ? "hidden" : "block"}>设置</span>
-        </a>
+        </Link>
       </div>
     </aside>
   );

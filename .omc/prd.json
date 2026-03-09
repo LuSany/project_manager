@@ -1,0 +1,56 @@
+{
+  "project": "project_manager",
+  "branchName": "ralph/frontend-fixes",
+  "description": "前端页面问题修复和布局重构",
+  "userStories": [
+    {
+      "id": "US-001",
+      "title": "修复项目跳转导航问题",
+      "description": "作为用户，我希望在工作台点击项目时能正确导航并保持统一的布局导航功能。",
+      "acceptanceCriteria": [
+        "点击项目卡片后能正确跳转到项目详情页",
+        "项目详情页有完整的侧边栏导航",
+        "导航功能正常工作，不丢失上下文"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "US-002",
+      "title": "修复评审管理功能报错",
+      "description": "作为用户，我希望能够正常访问项目内的评审管理功能而不出现错误。",
+      "acceptanceCriteria": [
+        "评审管理页面能正常加载",
+        "评审相关API返回正确响应",
+        "无控制台错误"
+      ],
+      "priority": 1,
+      "passes": false
+    },
+    {
+      "id": "US-003",
+      "title": "参考PingCode重新设计页面布局",
+      "description": "作为用户，我希望有现代化、专业的项目管理界面布局，参考PingCode等开源项目的设计。",
+      "acceptanceCriteria": [
+        "侧边栏导航清晰易用",
+        "工作台页面布局合理",
+        "响应式设计支持",
+        "整体UI风格统一专业"
+      ],
+      "priority": 2,
+      "passes": false
+    },
+    {
+      "id": "US-004",
+      "title": "添加机时管理功能",
+      "description": "作为用户，我希望能在工作台访问机时管理功能，进行测试资源申请和分配。",
+      "acceptanceCriteria": [
+        "侧边栏有机时管理入口",
+        "机时管理页面可用",
+        "支持基本的机时申请和查看功能"
+      ],
+      "priority": 2,
+      "passes": false
+    }
+  ]
+}
