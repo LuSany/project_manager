@@ -68,7 +68,7 @@ export async function GET(
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
-    return NextResponse.json(success(user))
+    return success(user)
   } catch (err) {
     console.error('获取用户详情失败:', err)
     return error('GET_USER_ERROR', '获取用户详情失败', undefined, 500)
@@ -138,7 +138,7 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json(success(user))
+    return success(user)
   } catch (err) {
     if (err instanceof z.ZodError) {
       return error('VALIDATION_ERROR', '数据验证失败', err.issues as any, 400)
@@ -216,7 +216,7 @@ export async function DELETE(
       })
     })
 
-    return NextResponse.json(success({ message: '用户已删除' }))
+    return success({ message: '用户已删除' })
   } catch (err) {
     console.error('删除用户失败:', err)
     return error('DELETE_USER_ERROR', '删除用户失败', undefined, 500)

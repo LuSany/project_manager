@@ -56,7 +56,7 @@ export async function PUT(
       },
     })
 
-    return NextResponse.json(success(user))
+    return success(user)
   } catch (err) {
     if (err instanceof z.ZodError) {
       return error('VALIDATION_ERROR', err.issues[0].message, undefined, 400)
