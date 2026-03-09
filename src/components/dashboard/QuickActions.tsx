@@ -10,7 +10,9 @@ import {
   Clock,
   ArrowRight,
   Star,
-  Zap
+  Zap,
+  Users,
+  Shield
 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -33,14 +35,27 @@ interface Milestone {
   }
 }
 
+interface UserInfo {
+  id: string
+  role: string
+}
+
 export function QuickActions() {
   const [recentProjects, setRecentProjects] = useState<RecentProject[]>([])
   const [upcomingMilestones, setUpcomingMilestones] = useState<Milestone[]>([])
+  const [currentUser, setCurrentUser] = useState<UserInfo | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 获取当前用户信息
+        const userRes = await fetch('/api/v1/users/me')
+        const userData = await userRes.json()
+        if (userData.success) {
+          setCurrentUser(userData.data)
+        }
+
         // 获取最近项目
         const projectsRes = await fetch('/api/v1/projects?limit=3&sort=updatedAt')
         const projectsData = await projectsRes.json()
@@ -92,6 +107,12 @@ export function QuickActions() {
     { icon: Star, label: '我的收藏', href: '/favorites', color: 'text-amber-500' }
   ]
 
+  // 管理员入口
+  const adminLinks = currentUser?.role === 'ADMIN' ? [
+    { icon: Users, label: '用户管理', href: '/admin/users', color: 'text-rose-500' },
+    { icon: Shield, label: '管理控制台', href: '/admin', color: 'text-slate-500' },
+  ] : []
+
   return (
     <Card className="shadow-sm h-full">
       <CardHeader className="pb-3">
@@ -116,6 +137,30 @@ export function QuickActions() {
             </Link>
           ))}
         </div>
+
+        {/* 管理员入口 */}
+        {adminLinks.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <Shield className="h-4 w-4 text-slate-400" />
+              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">管理员功能</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {adminLinks.map(link => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className="flex items-center gap-2 p-3 rounded-lg border border-rose-100 dark:border-rose-900/30 hover:border-rose-200 dark:hover:border-rose-800 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                >
+                  <link.icon className={cn('h-5 w-5', link.color)} />
+                  <span className="text-sm font-medium text-slate-700 dark:text-slate-300">
+                    {link.label}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* 最近项目 */}
         <div>
