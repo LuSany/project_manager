@@ -6,26 +6,9 @@ import { ApiResponder } from "@/lib/api/response";
 export async function GET(req: NextRequest) {
   // 认证检查
   const userId = req.cookies.get("user-id")?.value;
-  const userRole = req.cookies.get("user-role")?.value;
 
   if (!userId) {
     return ApiResponder.unauthorized("未授权，请先登录");
-  }
-
-  // 只有管理员或项目成员可以查看用户列表
-  if (userRole !== "ADMIN") {
-    // 检查用户是否是任何项目的成员
-    const projectMember = await prisma.projectMember.findFirst({
-      where: { userId },
-    });
-
-    const projectOwner = await prisma.project.findFirst({
-      where: { ownerId: userId },
-    });
-
-    if (!projectMember && !projectOwner) {
-      return ApiResponder.forbidden("无权查看用户列表");
-    }
   }
 
   try {
@@ -49,20 +32,16 @@ export async function GET(req: NextRequest) {
 
     // 如果指定了排除的项目ID，排除已经是该项目成员的用户
     if (excludeProjectId) {
-      where.NOT = {
-        projectMembers: {
-          some: {
-            projectId: excludeProjectId,
+      where.AND = [
+        {
+          NOT: {
+            OR: [
+              { ownedProjects: { some: { id: excludeProjectId } } },
+              { projectMembers: { some: { projectId: excludeProjectId } } },
+            ],
           },
         },
-      };
-      // 也排除项目所有者
-      where.NOT = {
-        OR: [
-          { ownedProjects: { some: { id: excludeProjectId } } },
-          { projectMembers: { some: { projectId: excludeProjectId } } },
-        ],
-      };
+      ];
     }
 
     const [users, total] = await Promise.all([
