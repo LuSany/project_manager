@@ -17,6 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Save, Loader2, Plus, Trash2, TrendingUp } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 
 interface Task {
   id: string;
@@ -174,7 +175,7 @@ export default function TaskDetailPage() {
           dueDate: data.data.dueDate ? data.data.dueDate.split("T")[0] : "",
           estimatedHours: data.data.estimatedHours?.toString() || "",
           actualHours: data.data.actualHours?.toString() || "",
-          assigneeIds: data.data.assignees?.map((a: any) => a.userId) || [],
+          assigneeIds: data.data.assignees?.length > 0 ? [data.data.assignees[0].userId] : [],
           milestoneId: data.data.milestoneId || "",
         });
       }
@@ -618,29 +619,21 @@ export default function TaskDetailPage() {
             {members.length === 0 ? (
               <p className="text-muted-foreground">暂无项目成员</p>
             ) : (
-              <div className="grid grid-cols-2 gap-2">
-                {members.map((member) => (
-                  <div
-                    key={member.userId}
-                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                      formData.assigneeIds.includes(member.userId)
-                        ? "border-blue-500 bg-blue-50"
-                        : "hover:border-gray-300"
-                    }`}
-                    onClick={() => {
-                      setFormData((prev) => ({
-                        ...prev,
-                        assigneeIds: prev.assigneeIds.includes(member.userId)
-                          ? prev.assigneeIds.filter((id) => id !== member.userId)
-                          : [...prev.assigneeIds, member.userId],
-                      }));
-                    }}
-                  >
-                    <div className="font-medium">{member.userName}</div>
-                    <div className="text-sm text-muted-foreground">{member.userEmail}</div>
-                  </div>
-                ))}
-              </div>
+              <Combobox
+                options={members.map((member) => ({
+                  value: member.userId,
+                  label: `${member.userName} (${member.userEmail})`,
+                }))}
+                value={formData.assigneeIds[0] || ""}
+                onChange={(value) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    assigneeIds: [value],
+                  }));
+                }}
+                placeholder="选择负责人"
+                emptyText="无匹配成员"
+              />
             )}
           </CardContent>
         </Card>
