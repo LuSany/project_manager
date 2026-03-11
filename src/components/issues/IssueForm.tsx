@@ -41,6 +41,7 @@ interface IssueFormProps {
 
 export function IssueForm({ projectId, issue, open, onOpenChange, onSuccess }: IssueFormProps) {
   const [loading, setLoading] = useState(false);
+  const [requirements, setRequirements] = useState<Array<{id: string; title: string}>>([]);
   const [formData, setFormData] = useState({
     title: issue?.title || "",
     description: issue?.description || "",
@@ -61,6 +62,21 @@ export function IssueForm({ projectId, issue, open, onOpenChange, onSuccess }: I
       });
     }
   }, [open, issue]);
+
+  // 获取需求列表
+  useEffect(() => {
+    if (open && projectId) {
+      fetch(`/api/v1/projects/${projectId}/requirements`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setRequirements(data.data || []);
+          }
+        })
+        .catch(err => console.error("获取需求列表失败:", err));
+    }
+  }, [open, projectId]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -190,12 +206,22 @@ export function IssueForm({ projectId, issue, open, onOpenChange, onSuccess }: I
           {/* 关联需求 */}
           <div>
             <Label htmlFor="requirementId">关联需求</Label>
-            <Input
-              id="requirementId"
-              value={formData.requirementId}
-              onChange={(e) => setFormData({ ...formData, requirementId: e.target.value })}
-              placeholder="输入需求 ID（可选）"
-            />
+            <Select
+              value={formData.requirementId || "__none__"}
+              onValueChange={(value) => setFormData({ ...formData, requirementId: value === "__none__" ? "" : value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="选择需求（可选）" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="__none__">无</SelectItem>
+                {requirements.map((req) => (
+                  <SelectItem key={req.id} value={req.id}>
+                    {req.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <p className="text-xs text-muted-foreground mt-1">
               将问题关联到特定需求，便于追踪
             </p>

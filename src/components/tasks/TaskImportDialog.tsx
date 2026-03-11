@@ -42,7 +42,7 @@ export function TaskImportDialog({ projectId, open, onOpenChange, onSuccess }: T
   const [loading, setLoading] = useState(false);
   const [importMethod, setImportMethod] = useState<"template" | "file" | "json">("template");
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
-  const [selectedMilestoneId, setSelectedMilestoneId] = useState("");
+  const [selectedMilestoneId, setSelectedMilestoneId] = useState("__none__");
   const [file, setFile] = useState<File | null>(null);
   const [jsonText, setJsonText] = useState("");
   const [templates, setTemplates] = useState<Array<{ id: string; title: string }>>([]);
@@ -173,7 +173,7 @@ export function TaskImportDialog({ projectId, open, onOpenChange, onSuccess }: T
           body: JSON.stringify({
             templateId: selectedTemplateId,
             projectId,
-            milestoneId: selectedMilestoneId || undefined,
+            milestoneId: selectedMilestoneId === "__none__" ? undefined : selectedMilestoneId,
           }),
         });
         const data = await response.json();
@@ -195,7 +195,7 @@ export function TaskImportDialog({ projectId, open, onOpenChange, onSuccess }: T
         const formData = new FormData();
         formData.append("file", file);
         formData.append("projectId", projectId);
-        if (selectedMilestoneId) {
+        if (selectedMilestoneId && selectedMilestoneId !== "__none__") {
           formData.append("milestoneId", selectedMilestoneId);
         }
 
@@ -226,7 +226,7 @@ export function TaskImportDialog({ projectId, open, onOpenChange, onSuccess }: T
           body: JSON.stringify({
             tasks: Array.isArray(json) ? json : json.tasks,
             projectId,
-            milestoneId: selectedMilestoneId || undefined,
+            milestoneId: selectedMilestoneId === "__none__" ? undefined : selectedMilestoneId,
           }),
         });
         const data = await response.json();
@@ -300,7 +300,7 @@ export function TaskImportDialog({ projectId, open, onOpenChange, onSuccess }: T
                 <SelectValue placeholder="选择里程碑" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">不关联</SelectItem>
+                <SelectItem value="__none__">不关联</SelectItem>
                 {milestones.map((m) => (
                   <SelectItem key={m.id} value={m.id}>
                     {m.title}

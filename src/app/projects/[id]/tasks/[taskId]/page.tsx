@@ -146,7 +146,7 @@ export default function TaskDetailPage() {
     estimatedHours: "",
     actualHours: "",
     assigneeIds: [] as string[],
-    milestoneId: "",
+    milestoneId: "__none__",
   });
 
   useEffect(() => {
@@ -176,7 +176,7 @@ export default function TaskDetailPage() {
           estimatedHours: data.data.estimatedHours?.toString() || "",
           actualHours: data.data.actualHours?.toString() || "",
           assigneeIds: data.data.assignees?.length > 0 ? [data.data.assignees[0].userId] : [],
-          milestoneId: data.data.milestoneId || "",
+          milestoneId: data.data.milestoneId || "__none__",
         });
       }
     } catch (error) {
@@ -263,7 +263,7 @@ export default function TaskDetailPage() {
           dueDate: formData.dueDate || null,
           estimatedHours: formData.estimatedHours ? Number(formData.estimatedHours) : null,
           actualHours: formData.actualHours ? Number(formData.actualHours) : null,
-          milestoneId: formData.milestoneId || null,
+          milestoneId: formData.milestoneId === "__none__" ? null : formData.milestoneId,
         }),
       });
 
@@ -465,7 +465,7 @@ export default function TaskDetailPage() {
                   <SelectValue placeholder="选择里程碑（可选）" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">无</SelectItem>
+                  <SelectItem value="__none__">无</SelectItem>
                   {milestones.map((m) => (
                     <SelectItem key={m.id} value={m.id}>
                       {m.title}
