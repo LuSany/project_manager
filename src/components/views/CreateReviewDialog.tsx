@@ -20,7 +20,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-
 } from '@/components/ui/select'
 import { AlertCircle } from 'lucide-react'
 
@@ -100,7 +99,12 @@ export function CreateReviewDialog({ projectId, onSuccess }: CreateReviewDialogP
         router.refresh()
       } else {
         // 显示 API 返回的错误信息
-        setError(data.error || '创建评审失败')
+        // API 返回格式: { success: false, error: { code, message } } 或 { success: false, error: string }
+        const errorMessage = typeof data.error === 'object' && data.error !== null
+          ? data.error.message
+          : (data.error || '创建评审失败')
+        setError(errorMessage)
+        
         if (data.details) {
           // 如果有详细的验证错误，显示第一个
           const firstError = Object.values(data.details)[0] as string
