@@ -49,7 +49,7 @@ export default function ReviewsPage({
       const response = await fetch(`/api/v1/reviews?projectId=${id}`);
       const data = await response.json();
       if (data.success) {
-        setReviews(data.data || []);
+        setReviews(Array.isArray(data.data?.data) ? data.data.data : []);
       }
     } catch (err) {
       console.error('获取评审列表失败:', err);
