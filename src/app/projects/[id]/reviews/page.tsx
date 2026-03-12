@@ -3,9 +3,9 @@
 import { useEffect, useState, use } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { CreateReviewDialog } from '@/components/views/CreateReviewDialog';
+import { ReviewWizard } from '@/components/reviews/ReviewWizard';
 import { ReviewList } from '@/components/views/ReviewList';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Plus } from 'lucide-react';
 
 interface Review {
   id: string;
@@ -42,6 +42,7 @@ export default function ReviewsPage({
   const { id } = use(params);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
+  const [wizardOpen, setWizardOpen] = useState(false);
 
   const fetchReviews = async () => {
     setLoading(true);
@@ -93,7 +94,16 @@ export default function ReviewsPage({
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">评审管理</h1>
         <div className="flex gap-2">
-          <CreateReviewDialog projectId={id} onSuccess={fetchReviews} />
+          <Button onClick={() => setWizardOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            创建评审
+          </Button>
+          <ReviewWizard
+            projectId={id}
+            open={wizardOpen}
+            onOpenChange={setWizardOpen}
+            onSuccess={fetchReviews}
+          />
         </div>
       </div>
 
