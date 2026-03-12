@@ -1,5 +1,6 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -50,9 +51,10 @@ interface ReviewListProps {
   reviews: Review[];
   onEdit?: (review: Review) => void;
   onDelete?: (review: Review) => void;
+  projectId: string;
 }
-
-export function ReviewList({ reviews, onEdit, onDelete }: ReviewListProps) {
+export function ReviewList({ reviews, projectId, onEdit, onDelete }: ReviewListProps) {
+  const router = useRouter();
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'PENDING':
@@ -89,7 +91,14 @@ export function ReviewList({ reviews, onEdit, onDelete }: ReviewListProps) {
           </TableHeader>
           <TableBody>
             {reviews.map((review) => (
-              <TableRow key={review.id}>
+              <TableRow
+                key={review.id}
+                className="cursor-pointer hover:bg-muted"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/projects/${projectId}/reviews/${review.id}`);
+                }}
+              >
                 <TableCell className="font-medium">{review.title}</TableCell>
                 <TableCell>{review.type.displayName}</TableCell>
                 <TableCell>{getStatusBadge(review.status)}</TableCell>

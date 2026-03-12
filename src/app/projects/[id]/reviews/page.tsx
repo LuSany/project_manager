@@ -97,7 +97,7 @@ export default function ReviewsPage({
         </div>
       </div>
 
-      <ReviewList reviews={reviews} onDelete={handleDelete} />
+      <ReviewList reviews={reviews} projectId={id} onDelete={handleDelete} />
     </div>
   );
 }

@@ -128,8 +128,9 @@ export default function ProjectMilestonesPage({
 
   const fetchProjectTasks = async (pid: string) => {
     try {
-      const response = await api.get(`/projects/${pid}/tasks`)
-      setProjectTasks((response as { data?: ProjectTask[] }).data || [])
+      const response = await api.get(`/tasks?projectId=${pid}`)
+      const data = response as { success?: boolean; data?: { items?: ProjectTask[] } }
+      setProjectTasks(data.data?.items || [])
     } catch (error) {
       console.error('获取项目任务失败:', error)
     }
