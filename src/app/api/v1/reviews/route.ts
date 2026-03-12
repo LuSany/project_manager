@@ -10,6 +10,17 @@ const createReviewSchema = z.object({
   projectId: z.string().min(1, '项目ID不能为空'),
   typeId: z.string().min(1, '评审类型ID不能为空'),
   scheduledAt: z.string().datetime().optional(),
+  // 新增：参与者和材料
+  participants: z.array(z.object({
+    userId: z.string(),
+    role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']),
+  })).optional(),
+  materials: z.array(z.object({
+    fileId: z.string(),
+    fileName: z.string(),
+    fileType: z.string(),
+    fileSize: z.number(),
+  })).optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -147,10 +158,35 @@ export async function POST(req: NextRequest) {
         typeId: validatedData.typeId,
         scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : undefined,
         status: 'PENDING',
+        // 新增：创建参与者和材料
+        participants: validatedData.participants
+          ? {
+              create: validatedData.participants.map((p) => ({
+                userId: p.userId,
+                role: p.role,
+              })),
+            }
+          : undefined,
+        materials: validatedData.materials
+          ? {
+              create: validatedData.materials.map((m) => ({
+                fileId: m.fileId,
+                fileName: m.fileName,
+                fileType: m.fileType,
+                fileSize: m.fileSize,
+              })),
+            }
+          : undefined,
       },
       include: {
         project: { select: { id: true, name: true } },
         type: { select: { id: true, displayName: true } },
+        participants: {
+          include: {
+            user: { select: { id: true, name: true, email: true } },
+          },
+        },
+        materials: true,
       },
     })
 

@@ -47,6 +47,7 @@ model User {
   acceptedTasks           Task[]                   @relation("TaskAcceptor")
   requirementDiscussions  RequirementDiscussion[]
   progressRecords         TaskProgressHistory[]    @relation("ProgressRecorder")
+  reviewGroupMembers      ReviewGroupMember[]
 
   @@index([email])
   @@map("users")
@@ -746,8 +747,9 @@ model ReviewParticipant {
 }
 
 enum ReviewParticipantRole {
-  REVIEWER // 评审人
-  OBSERVER // 观察者
+  MODERATOR // 评审主持人
+  REVIEWER  // 评审人
+  OBSERVER  // 观察者
   SECRETARY // 记录员
 }
 
@@ -783,6 +785,44 @@ model ReviewCriterion {
 
   @@index([reviewId])
   @@map("review_criteria")
+}
+
+// ============================================================================
+// 评审组 - 可复用的评审人组合
+// ============================================================================
+
+model ReviewGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdById String
+
+  // 关系
+  members ReviewGroupMember[]
+
+  @@index([createdById])
+  @@index([isActive])
+  @@map("review_groups")
+}
+
+model ReviewGroupMember {
+  id        String                @id @default(cuid())
+  groupId   String
+  userId    String
+  role      ReviewParticipantRole @default(REVIEWER)
+  createdAt DateTime              @default(now())
+
+  // 关系
+  group ReviewGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+  @@map("review_group_members")
 }
 
 // ============================================================================
