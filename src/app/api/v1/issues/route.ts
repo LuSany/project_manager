@@ -16,6 +16,8 @@ const createIssueSchema = z.object({
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).default("OPEN"),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).default("MEDIUM"),
   projectId: z.string().min(1, "项目ID不能为空"),
+  requirementId: z.string().optional().nullable(),
+  taskId: z.string().optional().nullable(),
 });
 
 // Issue更新验证 Schema
@@ -24,6 +26,8 @@ const updateIssueSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH", "URGENT"]).optional(),
+  requirementId: z.string().optional().nullable(),
+  taskId: z.string().optional().nullable(),
 });
 
 // GET /api/v1/issues - 获取问题列表
@@ -134,6 +138,7 @@ export async function POST(request: NextRequest) {
         status: validatedData.status,
         priority: validatedData.priority,
         projectId: validatedData.projectId,
+        requirementId: validatedData.requirementId || null,
       },
       include: {
         project: {

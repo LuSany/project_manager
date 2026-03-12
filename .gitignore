@@ -68,3 +68,4 @@ coverage/
 .omc/plans/
 .omc/project-memory.json
 .sisyphus/
+.sisyphus/*

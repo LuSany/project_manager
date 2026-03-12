@@ -14,6 +14,7 @@ const updateTaskSchema = z.object({
   estimatedHours: z.number().optional().nullable(),
   actualHours: z.number().optional().nullable(),
   milestoneId: z.string().optional().nullable(),
+  assigneeIds: z.array(z.string()).optional(),
 });
 
 // 辅助函数：获取已认证用户
@@ -295,6 +296,23 @@ export async function PUT(
     if (validatedData.estimatedHours !== undefined) updateData.estimatedHours = validatedData.estimatedHours;
     if (validatedData.actualHours !== undefined) updateData.actualHours = validatedData.actualHours;
     if (validatedData.milestoneId !== undefined) updateData.milestoneId = validatedData.milestoneId || null;
+
+    // 处理负责人更新
+    if (validatedData.assigneeIds !== undefined) {
+      // 删除现有的负责人
+      await db.taskAssignee.deleteMany({
+        where: { taskId: id },
+      });
+      // 添加新的负责人
+      if (validatedData.assigneeIds.length > 0) {
+        await db.taskAssignee.createMany({
+          data: validatedData.assigneeIds.map((userId) => ({
+            taskId: id,
+            userId,
+          })),
+        });
+      }
+    }
 
     // 更新任务
     const updatedTask = await db.task.update({

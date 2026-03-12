@@ -49,7 +49,7 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
     probability: risk?.probability || 1,
     impact: risk?.impact || 1,
     status: risk?.status || "IDENTIFIED" as RiskStatus,
-    owner: risk?.owner || "",
+    owner: risk?.owner?.name || "",
     dueDate: risk?.dueDate ? new Date(risk.dueDate).toISOString().split("T")[0] : "",
   });
 
@@ -66,7 +66,7 @@ export function RiskForm({ projectId, risk, open, onOpenChange, onSuccess }: Ris
         probability: risk?.probability || 1,
         impact: risk?.impact || 1,
         status: risk?.status || "IDENTIFIED",
-        owner: risk?.owner || "",
+        owner: risk?.owner?.name || "",
         dueDate: risk?.dueDate ? new Date(risk.dueDate).toISOString().split("T")[0] : "",
       });
     }

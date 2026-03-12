@@ -16,7 +16,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 
 // 角色类型定义
-export type UserRole = 'ADMIN' | 'PROJECT_ADMIN' | 'PROJECT_OWNER' | 'PROJECT_MEMBER' | 'EMPLOYEE'
+export type UserRole = 'ADMIN' | 'PROJECT_DIRECTOR' | 'PROJECT_ADMIN' | 'PROJECT_OWNER' | 'PROJECT_MEMBER' | 'EMPLOYEE'
 
 // 角色配置
 export interface RoleConfig {
@@ -41,6 +41,16 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
     color: 'text-red-600',
     bgColor: 'bg-red-50 border-red-200',
     permissions: ['系统管理', '用户管理', '所有项目管理', '系统设置', '数据导出'],
+  },
+  PROJECT_DIRECTOR: {
+    value: 'PROJECT_DIRECTOR',
+    label: '项目总监',
+    description: '监督项目进展，拥有审批和决策权限',
+    level: 4,
+    icon: Crown,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50 border-amber-200',
+    permissions: ['项目查看', '项目审批', '里程碑审批', '需求审批', '评审审批', '报告查看'],
   },
   PROJECT_ADMIN: {
     value: 'PROJECT_ADMIN',
@@ -95,6 +105,7 @@ export const ROLE_CONFIG: Record<UserRole, RoleConfig> = {
 // 所有角色列表
 export const ALL_ROLES: UserRole[] = [
   'ADMIN',
+  'PROJECT_DIRECTOR',
   'PROJECT_ADMIN',
   'PROJECT_OWNER',
   'PROJECT_MEMBER',
@@ -103,6 +114,7 @@ export const ALL_ROLES: UserRole[] = [
 
 // 项目成员可选角色（排除 ADMIN）
 export const PROJECT_ROLES: UserRole[] = [
+  'PROJECT_DIRECTOR',
   'PROJECT_ADMIN',
   'PROJECT_OWNER',
   'PROJECT_MEMBER',

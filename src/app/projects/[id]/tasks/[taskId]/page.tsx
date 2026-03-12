@@ -264,6 +264,7 @@ export default function TaskDetailPage() {
           estimatedHours: formData.estimatedHours ? Number(formData.estimatedHours) : null,
           actualHours: formData.actualHours ? Number(formData.actualHours) : null,
           milestoneId: formData.milestoneId === "__none__" ? null : formData.milestoneId,
+          assigneeIds: formData.assigneeIds,
         }),
       });
 

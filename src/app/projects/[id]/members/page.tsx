@@ -200,6 +200,8 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
     switch (role) {
       case "PROJECT_OWNER":
         return <Badge className="bg-purple-500">项目所有者</Badge>;
+      case "PROJECT_DIRECTOR":
+        return <Badge className="bg-amber-500">项目总监</Badge>;
       case "PROJECT_ADMIN":
         return <Badge className="bg-blue-500">项目管理员</Badge>;
       case "PROJECT_MEMBER":

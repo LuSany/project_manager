@@ -98,6 +98,7 @@ export function IssueForm({ projectId, issue, open, onOpenChange, onSuccess }: I
         description: formData.description || undefined,
         status: formData.status,
         priority: formData.priority,
+        requirementId: formData.requirementId || null,
       };
 
       if (!issue) {

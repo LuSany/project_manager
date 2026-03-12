@@ -75,6 +75,9 @@ export function CreateReviewDialog({ projectId, onSuccess }: CreateReviewDialogP
     setLoading(true)
 
     try {
+      // 将 datetime-local 格式转换为 ISO 格式
+      const scheduledAtISO = scheduledAt ? new Date(scheduledAt).toISOString() : undefined;
+
       const response = await fetch('/api/v1/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -83,7 +86,7 @@ export function CreateReviewDialog({ projectId, onSuccess }: CreateReviewDialogP
           title,
           description,
           typeId,
-          scheduledAt: scheduledAt || undefined,
+          scheduledAt: scheduledAtISO,
         }),
       })
 

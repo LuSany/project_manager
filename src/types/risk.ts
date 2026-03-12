@@ -8,7 +8,11 @@ export interface Risk {
   impact: number; // 1-5
   riskLevel: RiskLevel; // 计算得出: probability × impact
   status: RiskStatus;
-  owner: string | null;
+  owner: {
+    id: string;
+    name: string;
+    email: string;
+  } | null;
   dueDate: string | null;
   projectId: string;
   createdAt: string;
@@ -16,6 +20,9 @@ export interface Risk {
   project?: {
     id: string;
     name: string;
+  };
+  _count?: {
+    riskTasks: number;
   };
 }
 

@@ -6,7 +6,7 @@ import { ApiResponder } from "@/lib/api/response";
 // 成员验证Schema
 const addMemberSchema = z.object({
   email: z.string().email("请输入有效的邮箱地址"),
-  role: z.enum(["PROJECT_OWNER", "PROJECT_ADMIN", "PROJECT_MEMBER"]).default("PROJECT_MEMBER"),
+  role: z.enum(["PROJECT_OWNER", "PROJECT_DIRECTOR", "PROJECT_ADMIN", "PROJECT_MEMBER"]).default("PROJECT_MEMBER"),
 });
 
 export async function GET(

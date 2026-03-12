@@ -121,6 +121,7 @@ model ProjectMember {
 
 enum ProjectMemberRole {
   PROJECT_OWNER // 项目所有者 - 完整权限
+  PROJECT_DIRECTOR // 项目总监 - 监督和审批权限
   PROJECT_ADMIN // 项目管理员 - 可管理成员和设置
   PROJECT_MEMBER // 项目成员 - 可参与任务
 }
