@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client'
 import * as bcrypt from 'bcrypt'
+import { DEFAULT_REVIEW_TYPES } from '../src/lib/constants/review-types'
 
 const prisma = new PrismaClient()
 
@@ -35,6 +36,17 @@ async function main() {
     },
   })
   console.log('✅ 创建测试用户:', testUser.email)
+
+  // 初始化评审类型
+  console.log('\n📋 初始化评审类型...')
+  for (const type of DEFAULT_REVIEW_TYPES) {
+    const reviewType = await prisma.reviewTypeConfig.upsert({
+      where: { name: type.name },
+      update: {},
+      create: type,
+    })
+    console.log(`  ✅ 评审类型: ${reviewType.displayName}`)
+  }
 
   // 创建测试项目
   const project = await prisma.project.create({
