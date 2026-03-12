@@ -10,7 +10,7 @@ import { X, Plus, Search, User, Users } from 'lucide-react'
 import type { WizardData } from '../ReviewWizard'
 
 interface ParticipantsStepProps {
-  data: Pick<WizardData, 'moderatorId' | 'reviewers' | 'observers'>
+  data: Pick<WizardData, 'moderatorId' | 'reviewers' | 'observers' | 'userNames'>
   onChange: (data: Partial<WizardData>) => void
   projectId: string
 }
@@ -113,33 +113,51 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
     return () => clearTimeout(timer)
   }, [searchQuery, tab])
 
-  const handleSelectModerator = (userId: string) => {
-    onChange({ moderatorId: data.moderatorId === userId ? null : userId })
+  const handleSelectModerator = (userId: string, userName?: string) => {
+    const newModeratorId = data.moderatorId === userId ? null : userId
+    const newUserNames = { ...data.userNames }
+    if (newModeratorId && userName) {
+      newUserNames[userId] = userName
+    }
+    onChange({ moderatorId: newModeratorId, userNames: newUserNames })
   }
 
-  const handleToggleReviewer = (userId: string) => {
+  const handleToggleReviewer = (userId: string, userName?: string) => {
     const newReviewers = data.reviewers.includes(userId)
       ? data.reviewers.filter((id) => id !== userId)
       : [...data.reviewers, userId]
-    onChange({ reviewers: newReviewers })
+    const newUserNames = { ...data.userNames }
+    if (userName) {
+      newUserNames[userId] = userName
+    }
+    onChange({ reviewers: newReviewers, userNames: newUserNames })
   }
 
-  const handleToggleObserver = (userId: string) => {
+  const handleToggleObserver = (userId: string, userName?: string) => {
     const newObservers = data.observers.includes(userId)
       ? data.observers.filter((id) => id !== userId)
       : [...data.observers, userId]
-    onChange({ observers: newObservers })
+    const newUserNames = { ...data.userNames }
+    if (userName) {
+      newUserNames[userId] = userName
+    }
+    onChange({ observers: newObservers, userNames: newUserNames })
   }
 
   const handleAddReviewGroup = (group: ReviewGroup) => {
     const newModeratorId = group.members.find((m) => m.role === 'MODERATOR')?.userId || data.moderatorId
     const newReviewers = [...new Set([...data.reviewers, ...group.members.filter((m) => m.role === 'REVIEWER').map((m) => m.userId)])]
     const newObservers = [...new Set([...data.observers, ...group.members.filter((m) => m.role === 'OBSERVER').map((m) => m.userId)])]
+    const newUserNames = { ...data.userNames }
+    group.members.forEach((m) => {
+      newUserNames[m.userId] = m.user.name
+    })
 
     onChange({
       moderatorId: newModeratorId,
       reviewers: newReviewers,
       observers: newObservers,
+      userNames: newUserNames,
     })
   }
 
@@ -166,9 +184,9 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
           isSelected ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
         }`}
         onClick={() => {
-          if (type === 'moderator') handleSelectModerator(id)
-          else if (type === 'reviewer') handleToggleReviewer(id)
-          else handleToggleObserver(id)
+          if (type === 'moderator') handleSelectModerator(id, name)
+          else if (type === 'reviewer') handleToggleReviewer(id, name)
+          else handleToggleObserver(id, name)
         }}
       >
         <div className="flex items-center gap-3">

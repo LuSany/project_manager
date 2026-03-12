@@ -1,6 +1,5 @@
 'use client'
 
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -91,7 +90,7 @@ export function ConfirmStep({ data, onEditStep }: ConfirmStepProps) {
           {data.moderatorId && (
             <div className="flex items-center gap-2">
               <Badge variant="default">主持人</Badge>
-              <span className="text-sm">{data.moderatorId}</span>
+              <span className="text-sm">{data.userNames[data.moderatorId] || data.moderatorId}</span>
             </div>
           )}
           {data.reviewers.length > 0 && (
@@ -99,7 +98,7 @@ export function ConfirmStep({ data, onEditStep }: ConfirmStepProps) {
               <div className="text-muted-foreground text-sm mb-1">评审人:</div>
               <div className="flex flex-wrap gap-1">
                 {data.reviewers.map((id) => (
-                  <Badge key={id} variant="secondary">{id}</Badge>
+                  <Badge key={id} variant="secondary">{data.userNames[id] || id}</Badge>
                 ))}
               </div>
             </div>
@@ -109,7 +108,7 @@ export function ConfirmStep({ data, onEditStep }: ConfirmStepProps) {
               <div className="text-muted-foreground text-sm mb-1">观察者:</div>
               <div className="flex flex-wrap gap-1">
                 {data.observers.map((id) => (
-                  <Badge key={id} variant="outline">{id}</Badge>
+                  <Badge key={id} variant="outline">{data.userNames[id] || id}</Badge>
                 ))}
               </div>
             </div>

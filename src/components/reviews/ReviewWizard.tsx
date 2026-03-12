@@ -26,6 +26,8 @@ export interface WizardData {
   moderatorId: string | null
   reviewers: string[]
   observers: string[]
+  // 用户姓名映射
+  userNames: Record<string, string>
   // 步骤3: 材料
   materials: MaterialFile[]
 }
@@ -45,6 +47,7 @@ const initialData: WizardData = {
   moderatorId: null,
   reviewers: [],
   observers: [],
+  userNames: {},
   materials: [],
 }
 
@@ -161,6 +164,7 @@ export function ReviewWizard({ projectId, open, onOpenChange, onSuccess }: Revie
               moderatorId: wizardData.moderatorId,
               reviewers: wizardData.reviewers,
               observers: wizardData.observers,
+              userNames: wizardData.userNames,
             }}
             onChange={updateData}
             projectId={projectId}
