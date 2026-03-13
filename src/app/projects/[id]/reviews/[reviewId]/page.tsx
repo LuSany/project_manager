@@ -5,8 +5,9 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, ExternalLink } from 'lucide-react'
+import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, ExternalLink, Edit } from 'lucide-react'
 import { format } from 'date-fns'
+import { ReviewEditDialog } from '@/components/reviews/ReviewEditDialog'
 
 interface ReviewMaterial {
   id: string
@@ -72,6 +73,7 @@ export default function ReviewDetailPage({
   const [review, setReview] = useState<Review | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
   const fetchReview = async () => {
     setLoading(true)
@@ -185,16 +187,22 @@ export default function ReviewDetailPage({
             )}
           </div>
         </div>
-        <div className="text-muted-foreground text-right text-sm">
-          {review.scheduledAt && (
-            <div className="mb-1 flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>计划时间: {format(new Date(review.scheduledAt), 'yyyy-MM-dd HH:mm')}</span>
+        <div className="flex flex-col items-end gap-2">
+          <Button onClick={() => setEditDialogOpen(true)}>
+            <Edit className="h-4 w-4 mr-2" />
+            编辑评审
+          </Button>
+          <div className="text-muted-foreground text-right text-sm">
+            {review.scheduledAt && (
+              <div className="mb-1 flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>计划时间: {format(new Date(review.scheduledAt), 'yyyy-MM-dd HH:mm')}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <Clock className="h-4 w-4" />
+              <span>创建于: {format(new Date(review.createdAt), 'yyyy-MM-dd HH:mm')}</span>
             </div>
-          )}
-          <div className="flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            <span>创建于: {format(new Date(review.createdAt), 'yyyy-MM-dd HH:mm')}</span>
           </div>
         </div>
       </div>
@@ -336,6 +344,14 @@ export default function ReviewDetailPage({
           )}
         </CardContent>
       </Card>
+
+      {/* 编辑对话框 */}
+      <ReviewEditDialog
+        reviewId={reviewId}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+        onSuccess={fetchReview}
+      />
     </div>
   )
 }
