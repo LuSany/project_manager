@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 import { z } from 'zod';
@@ -115,7 +115,7 @@ async function handleFormDataUpload(request: NextRequest, userId: string) {
     },
   });
 
-  return NextResponse.json(success(fileRecord));
+  return success(fileRecord);
 }
 
 // 处理 JSON 格式上传 (向后兼容，仅记录元数据)
@@ -146,5 +146,5 @@ async function handleJsonUpload(request: NextRequest, userId: string) {
     },
   });
 
-  return NextResponse.json(success(file));
+  return success(file);
 }
