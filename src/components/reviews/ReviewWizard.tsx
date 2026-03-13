@@ -94,11 +94,20 @@ export function ReviewWizard({ projectId, open, onOpenChange, onSuccess }: Revie
           description: wizardData.description || undefined,
           typeId: wizardData.typeId,
           scheduledAt: wizardData.scheduledAt ? new Date(wizardData.scheduledAt).toISOString() : undefined,
-          participants: [
-            ...(wizardData.moderatorId ? [{ userId: wizardData.moderatorId, role: 'MODERATOR' as const }] : []),
-            ...wizardData.reviewers.map((userId) => ({ userId, role: 'REVIEWER' as const })),
-            ...wizardData.observers.map((userId) => ({ userId, role: 'OBSERVER' as const })),
-          ],
+          // 构建参与者数组，按优先级去重：MODERATOR > REVIEWER > OBSERVER
+          // 避免同一用户被分配多个角色导致唯一约束冲突
+          participants: (() => {
+            const userRoles = new Map<string, 'MODERATOR' | 'REVIEWER' | 'OBSERVER'>()
+            // 先添加观察者（最低优先级）
+            wizardData.observers.forEach((userId) => userRoles.set(userId, 'OBSERVER'))
+            // 再添加评审人（覆盖观察者）
+            wizardData.reviewers.forEach((userId) => userRoles.set(userId, 'REVIEWER'))
+            // 最后添加主持人（最高优先级，覆盖其他角色）
+            if (wizardData.moderatorId) {
+              userRoles.set(wizardData.moderatorId, 'MODERATOR')
+            }
+            return Array.from(userRoles.entries()).map(([userId, role]) => ({ userId, role }))
+          })(),
           materials: wizardData.materials,
         }),
       })
