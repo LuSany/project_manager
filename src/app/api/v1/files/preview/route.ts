@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 
@@ -52,9 +52,9 @@ export async function GET(request: NextRequest) {
       break;
   }
 
-  return NextResponse.json(success({
+  return success({
     previewUrl,
     fileName: file.fileName,
     fileType: file.mimeType,
-  }));
+  });
 }

@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar } from 'lucide-react'
+import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, ExternalLink } from 'lucide-react'
 import { format } from 'date-fns'
 
 interface ReviewMaterial {
@@ -223,8 +223,26 @@ export default function ReviewDetailPage({
                       </div>
                     </div>
                   </div>
-                  <div className="text-muted-foreground text-xs">
-                    {format(new Date(material.uploadedAt), 'yyyy-MM-dd HH:mm')}
+                  <div className="flex items-center gap-2">
+                    <div className="text-muted-foreground text-xs mr-2">
+                      {format(new Date(material.uploadedAt), 'yyyy-MM-dd HH:mm')}
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.open(`/api/v1/files/${material.id}`, '_blank')}
+                      title="下载文件"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => window.open(`/api/v1/files/${material.id}`, '_blank')}
+                      title="预览文件"
+                    >
+                      <ExternalLink className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               ))}
