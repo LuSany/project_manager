@@ -52,6 +52,12 @@ interface Review {
     id: string
     name: string
   }
+  author: {
+    id: string
+    name: string
+    avatar: string | null
+    email: string
+  } | null
   materials: ReviewMaterial[]
   participants: ReviewParticipant[]
   items: ReviewItem[]
@@ -172,7 +178,12 @@ export default function ReviewDetailPage({
             <h1 className="text-2xl font-bold">{review.title}</h1>
             {getStatusBadge(review.status)}
           </div>
-          <p className="text-muted-foreground">评审类型: {review.type.displayName}</p>
+          <div className="flex items-center gap-4 text-muted-foreground">
+            <span>评审类型: {review.type.displayName}</span>
+            {review.author && (
+              <span>作者: {review.author.name}</span>
+            )}
+          </div>
         </div>
         <div className="text-muted-foreground text-right text-sm">
           {review.scheduledAt && (

@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
         description: validatedData.description,
         projectId: validatedData.projectId,
         typeId: validatedData.typeId,
+        authorId: user.id,  // 设置评审作者为当前用户
         scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : undefined,
         status: 'PENDING',
         // 新增：创建参与者和材料

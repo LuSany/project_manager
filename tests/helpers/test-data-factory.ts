@@ -268,14 +268,30 @@ export async function createTestIssue(
 export async function createTestReview(
   projectId: string,
   typeId: string,
+  authorId?: string,  // 可选作者ID
   overrides: Partial<Prisma.ReviewCreateInput> = {}
 ) {
+  // 如果没有提供作者ID，获取项目所有者
+  let reviewAuthorId = authorId;
+  if (!reviewAuthorId) {
+    const project = await testPrisma.project.findUnique({
+      where: { id: projectId },
+      select: { ownerId: true },
+    });
+    reviewAuthorId = project?.ownerId;
+  }
+
+  if (!reviewAuthorId) {
+    throw new Error('Cannot determine review author: no authorId provided and project has no owner');
+  }
+
   return testPrisma.review.create({
     data: {
       title: overrides.title ?? faker.word.words(4),
       description: overrides.description,
       projectId,
       typeId,
+      authorId: reviewAuthorId,
       scheduledAt: overrides.scheduledAt,
       status: overrides.status ?? 'PENDING',
     },

@@ -28,6 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           include: { members: true },
         },
         type: true,
+        author: { select: { id: true, name: true, avatar: true, email: true } },  // 包含作者信息
         materials: true,
         participants: {
           include: {
