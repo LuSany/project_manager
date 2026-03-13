@@ -10,6 +10,7 @@ import { format } from 'date-fns'
 
 interface ReviewMaterial {
   id: string
+  fileId: string  // 添加 fileId 字段
   fileName: string
   fileSize: number
   fileType: string
@@ -230,7 +231,7 @@ export default function ReviewDetailPage({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(`/api/v1/files/${material.id}`, '_blank')}
+                      onClick={() => window.open(`/api/v1/files/${material.fileId}`, '_blank')}
                       title="下载文件"
                     >
                       <Download className="h-4 w-4" />
@@ -238,7 +239,7 @@ export default function ReviewDetailPage({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(`/api/v1/files/${material.id}`, '_blank')}
+                      onClick={() => window.open(`/api/v1/files/${material.fileId}`, '_blank')}
                       title="预览文件"
                     >
                       <ExternalLink className="h-4 w-4" />

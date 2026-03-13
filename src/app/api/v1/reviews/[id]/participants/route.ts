@@ -95,7 +95,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     if (existingParticipant) {
-      return this.error('ALREADY_EXISTS', '该用户已经是评审参与者', undefined, 400)
+      return ApiResponder.error('ALREADY_EXISTS', '该用户已经是评审参与者', undefined, 400)
     }
 
     const participant = await prisma.reviewParticipant.create({
@@ -138,7 +138,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const userId = searchParams.get('userId')
 
     if (!userId) {
-      return this.error('MISSING_PARAM', '用户ID不能为空', undefined, 400)
+      return ApiResponder.error('MISSING_PARAM', '用户ID不能为空', undefined, 400)
     }
 
     const review = await prisma.review.findUnique({
