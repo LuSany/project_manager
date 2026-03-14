@@ -40,6 +40,8 @@ model User {
   authoredAcceptances     RequirementAcceptance[]  @relation("AcceptanceAuthor")
   authoredReviews         Review[]                 @relation("ReviewAuthor")  // 评审作者
   reviewParticipants      ReviewParticipant[]
+  reviewComments         ReviewComment[]          // 评审评论
+  reviewVotes            ReviewVote[]             // 评审投票
   ownedRisks              Risk[]                   @relation("RiskOwner")
   uploadedFiles           FileStorage[]
   notifications           Notification[]
@@ -705,6 +707,8 @@ model Review {
   participants ReviewParticipant[]
   items        ReviewItem[]
   criteria     ReviewCriterion[]
+  comments     ReviewComment[]
+  votes        ReviewVote[]
 
   @@index([projectId])
   @@index([typeId])
@@ -730,7 +734,8 @@ model ReviewMaterial {
   uploadedAt DateTime @default(now())
 
   // 关系
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review   Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  comments ReviewComment[]
 
   @@index([reviewId])
   @@map("review_materials")
@@ -757,6 +762,60 @@ enum ReviewParticipantRole {
   SECRETARY // 记录员
 }
 
+// ============================================================================
+// 评审评论
+// ============================================================================
+
+model ReviewComment {
+  id          String        @id @default(cuid())
+  reviewId    String
+  materialId  String?       // 可选，针对材料的评论
+  itemId      String?       // 可选，针对评审项的评论
+  parentId    String?       // 父评论ID，用于回复
+  authorId    String
+  content     String        // 纯文本内容
+  status      CommentStatus @default(OPEN)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  // 关系
+  review   Review           @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  material ReviewMaterial?  @relation(fields: [materialId], references: [id], onDelete: Cascade)
+  item     ReviewItem?      @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  parent   ReviewComment?   @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  ReviewComment[]  @relation("CommentReplies")
+  author   User             @relation(fields: [authorId], references: [id], onDelete: Restrict)
+
+  @@index([reviewId])
+  @@index([materialId])
+  @@index([itemId])
+  @@index([parentId])
+  @@map("review_comments")
+}
+
+enum CommentStatus {
+  OPEN      // 待解决
+  RESOLVED  // 已解决
+}
+
+// ============================================================================
+// 评审投票
+// ============================================================================
+
+model ReviewVote {
+  reviewId String
+  userId   String
+  agreed   Boolean  // true=同意
+  votedAt  DateTime @default(now())
+
+  // 关系
+  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([reviewId, userId])
+  @@map("review_votes")
+}
+
 model ReviewItem {
   id          String   @id @default(cuid())
   reviewId    String
@@ -768,7 +827,8 @@ model ReviewItem {
   createdAt   DateTime @default(now())
 
   // 关系
-  review Review @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  review   Review  @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  comments ReviewComment[]
 
   @@index([reviewId])
   @@map("review_items")
