@@ -1,56 +1,165 @@
 {
   "project": "project_manager",
-  "branchName": "ralph/frontend-fixes",
-  "description": "前端页面问题修复和布局重构",
+  "branchName": "main",
+  "description": "Phase 3: 评审评论/讨论功能实现",
   "userStories": [
     {
       "id": "US-001",
-      "title": "修复项目跳转导航问题",
-      "description": "作为用户，我希望在工作台点击项目时能正确导航并保持统一的布局导航功能。",
+      "title": "数据库模型和迁移",
+      "description": "添加 ReviewComment 和 ReviewVote 模型到 Prisma schema",
       "acceptanceCriteria": [
-        "点击项目卡片后能正确跳转到项目详情页",
-        "项目详情页有完整的侧边栏导航",
-        "导航功能正常工作，不丢失上下文"
+        "ReviewComment 模型包含所有必要字段：id, reviewId, materialId, itemId, parentId, authorId, content, status",
+        "ReviewVote 模型包含复合主键 (reviewId, userId)",
+        "CommentStatus 枚举包含 OPEN 和 RESOLVED",
+        "迁移文件创建成功",
+        "Prisma Client 重新生成成功",
+        "npm run build 无错误"
       ],
       "priority": 1,
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-002",
-      "title": "修复评审管理功能报错",
-      "description": "作为用户，我希望能够正常访问项目内的评审管理功能而不出现错误。",
+      "title": "评论 CRUD API",
+      "description": "创建评论的增删改查 API 端点",
       "acceptanceCriteria": [
-        "评审管理页面能正常加载",
-        "评审相关API返回正确响应",
-        "无控制台错误"
+        "GET /api/v1/reviews/[id]/comments 返回评论列表",
+        "POST /api/v1/reviews/[id]/comments 创建评论成功",
+        "PUT /api/v1/reviews/[id]/comments/[commentId] 更新评论成功（仅作者）",
+        "DELETE /api/v1/reviews/[id]/comments/[commentId] 删除评论成功（作者/管理员）",
+        "权限验证正确：参与者可评论，仅作者可编辑"
       ],
-      "priority": 1,
-      "passes": false
+      "priority": 2,
+      "passes": true
     },
     {
       "id": "US-003",
-      "title": "参考PingCode重新设计页面布局",
-      "description": "作为用户，我希望有现代化、专业的项目管理界面布局，参考PingCode等开源项目的设计。",
+      "title": "评论解决/重开 API",
+      "description": "创建标记评论已解决和重新打开的 API",
       "acceptanceCriteria": [
-        "侧边栏导航清晰易用",
-        "工作台页面布局合理",
-        "响应式设计支持",
-        "整体UI风格统一专业"
+        "POST /api/v1/reviews/[id]/comments/[commentId]/resolve 标记已解决",
+        "POST /api/v1/reviews/[id]/comments/[commentId]/reopen 重新打开",
+        "仅评论作者可以操作"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true
     },
     {
       "id": "US-004",
-      "title": "添加机时管理功能",
-      "description": "作为用户，我希望能在工作台访问机时管理功能，进行测试资源申请和分配。",
+      "title": "投票 API",
+      "description": "创建评审投票 API",
       "acceptanceCriteria": [
-        "侧边栏有机时管理入口",
-        "机时管理页面可用",
-        "支持基本的机时申请和查看功能"
+        "GET /api/v1/reviews/[id]/votes 返回投票情况",
+        "POST /api/v1/reviews/[id]/votes 提交投票成功",
+        "仅 REVIEWER 角色可以投票",
+        "可以重新投票（更新已有投票）"
       ],
       "priority": 2,
-      "passes": false
+      "passes": true
+    },
+    {
+      "id": "US-005",
+      "title": "结束评审 API",
+      "description": "创建结束评审 API",
+      "acceptanceCriteria": [
+        "POST /api/v1/reviews/[id]/complete 结束评审成功",
+        "仅 MODERATOR 可以操作",
+        "所有 REVIEWER 都已投票同意才能结束",
+        "评审状态更新为 COMPLETED"
+      ],
+      "priority": 2,
+      "passes": true
+    },
+    {
+      "id": "US-006",
+      "title": "评论前端组件",
+      "description": "创建评论列表和表单组件",
+      "acceptanceCriteria": [
+        "ReviewComments.tsx 显示评论列表",
+        "CommentThread.tsx 显示单个评论线程",
+        "CommentForm.tsx 提供评论输入",
+        "支持过滤（全部/未解决/已解决）",
+        "支持针对材料/评审项评论"
+      ],
+      "priority": 3,
+      "passes": true
+    },
+    {
+      "id": "US-007",
+      "title": "投票前端组件",
+      "description": "创建投票面板组件",
+      "acceptanceCriteria": [
+        "ReviewVoting.tsx 显示投票情况",
+        "显示投票进度（X/Y 已同意）",
+        "REVIEWER 可以点击同意按钮",
+        "MODERATOR 看到结束评审按钮（当所有人同意后）"
+      ],
+      "priority": 3,
+      "passes": true
+    },
+    {
+      "id": "US-008",
+      "title": "评审详情页集成",
+      "description": "将评论和投票组件集成到评审详情页",
+      "acceptanceCriteria": [
+        "评审详情页显示评论区域",
+        "评审详情页显示投票面板",
+        "页面无 TypeScript 错误",
+        "npm run build 成功"
+      ],
+      "priority": 4,
+      "passes": true
+    },
+    {
+      "id": "US-009",
+      "title": "通知集成",
+      "description": "添加评论和投票相关的通知",
+      "acceptanceCriteria": [
+        "新评论通知评审作者",
+        "回复通知评论作者",
+        "所有人同意通知主持人"
+      ],
+      "priority": 5,
+      "passes": true
+    },
+    {
+      "id": "US-010",
+      "title": "单元测试 - 模型和工具函数",
+      "description": "为评审评论和投票创建单元测试",
+      "acceptanceCriteria": [
+        "创建 tests/models/review-comment.test.ts - 测试 ReviewComment 模型操作",
+        "创建 tests/models/review-vote.test.ts - 测试 ReviewVote 模型操作",
+        "所有测试通过",
+        "测试覆盖率报告显示新增功能被覆盖"
+      ],
+      "priority": 6,
+      "passes": true
+    },
+    {
+      "id": "US-011",
+      "title": "集成测试 - API 端点",
+      "description": "为评审评论和投票 API 创建集成测试",
+      "acceptanceCriteria": [
+        "创建 tests/integration/review-comments.test.ts",
+        "测试评论 CRUD 操作",
+        "测试投票操作",
+        "测试权限验证",
+        "所有集成测试通过"
+      ],
+      "priority": 6,
+      "passes": true
+    },
+    {
+      "id": "US-012",
+      "title": "生产构建验证",
+      "description": "验证生产构建成功",
+      "acceptanceCriteria": [
+        "npm run build 成功完成",
+        "无 TypeScript 错误",
+        "无构建警告"
+      ],
+      "priority": 7,
+      "passes": true
     }
   ]
 }

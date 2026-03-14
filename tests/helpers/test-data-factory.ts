@@ -346,6 +346,44 @@ export async function createTestNotification(
 }
 
 /**
+ * 创建测试评审评论
+ */
+export async function createTestReviewComment(
+  reviewId: string,
+  authorId: string,
+  overrides: Partial<{ content?: string; status?: string; materialId?: string | null; itemId?: string | null; parentId?: string | null }> = {}
+) {
+  return testPrisma.reviewComment.create({
+    data: {
+      reviewId,
+      authorId,
+      content: overrides.content ?? faker.lorem.sentence(),
+      status: overrides.status ?? 'OPEN',
+      materialId: overrides.materialId,
+      itemId: overrides.itemId,
+      parentId: overrides.parentId,
+    },
+  })
+}
+
+/**
+ * 创建测试评审投票
+ */
+export async function createTestReviewVote(
+  reviewId: string,
+  userId: string,
+  overrides: Partial<{ agreed?: boolean }> = {}
+) {
+  return testPrisma.reviewVote.create({
+    data: {
+      reviewId,
+      userId,
+      agreed: overrides.agreed ?? true,
+    },
+  })
+}
+
+/**
  * 创建测试审计日志
  */
 export async function createTestAuditLog(
