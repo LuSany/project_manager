@@ -965,6 +965,10 @@ enum NotificationType {
   TASK_ASSIGNED // 任务分配
   COMMENT_MENTION // 评论提及
   DAILY_DIGEST // 每日摘要
+  REVIEW_COMMENT // 评审评论
+  COMMENT_REPLY // 评论回复
+  COMMENT_RESOLVED // 评论已解决
+  REVIEW_ALL_AGREED // 评审全员同意
 }
 
 model NotificationPreference {
