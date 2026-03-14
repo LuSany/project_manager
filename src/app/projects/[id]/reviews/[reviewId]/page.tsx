@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge'
 import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, ExternalLink, Edit } from 'lucide-react'
 import { format } from 'date-fns'
 import { ReviewEditDialog } from '@/components/reviews/ReviewEditDialog'
+import { ReviewComments } from '@/components/reviews/ReviewComments'
+import { ReviewVoting } from '@/components/reviews/ReviewVoting'
+import { ReviewStatusBanner } from '@/components/reviews/ReviewStatusBanner'
 
 interface ReviewMaterial {
   id: string
@@ -74,6 +77,7 @@ export default function ReviewDetailPage({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
+  const [currentUserId, setCurrentUserId] = useState<string | undefined>(undefined)
 
   const fetchReview = async () => {
     setLoading(true)
@@ -97,6 +101,22 @@ export default function ReviewDetailPage({
   useEffect(() => {
     fetchReview()
   }, [reviewId])
+
+  // 获取当前用户
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      try {
+        const response = await fetch('/api/v1/auth/me')
+        const data = await response.json()
+        if (data.success && data.data?.id) {
+          setCurrentUserId(data.data.id)
+        }
+      } catch (err) {
+        console.error('获取当前用户失败:', err)
+      }
+    }
+    fetchCurrentUser()
+  }, [])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -215,6 +235,12 @@ export default function ReviewDetailPage({
           </CardContent>
         </Card>
       )}
+
+      {/* 评审状态横幅 */}
+      <ReviewStatusBanner
+        status={review.status as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'}
+        scheduledAt={review.scheduledAt}
+      />
 
       {/* 材料列表 */}
       <Card>
@@ -342,6 +368,28 @@ export default function ReviewDetailPage({
               ))}
             </div>
           )}
+        </CardContent>
+      </Card>
+
+      {/* 投票面板 - 仅评审中状态显示 */}
+      {review.status === 'IN_PROGRESS' && (
+        <ReviewVoting
+          reviewId={reviewId}
+          currentUserId={currentUserId}
+          isReviewer={review.participants.some(
+            (p) => p.user.id === currentUserId && p.role === 'REVIEWER'
+          )}
+          onComplete={fetchReview}
+        />
+      )}
+
+      {/* 评论区域 */}
+      <Card>
+        <CardContent className="pt-6">
+          <ReviewComments
+            reviewId={reviewId}
+            currentUserId={currentUserId}
+          />
         </CardContent>
       </Card>
 

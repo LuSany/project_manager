@@ -307,3 +307,67 @@ export async function notifyRiskAlert(
     projectId,
   })
 }
+
+// 评审评论相关通知
+
+export async function notifyReviewComment(
+  userId: string,
+  reviewTitle: string,
+  projectId: string,
+  commenterName: string
+): Promise<void> {
+  await createNotification({
+    userId,
+    type: 'REVIEW_COMMENT',
+    title: '评审新评论',
+    content: `${commenterName} 在评审"${reviewTitle}"中发表了新评论`,
+    link: `/projects/${projectId}/reviews`,
+    projectId,
+  })
+}
+
+export async function notifyCommentReply(
+  userId: string,
+  reviewTitle: string,
+  projectId: string,
+  replierName: string
+): Promise<void> {
+  await createNotification({
+    userId,
+    type: 'COMMENT_REPLY',
+    title: '评论回复',
+    content: `${replierName} 回复了您在评审"${reviewTitle}"中的评论`,
+    link: `/projects/${projectId}/reviews`,
+    projectId,
+  })
+}
+
+export async function notifyCommentResolved(
+  userId: string,
+  reviewTitle: string,
+  projectId: string
+): Promise<void> {
+  await createNotification({
+    userId,
+    type: 'COMMENT_RESOLVED',
+    title: '评论已解决',
+    content: `您在评审"${reviewTitle}"中的评论已被标记为已解决`,
+    link: `/projects/${projectId}/reviews`,
+    projectId,
+  })
+}
+
+export async function notifyReviewAllAgreed(
+  userId: string,
+  reviewTitle: string,
+  projectId: string
+): Promise<void> {
+  await createNotification({
+    userId,
+    type: 'REVIEW_ALL_AGREED',
+    title: '评审全员同意',
+    content: `评审"${reviewTitle}"已获得所有评审人同意，可以结束评审`,
+    link: `/projects/${projectId}/reviews`,
+    projectId,
+  })
+}

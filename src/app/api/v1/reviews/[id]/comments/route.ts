@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthenticatedUser } from '@/lib/auth'
 import { ApiResponder } from '@/lib/api/response'
+import { notifyReviewComment, notifyCommentReply } from '@/lib/notification'
 
 const createCommentSchema = z.object({
   content: z.string().min(1, 'Content cannot be empty'),
@@ -143,6 +144,37 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
         item: { select: { id: true, title: true } },
       },
     })
+
+    // 发送通知
+    try {
+      if (validatedData.parentId) {
+        // 回复通知：通知父评论作者
+        const parentComment = await prisma.reviewComment.findUnique({
+          where: { id: validatedData.parentId },
+          select: { authorId: true },
+        })
+        if (parentComment && parentComment.authorId !== user.id) {
+          await notifyCommentReply(
+            parentComment.authorId,
+            review.title,
+            review.projectId,
+            user.name
+          )
+        }
+      } else {
+        // 新评论通知：通知评审作者
+        if (review.authorId && review.authorId !== user.id) {
+          await notifyReviewComment(
+            review.authorId,
+            review.title,
+            review.projectId,
+            user.name
+          )
+        }
+      }
+    } catch (notifyError) {
+      console.error('Failed to send notification:', notifyError)
+    }
 
     return ApiResponder.success(comment, 'Comment created')
   } catch (error) {

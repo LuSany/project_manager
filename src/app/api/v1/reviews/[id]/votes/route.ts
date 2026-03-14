@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { notifyReviewAllAgreed } from "@/lib/notification";
 
 // GET /api/v1/reviews/[id]/votes - 获取评审投票情况
 export async function GET(
@@ -162,6 +163,34 @@ export async function POST(
         user: { select: { id: true, name: true, avatar: true } },
       },
     });
+
+    // 检查是否所有评审人都已同意
+    if (agreed) {
+      try {
+        const allVotes = await prisma.reviewVote.findMany({
+          where: { reviewId, agreed: true },
+        });
+        const allReviewers = review.participants.filter(
+          (p) => p.role === "REVIEWER"
+        );
+
+        if (allReviewers.length > 0 && allVotes.length === allReviewers.length) {
+          // 找到主持人并发送通知
+          const moderator = review.participants.find(
+            (p) => p.role === "MODERATOR"
+          );
+          if (moderator) {
+            await notifyReviewAllAgreed(
+              moderator.userId,
+              review.title,
+              review.projectId
+            );
+          }
+        }
+      } catch (notifyError) {
+        console.error("Failed to check/send all agreed notification:", notifyError);
+      }
+    }
 
     return NextResponse.json({
       success: true,

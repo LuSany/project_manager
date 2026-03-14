@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getAuthenticatedUser } from "@/lib/auth";
+import { notifyCommentResolved } from "@/lib/notification";
 
 // POST /api/v1/reviews/[id]/comments/[commentId]/resolve - 标记评论已解决
 export async function POST(
@@ -63,6 +64,19 @@ export async function POST(
         author: { select: { id: true, name: true, avatar: true } },
       },
     });
+
+    // 发送通知给评论作者
+    try {
+      if (comment.authorId !== user.id) {
+        await notifyCommentResolved(
+          comment.authorId,
+          comment.review.title,
+          comment.review.projectId
+        );
+      }
+    } catch (notifyError) {
+      console.error("Failed to send notification:", notifyError);
+    }
 
     return NextResponse.json({
       success: true,
