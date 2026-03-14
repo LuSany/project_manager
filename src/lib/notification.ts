@@ -10,6 +10,10 @@ export type NotificationType =
   | 'TASK_ASSIGNED'
   | 'COMMENT_MENTION'
   | 'DAILY_DIGEST'
+  | 'REVIEW_COMMENT'
+  | 'COMMENT_REPLY'
+  | 'COMMENT_RESOLVED'
+  | 'REVIEW_ALL_AGREED'
 
 // Notification channel types
 export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS'
