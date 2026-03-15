@@ -118,7 +118,9 @@ export default function ReviewDetailPage({
   useEffect(() => {
     const fetchCurrentUser = async () => {
       try {
-        const response = await fetch('/api/v1/auth/me')
+        const response = await fetch('/api/v1/users/me', {
+          credentials: 'include',
+        })
 
         // 检查 Content-Type
         const contentType = response.headers.get('content-type')
