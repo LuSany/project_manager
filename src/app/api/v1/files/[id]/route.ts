@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { error } from '@/lib/api/response';
 import { createReadStream } from 'fs';
+import { checkFileAccess } from '@/lib/file-permission';
 
 export async function GET(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
@@ -14,17 +15,19 @@ export async function GET(request: NextRequest, context: any) {
   const id = context.params.id;
 
   try {
+    // 使用新的权限检查函数
+    const accessCheck = await checkFileAccess(id, userId);
+
+    if (!accessCheck.hasAccess) {
+      return error('FORBIDDEN_ERROR', accessCheck.reason || '无权访问此文件', undefined, 403);
+    }
+
     const file = await prisma.fileStorage.findUnique({
       where: { id },
     });
 
     if (!file) {
       return error('文件不存在_ERROR', '文件不存在', undefined, 404);
-    }
-
-    // 验证文件所有权：只能下载自己上传的文件
-    if (file.uploadedBy !== userId) {
-      return error('FORBIDDEN_ERROR', '无权访问此文件', undefined, 403);
     }
 
     const filePath = file.filePath;

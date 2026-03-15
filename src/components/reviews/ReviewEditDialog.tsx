@@ -13,8 +13,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Loader2, Trash2, Upload, X } from 'lucide-react'
+import { Loader2, Trash2, Upload, UserPlus } from 'lucide-react'
 import { Badge } from '@/components/ui/badge'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface MaterialFile {
   id: string
@@ -33,8 +40,16 @@ interface Participant {
   role: string
 }
 
+interface ProjectMember {
+  userId: string
+  userName: string
+  userEmail: string
+  role: string
+}
+
 interface ReviewEditDialogProps {
   reviewId: string
+  projectId?: string
   open: boolean
   onOpenChange: (open: boolean) => void
   onSuccess: () => void
@@ -42,6 +57,7 @@ interface ReviewEditDialogProps {
 
 export function ReviewEditDialog({
   reviewId,
+  projectId,
   open,
   onOpenChange,
   onSuccess,
@@ -55,12 +71,37 @@ export function ReviewEditDialog({
   const [participants, setParticipants] = useState<Participant[]>([])
   const [uploading, setUploading] = useState(false)
 
+  // 添加参与者相关状态
+  const [projectMembers, setProjectMembers] = useState<ProjectMember[]>([])
+  const [selectedUserId, setSelectedUserId] = useState('')
+  const [selectedRole, setSelectedRole] = useState('REVIEWER')
+  const [addingParticipant, setAddingParticipant] = useState(false)
+
   // 加载评审数据
   useEffect(() => {
     if (open && reviewId) {
       loadReview()
     }
   }, [open, reviewId])
+
+  // 加载项目成员
+  useEffect(() => {
+    if (open && projectId) {
+      loadProjectMembers()
+    }
+  }, [open, projectId])
+
+  const loadProjectMembers = async () => {
+    try {
+      const response = await fetch(`/api/v1/projects/${projectId}/members`)
+      const data = await response.json()
+      if (data.success) {
+        setProjectMembers(data.data || [])
+      }
+    } catch (err) {
+      console.error('加载项目成员失败:', err)
+    }
+  }
 
   const loadReview = async () => {
     setLoading(true)
@@ -186,6 +227,45 @@ export function ReviewEditDialog({
     }
   }
 
+  const handleAddParticipant = async () => {
+    if (!selectedUserId) {
+      alert('请选择要添加的用户')
+      return
+    }
+
+    // 检查用户是否已经是参与者
+    if (participants.some((p) => p.user.id === selectedUserId)) {
+      alert('该用户已经是评审参与者')
+      return
+    }
+
+    setAddingParticipant(true)
+    try {
+      const response = await fetch(`/api/v1/reviews/${reviewId}/participants`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: selectedUserId,
+          role: selectedRole,
+        }),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setParticipants((prev) => [...prev, data.data])
+        setSelectedUserId('')
+        setSelectedRole('REVIEWER')
+        onSuccess()
+      } else {
+        alert(data.error?.message || '添加参与者失败')
+      }
+    } catch (err) {
+      console.error('添加参与者失败:', err)
+      alert('添加参与者失败')
+    } finally {
+      setAddingParticipant(false)
+    }
+  }
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
@@ -263,6 +343,52 @@ export function ReviewEditDialog({
             {/* 参与者 */}
             <div className="space-y-4">
               <h3 className="font-medium">参与者</h3>
+
+              {/* 添加参与者 */}
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="user-select" className="text-xs text-muted-foreground">选择用户</Label>
+                  <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+                    <SelectTrigger id="user-select">
+                      <SelectValue placeholder="选择项目成员" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {projectMembers
+                        .filter((m) => !participants.some((p) => p.user.id === m.userId))
+                        .map((member) => (
+                          <SelectItem key={member.userId} value={member.userId}>
+                            {member.userName} ({member.userEmail})
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="w-32">
+                  <Label htmlFor="role-select" className="text-xs text-muted-foreground">角色</Label>
+                  <Select value={selectedRole} onValueChange={setSelectedRole}>
+                    <SelectTrigger id="role-select">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="REVIEWER">评审人</SelectItem>
+                      <SelectItem value="OBSERVER">观察者</SelectItem>
+                      <SelectItem value="SECRETARY">记录员</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button
+                  onClick={handleAddParticipant}
+                  disabled={!selectedUserId || addingParticipant}
+                  size="sm"
+                >
+                  {addingParticipant ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <UserPlus className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+
               {participants.length === 0 ? (
                 <p className="text-sm text-muted-foreground">暂无参与者</p>
               ) : (

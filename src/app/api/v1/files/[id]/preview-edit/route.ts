@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error, unauthorized, forbidden, notFound } from '@/lib/api/response';
 import {
@@ -10,6 +10,7 @@ import {
   generateMockOnlyOfficeResponse,
   buildDocumentConfig,
 } from '@/lib/preview/onlyoffice';
+import { checkFilePreviewAccess } from '@/lib/file-permission';
 
 // GET /api/v1/files/:id/preview-edit - 获取OnlyOffice编辑URL
 export async function GET(request: NextRequest, context: any) {
@@ -24,26 +25,20 @@ export async function GET(request: NextRequest, context: any) {
   const mode = searchParams.get('mode') === 'view' ? 'view' : 'edit';
 
   try {
-    // 检查文件是否存在
+    // 使用新的权限检查函数
+    const accessCheck = await checkFilePreviewAccess(fileId, userId);
+
+    if (!accessCheck.hasAccess) {
+      return forbidden(accessCheck.reason || '无权访问此文件');
+    }
+
+    // 获取文件信息
     const file = await prisma.fileStorage.findUnique({
       where: { id: fileId },
-      include: {
-        uploader: {
-          select: {
-            id: true,
-            name: true,
-          },
-        },
-      },
     });
 
     if (!file) {
       return notFound('文件不存在');
-    }
-
-    // 验证文件所有权
-    if (file.uploadedBy !== userId) {
-      return forbidden('无权访问此文件');
     }
 
     // 检查文件类型是否支持
@@ -85,8 +80,8 @@ export async function GET(request: NextRequest, context: any) {
       fileType,
       mode: mode as 'edit' | 'view',
       user: {
-        id: file.uploader.id,
-        name: file.uploader.name,
+        id: accessCheck.user!.id,
+        name: accessCheck.user!.name,
       },
     };
 

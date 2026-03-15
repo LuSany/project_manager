@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, ExternalLink, Edit } from 'lucide-react'
+import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, Eye, Edit } from 'lucide-react'
 import { format } from 'date-fns'
 import { ReviewEditDialog } from '@/components/reviews/ReviewEditDialog'
 import { ReviewComments } from '@/components/reviews/ReviewComments'
@@ -180,6 +180,34 @@ export default function ReviewDetailPage({
     }
   }
 
+  // 预览文件
+  const handlePreview = async (material: ReviewMaterial) => {
+    try {
+      // 获取预览URL
+      const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`)
+      const data = await response.json()
+
+      if (data.success) {
+        const { previewType } = data.data
+
+        if (previewType === 'onlyoffice') {
+          // Office文档：打开OnlyOffice预览页面
+          window.open(`/files/${material.fileId}/preview`, '_blank')
+        } else {
+          // 图片、PDF等：直接打开文件
+          window.open(`/api/v1/files/${material.fileId}`, '_blank')
+        }
+      } else {
+        // 降级：直接打开文件
+        window.open(`/api/v1/files/${material.fileId}`, '_blank')
+      }
+    } catch (err) {
+      console.error('预览文件失败:', err)
+      // 降级：直接打开文件
+      window.open(`/api/v1/files/${material.fileId}`, '_blank')
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -306,10 +334,10 @@ export default function ReviewDetailPage({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => window.open(`/api/v1/files/${material.fileId}`, '_blank')}
+                      onClick={() => handlePreview(material)}
                       title="预览文件"
                     >
-                      <ExternalLink className="h-4 w-4" />
+                      <Eye className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
@@ -418,6 +446,7 @@ export default function ReviewDetailPage({
       {/* 编辑对话框 */}
       <ReviewEditDialog
         reviewId={reviewId}
+        projectId={review.project.id}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSuccess={fetchReview}
