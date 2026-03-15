@@ -13,14 +13,14 @@ import {
 import { checkFilePreviewAccess } from '@/lib/file-permission';
 
 // GET /api/v1/files/:id/preview-edit - 获取OnlyOffice编辑URL
-export async function GET(request: NextRequest, context: any) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const userId = request.cookies.get('user-id')?.value;
 
   if (!userId) {
     return unauthorized('未授权，请先登录');
   }
 
-  const fileId = context.params.id;
+  const { id: fileId } = await params;
   const { searchParams } = new URL(request.url);
   const mode = searchParams.get('mode') === 'view' ? 'view' : 'edit';
 
