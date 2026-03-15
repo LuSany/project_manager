@@ -89,7 +89,8 @@ export default function ProjectsAdminPage() {
 
   const fetchProjects = async () => {
     try {
-      const response = await api.get('/projects?all=true')
+      const response = await api.get<Project[]>('/projects?all=true')
+      // API 返回格式: { success: true, data: [...] }
       const data = (response as { data?: Project[] }).data || []
       setProjects(data)
 

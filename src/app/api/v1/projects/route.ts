@@ -34,6 +34,7 @@ export async function GET(request: NextRequest, context: any) {
   const page = parseInt(searchParams.get('page') || '1');
   const pageSize = parseInt(searchParams.get('pageSize') || '10');
   const status = searchParams.get('status') as any;
+  const getAll = searchParams.get('all') === 'true'; // 支持 all=true 参数
 
   // 构建查询条件：用户只能看到自己作为所有者或成员的项目，或者管理员可以看到所有项目
   const where: any = {};
@@ -48,6 +49,32 @@ export async function GET(request: NextRequest, context: any) {
       { ownerId: userId },
       { members: { some: { userId: userId } } }
     ];
+  }
+
+  // 如果 all=true，返回所有项目（不分页）
+  if (getAll) {
+    const projects = await prisma.project.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+          },
+        },
+        _count: {
+          select: {
+            members: true,
+            tasks: true,
+            risks: true,
+          },
+        },
+      },
+    });
+
+    return success(projects);
   }
 
   const skip = (page - 1) * pageSize;
