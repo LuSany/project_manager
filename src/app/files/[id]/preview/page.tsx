@@ -19,7 +19,9 @@ export default function FilePreviewPage({
   useEffect(() => {
     const loadPreview = async () => {
       try {
-        const response = await fetch(`/api/v1/files/${id}/preview-edit?mode=view`)
+        const response = await fetch(`/api/v1/files/${id}/preview-edit?mode=view`, {
+          credentials: 'include',
+        })
         const data = await response.json()
 
         if (data.success) {

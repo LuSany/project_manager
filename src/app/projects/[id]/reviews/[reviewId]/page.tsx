@@ -184,7 +184,7 @@ export default function ReviewDetailPage({
   const handlePreview = async (material: ReviewMaterial) => {
     try {
       // 获取预览URL
-      const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`)
+      const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`, { credentials: 'include' })
       const data = await response.json()
 
       if (data.success) {
