@@ -24,6 +24,19 @@ export class ApiClient {
       ...options,
     });
 
+    // 检查 Content-Type 确保返回的是 JSON
+    const contentType = response.headers.get("content-type");
+    if (!contentType || !contentType.includes("application/json")) {
+      // 如果返回的是 HTML（如错误页面），返回错误响应
+      return {
+        success: false,
+        error: {
+          code: "INVALID_RESPONSE",
+          message: response.status === 401 ? "请先登录" : "服务器返回了无效的响应格式",
+        },
+      } as ApiResponse<T>;
+    }
+
     const data = await response.json();
 
     if (!response.ok) {

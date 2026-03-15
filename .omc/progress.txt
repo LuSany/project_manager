@@ -1,0 +1,46 @@
+# 修复管理后台项目删除功能 - 进度记录
+
+## 实现摘要
+
+### US-001: 后端删除 API ✅
+- 创建文件：`/src/app/api/v1/admin/projects/[id]/route.ts`
+- 实现 DELETE 方法
+- 添加 `checkAdmin` 辅助函数验证权限
+- 权限验证：从 cookies 获取 user-id，检查角色是否为 ADMIN
+- 错误处理：
+  - 未登录 → 401
+  - 非管理员 → 403
+  - 项目不存在 → 404
+- Prisma 级联删除关联数据
+
+### US-002: 前端删除按钮 ✅
+- 修改文件：`/src/app/(main)/admin/projects/page.tsx`
+- 添加导入：`Button`, `Trash2`
+- 添加 `handleDelete` 函数：
+  - 确认对话框提示
+  - 调用 `api.delete('/admin/projects/' + id)`
+  - 删除成功后更新列表和统计
+  - 错误时显示提示
+- 表格添加"操作"列
+- 每行添加删除按钮（红色 destructive 样式）
+
+### US-003: 构建验证 ✅
+- 修改的文件无 TypeScript 错误
+- `Button` 和 `Trash2` 未使用警告需要清理
+
+## 文件变更清单
+
+1. 新建：`src/app/api/v1/admin/projects/[id]/route.ts` (54 行)
+2. 修改：`src/app/(main)/admin/projects/page.tsx` (添加删除功能)
+
+## API 端点
+
+- `DELETE /api/v1/admin/projects/[id]`
+- 权限：仅 ADMIN
+- 响应：`{ success: true, data: { id }, message }`
+
+## Learnings
+
+- API 客户端已有 `api.delete` 方法，直接使用
+- Prisma 的 `project.delete` 会自动级联删除关联数据
+- 前端使用 `confirm()` 简单确认对话框

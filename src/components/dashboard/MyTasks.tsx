@@ -24,7 +24,9 @@ export function MyTasks() {
   const fetchTasks = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/v1/dashboard/my-tasks');
+      const response = await fetch('/api/v1/dashboard/my-tasks', {
+        credentials: 'include'
+      });
       const data = await response.json();
       if (data.success) {
         setTasks(data.data || []);

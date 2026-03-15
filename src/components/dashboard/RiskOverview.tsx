@@ -42,7 +42,9 @@ export function RiskOverview() {
   useEffect(() => {
     const fetchRisks = async () => {
       try {
-        const response = await fetch('/api/v1/dashboard/risks')
+        const response = await fetch('/api/v1/dashboard/risks', {
+          credentials: 'include'
+        })
         const data = await response.json()
         if (data.success) {
           setRisks(data.data.risks || [])

@@ -174,7 +174,9 @@ export function StatsGrid({ loading }: StatsGridProps) {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch('/api/v1/dashboard/stats')
+        const response = await fetch('/api/v1/dashboard/stats', {
+          credentials: 'include'
+        })
         const data = await response.json()
         if (data.success) {
           setStats({

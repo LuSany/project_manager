@@ -29,7 +29,9 @@ export function BasicInfoStep({ data, onChange }: BasicInfoStepProps) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    fetch('/api/v1/reviews/types?isActive=true')
+    fetch('/api/v1/reviews/types?isActive=true', {
+      credentials: 'include'
+    })
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {

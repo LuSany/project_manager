@@ -81,6 +81,7 @@ export function CreateReviewDialog({ projectId, onSuccess }: CreateReviewDialogP
       const response = await fetch('/api/v1/reviews', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           projectId,
           title,

@@ -41,6 +41,7 @@ export function PreviewServiceConfig({ onSuccess }: PreviewServiceConfigProps) {
       const response = await fetch('/api/v1/preview/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({
           serviceType,
           endpoint,

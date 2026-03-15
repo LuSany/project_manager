@@ -52,7 +52,9 @@ export function WelcomeSection() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await fetch('/api/v1/notifications?unread=true')
+      const response = await fetch('/api/v1/notifications?unread=true', {
+        credentials: 'include'
+      })
       const data = await response.json()
       if (data.success) {
         setUnreadCount(data.data?.length || 0)

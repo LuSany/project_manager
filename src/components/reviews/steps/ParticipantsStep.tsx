@@ -56,7 +56,9 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
 
   // 获取项目成员
   useEffect(() => {
-    fetch(`/api/v1/projects/${projectId}/members`)
+    fetch(`/api/v1/projects/${projectId}/members`, {
+      credentials: 'include'
+    })
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {
@@ -74,7 +76,9 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
       if (query) params.append('search', query)
       params.append('pageSize', '50')
 
-      const response = await fetch(`/api/v1/users?${params.toString()}`)
+      const response = await fetch(`/api/v1/users?${params.toString()}`, {
+        credentials: 'include'
+      })
       const result = await response.json()
       if (result.success) {
         setSystemUsers(result.data?.data || result.data || [])
@@ -88,7 +92,9 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
 
   // 获取评审组
   useEffect(() => {
-    fetch('/api/v1/review-groups?isActive=true')
+    fetch('/api/v1/review-groups?isActive=true', {
+      credentials: 'include'
+    })
       .then((res) => res.json())
       .then((result) => {
         if (result.success) {

@@ -84,7 +84,9 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
   useEffect(() => {
     const fetchUserRole = async () => {
       try {
-        const response = await fetch('/api/v1/users/me');
+        const response = await fetch('/api/v1/users/me', {
+          credentials: 'include'
+        });
         const data = await response.json();
         if (data.success) {
           setUserRole(data.data.role);

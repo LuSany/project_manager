@@ -84,11 +84,23 @@ export default function ReviewDetailPage({
     setError(null)
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}`)
+
+      // 检查 Content-Type 确保返回的是 JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        if (response.status === 401) {
+          setError('请先登录')
+        } else {
+          setError('服务器返回了无效的响应')
+        }
+        return
+      }
+
       const data = await response.json()
       if (data.success) {
         setReview(data.data)
       } else {
-        setError(data.message || '获取评审详情失败')
+        setError(data.error?.message || data.message || '获取评审详情失败')
       }
     } catch (err) {
       setError('获取评审详情失败')
@@ -107,6 +119,14 @@ export default function ReviewDetailPage({
     const fetchCurrentUser = async () => {
       try {
         const response = await fetch('/api/v1/auth/me')
+
+        // 检查 Content-Type
+        const contentType = response.headers.get('content-type')
+        if (!contentType || !contentType.includes('application/json')) {
+          console.error('获取当前用户失败: 服务器返回了无效的响应')
+          return
+        }
+
         const data = await response.json()
         if (data.success && data.data?.id) {
           setCurrentUserId(data.data.id)

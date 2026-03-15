@@ -28,7 +28,9 @@ export function NotificationDrawer({ open, onClose }: NotificationDrawerProps) {
   const fetchNotifications = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/v1/notifications')
+      const response = await fetch('/api/v1/notifications', {
+        credentials: 'include'
+      })
       const data = await response.json()
       if (data.success) {
         setNotifications(data.data || [])

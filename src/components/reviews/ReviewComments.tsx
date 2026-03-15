@@ -66,7 +66,7 @@ export function ReviewComments({
       const data = await res.json();
 
       if (data.success) {
-        let sorted = [...data.data];
+        const sorted = [...data.data];
         if (sort === "oldest") {
           sorted.reverse();
         }

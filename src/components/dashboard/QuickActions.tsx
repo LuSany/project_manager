@@ -50,21 +50,27 @@ export function QuickActions() {
     const fetchData = async () => {
       try {
         // 获取当前用户信息
-        const userRes = await fetch('/api/v1/users/me')
+        const userRes = await fetch('/api/v1/users/me', {
+          credentials: 'include'
+        })
         const userData = await userRes.json()
         if (userData.success) {
           setCurrentUser(userData.data)
         }
 
         // 获取最近项目
-        const projectsRes = await fetch('/api/v1/projects?limit=3&sort=updatedAt')
+        const projectsRes = await fetch('/api/v1/projects?limit=3&sort=updatedAt', {
+          credentials: 'include'
+        })
         const projectsData = await projectsRes.json()
         if (projectsData.success && projectsData.data?.items) {
           setRecentProjects(projectsData.data.items.slice(0, 3) || [])
         }
 
         // 获取即将到来的里程碑
-        const milestonesRes = await fetch('/api/v1/milestones/upcoming?limit=3')
+        const milestonesRes = await fetch('/api/v1/milestones/upcoming?limit=3', {
+          credentials: 'include'
+        })
         const milestonesData = await milestonesRes.json()
         if (milestonesData.success) {
           setUpcomingMilestones(milestonesData.data || [])

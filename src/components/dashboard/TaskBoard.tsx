@@ -35,7 +35,9 @@ export function TaskBoard() {
   useEffect(() => {
     const fetchTasks = async () => {
       try {
-        const response = await fetch('/api/v1/dashboard/my-tasks')
+        const response = await fetch('/api/v1/dashboard/my-tasks', {
+          credentials: 'include'
+        })
         const data = await response.json()
         if (data.success) {
           setTasks(data.data || [])
