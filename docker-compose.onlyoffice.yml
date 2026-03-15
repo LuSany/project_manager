@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  onlyoffice:
+    image: onlyoffice/documentserver:latest
+    container_name: onlyoffice-document-server
+    ports:
+      - "8080:80"
+    environment:
+      - JWT_ENABLED=false
+      - ONLYOFFICE_HTTP_PORT=80
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_logs:/var/log/onlyoffice
+      - onlyoffice_certs:/usr/share/trusted-ca
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  onlyoffice_data:
+  onlyoffice_logs:
+  onlyoffice_certs:
