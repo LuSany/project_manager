@@ -8,6 +8,7 @@
 import { faker } from '@faker-js/faker'
 import { testPrisma } from './test-db'
 import type { Prisma } from '@prisma/client'
+import { CommentStatus } from '@prisma/client'
 
 // ============================================
 // Level 0: 独立模型（无外部依赖）
@@ -351,14 +352,14 @@ export async function createTestNotification(
 export async function createTestReviewComment(
   reviewId: string,
   authorId: string,
-  overrides: Partial<{ content?: string; status?: string; materialId?: string | null; itemId?: string | null; parentId?: string | null }> = {}
+  overrides: Partial<{ content?: string; status?: CommentStatus; materialId?: string | null; itemId?: string | null; parentId?: string | null }> = {}
 ) {
   return testPrisma.reviewComment.create({
     data: {
       reviewId,
       authorId,
       content: overrides.content ?? faker.lorem.sentence(),
-      status: overrides.status ?? 'OPEN',
+      status: overrides.status ?? CommentStatus.OPEN,
       materialId: overrides.materialId,
       itemId: overrides.itemId,
       parentId: overrides.parentId,
