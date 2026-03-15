@@ -11,8 +11,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { Button } from '@/components/ui/button'
 import { api } from '@/lib/api/client'
-import { Loader2, Users, CheckSquare, AlertCircle, Calendar } from 'lucide-react'
+import { Loader2, Users, CheckSquare, AlertCircle, Calendar, Trash2 } from 'lucide-react'
 
 interface Project {
   id: string
@@ -58,6 +59,29 @@ export default function ProjectsAdminPage() {
     active: 0,
     completed: 0,
   })
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!confirm(`确定要删除项目"${name}"吗？此操作不可恢复。`)) {
+      return
+    }
+
+    try {
+      const response = await api.delete('/admin/projects/' + id)
+      if ((response as { success?: boolean }).success) {
+        setProjects(prev => prev.filter(p => p.id !== id))
+        // 更新统计
+        const updated = projects.filter(p => p.id !== id)
+        setStats({
+          total: updated.length,
+          active: updated.filter(p => p.status === 'ACTIVE').length,
+          completed: updated.filter(p => p.status === 'COMPLETED').length,
+        })
+      }
+    } catch (error) {
+      console.error('删除项目失败:', error)
+      alert('删除项目失败，请重试')
+    }
+  }
 
   useEffect(() => {
     fetchProjects()
@@ -151,6 +175,7 @@ export default function ProjectsAdminPage() {
                   <TableHead>成员数</TableHead>
                   <TableHead>任务数</TableHead>
                   <TableHead>创建时间</TableHead>
+                  <TableHead>操作</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -188,6 +213,15 @@ export default function ProjectsAdminPage() {
                     </TableCell>
                     <TableCell>
                       {new Date(project.createdAt).toLocaleDateString('zh-CN')}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => handleDelete(project.id, project.name)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
