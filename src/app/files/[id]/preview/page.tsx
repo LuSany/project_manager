@@ -6,11 +6,7 @@ import { Button } from '@/components/ui/button'
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
 
-export default function FilePreviewPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default function FilePreviewPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -42,42 +38,47 @@ export default function FilePreviewPage({
 
   useEffect(() => {
     if (config && !loading) {
-      // 加载OnlyOffice编辑器API
-      const loadOnlyOffice = () => {
-        const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || config.url || 'http://localhost:8082'
-        const script = document.createElement('script')
-        script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
-        script.onload = () => {
-          // 初始化编辑器
-          if ((window as any).DocsAPI) {
-            new (window as any).DocsAPI.DocEditor('onlyoffice-editor', config.config)
-          }
+      const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || 'http://localhost:8082'
+
+      const existingScript = document.querySelector(
+        `script[src="${onlyOfficeUrl}/web-apps/apps/api/documents/api.js"]`
+      )
+      if (existingScript) {
+        if ((window as any).DocsAPI) {
+          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', config.config)
         }
-        script.onerror = () => {
-          setError('OnlyOffice服务不可用，请检查服务是否已启动')
-        }
-        document.head.appendChild(script)
+        return
       }
 
-      loadOnlyOffice()
+      const script = document.createElement('script')
+      script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
+      script.onload = () => {
+        if ((window as any).DocsAPI) {
+          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', config.config)
+        }
+      }
+      script.onerror = () => {
+        setError('OnlyOffice服务不可用，请检查服务是否已启动')
+      }
+      document.head.appendChild(script)
     }
   }, [config, loading])
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
         <p className="text-red-500">{error}</p>
         <Link href="/">
           <Button variant="outline">
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="mr-2 h-4 w-4" />
             返回
           </Button>
         </Link>
@@ -87,7 +88,7 @@ export default function FilePreviewPage({
 
   return (
     <div className="h-screen w-screen">
-      <div id="onlyoffice-editor" className="w-full h-full"></div>
+      <div id="onlyoffice-editor" className="h-full w-full"></div>
     </div>
   )
 }
