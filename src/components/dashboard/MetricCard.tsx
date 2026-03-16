@@ -177,6 +177,10 @@ export function StatsGrid({ loading }: StatsGridProps) {
         const response = await fetch('/api/v1/dashboard/stats', {
           credentials: 'include'
         })
+        if (!response.ok) {
+          // 未授权或错误响应，不尝试解析 JSON
+          return
+        }
         const data = await response.json()
         if (data.success) {
           setStats({

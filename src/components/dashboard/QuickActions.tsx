@@ -53,6 +53,10 @@ export function QuickActions() {
         const userRes = await fetch('/api/v1/users/me', {
           credentials: 'include'
         })
+        if (!userRes.ok) {
+          setLoading(false)
+          return
+        }
         const userData = await userRes.json()
         if (userData.success) {
           setCurrentUser(userData.data)
@@ -62,6 +66,10 @@ export function QuickActions() {
         const projectsRes = await fetch('/api/v1/projects?limit=3&sort=updatedAt', {
           credentials: 'include'
         })
+        if (!projectsRes.ok) {
+          setLoading(false)
+          return
+        }
         const projectsData = await projectsRes.json()
         if (projectsData.success && projectsData.data?.items) {
           setRecentProjects(projectsData.data.items.slice(0, 3) || [])
@@ -71,6 +79,10 @@ export function QuickActions() {
         const milestonesRes = await fetch('/api/v1/milestones/upcoming?limit=3', {
           credentials: 'include'
         })
+        if (!milestonesRes.ok) {
+          setLoading(false)
+          return
+        }
         const milestonesData = await milestonesRes.json()
         if (milestonesData.success) {
           setUpcomingMilestones(milestonesData.data || [])

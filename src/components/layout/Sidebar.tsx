@@ -87,6 +87,10 @@ export function Sidebar({ className, collapsed: controlledCollapsed, onCollapsed
         const response = await fetch('/api/v1/users/me', {
           credentials: 'include'
         });
+        if (!response.ok) {
+          // 未授权或错误响应，不尝试解析 JSON
+          return;
+        }
         const data = await response.json();
         if (data.success) {
           setUserRole(data.data.role);

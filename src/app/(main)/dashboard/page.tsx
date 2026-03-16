@@ -28,7 +28,13 @@ export default function DashboardPage() {
 
   const fetchStats = async () => {
     try {
-      const statsResponse = await fetch('/api/v1/dashboard/stats')
+      const statsResponse = await fetch('/api/v1/dashboard/stats', {
+        credentials: 'include'
+      })
+      if (!statsResponse.ok) {
+        // 未授权或错误响应，不尝试解析 JSON
+        return
+      }
       const statsData = await statsResponse.json()
       if (statsData.success) {
         setStats({
