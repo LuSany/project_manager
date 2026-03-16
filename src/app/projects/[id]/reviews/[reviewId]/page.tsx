@@ -5,7 +5,18 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { ArrowLeft, Loader2, FileText, Users, CheckCircle2, Clock, Calendar, Download, Eye, Edit } from 'lucide-react'
+import {
+  ArrowLeft,
+  Loader2,
+  FileText,
+  Users,
+  CheckCircle2,
+  Clock,
+  Calendar,
+  Download,
+  Eye,
+  Edit,
+} from 'lucide-react'
 import { format } from 'date-fns'
 import { ReviewEditDialog } from '@/components/reviews/ReviewEditDialog'
 import { ReviewComments } from '@/components/reviews/ReviewComments'
@@ -14,7 +25,7 @@ import { ReviewStatusBanner } from '@/components/reviews/ReviewStatusBanner'
 
 interface ReviewMaterial {
   id: string
-  fileId: string  // 添加 fileId 字段
+  fileId: string // 添加 fileId 字段
   fileName: string
   fileSize: number
   fileType: string
@@ -183,28 +194,42 @@ export default function ReviewDetailPage({
   // 预览文件
   const handlePreview = async (material: ReviewMaterial) => {
     try {
-      // 获取预览URL
-      const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`, { credentials: 'include' })
+      // 获取预览 URL
+      const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`, {
+        credentials: 'include',
+      })
       const data = await response.json()
 
       if (data.success) {
         const { previewType } = data.data
 
         if (previewType === 'onlyoffice') {
-          // Office文档：打开OnlyOffice预览页面
+          // Office 文档：打开 OnlyOffice 预览页面
           window.open(`/files/${material.fileId}/preview`, '_blank')
         } else {
-          // 图片、PDF等：直接打开文件
-          window.open(`/api/v1/files/${material.fileId}`, '_blank')
+          // 图片、PDF 等：使用 a 标签打开，确保 cookies 传递
+          const link = document.createElement('a')
+          link.href = `/api/v1/files/${material.fileId}`
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          link.click()
         }
       } else {
-        // 降级：直接打开文件
-        window.open(`/api/v1/files/${material.fileId}`, '_blank')
+        // 降级：使用 a 标签打开文件
+        const link = document.createElement('a')
+        link.href = `/api/v1/files/${material.fileId}`
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        link.click()
       }
     } catch (err) {
       console.error('预览文件失败:', err)
-      // 降级：直接打开文件
-      window.open(`/api/v1/files/${material.fileId}`, '_blank')
+      // 降级：使用 a 标签打开文件
+      const link = document.createElement('a')
+      link.href = `/api/v1/files/${material.fileId}`
+      link.target = '_blank'
+      link.rel = 'noopener noreferrer'
+      link.click()
     }
   }
 
@@ -250,16 +275,14 @@ export default function ReviewDetailPage({
             <h1 className="text-2xl font-bold">{review.title}</h1>
             {getStatusBadge(review.status)}
           </div>
-          <div className="flex items-center gap-4 text-muted-foreground">
+          <div className="text-muted-foreground flex items-center gap-4">
             <span>评审类型: {review.type.displayName}</span>
-            {review.author && (
-              <span>作者: {review.author.name}</span>
-            )}
+            {review.author && <span>作者: {review.author.name}</span>}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
           <Button onClick={() => setEditDialogOpen(true)}>
-            <Edit className="h-4 w-4 mr-2" />
+            <Edit className="mr-2 h-4 w-4" />
             编辑评审
           </Button>
           <div className="text-muted-foreground text-right text-sm">
@@ -320,17 +343,18 @@ export default function ReviewDetailPage({
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="text-muted-foreground text-xs mr-2">
+                    <div className="text-muted-foreground mr-2 text-xs">
                       {format(new Date(material.uploadedAt), 'yyyy-MM-dd HH:mm')}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => window.open(`/api/v1/files/${material.fileId}`, '_blank')}
-                      title="下载文件"
+                    <a
+                      href={`/api/v1/files/${material.fileId}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
                     >
-                      <Download className="h-4 w-4" />
-                    </Button>
+                      <Button variant="ghost" size="sm" title="下载文件">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </a>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -436,10 +460,7 @@ export default function ReviewDetailPage({
       {/* 评论区域 */}
       <Card>
         <CardContent className="pt-6">
-          <ReviewComments
-            reviewId={reviewId}
-            currentUserId={currentUserId}
-          />
+          <ReviewComments reviewId={reviewId} currentUserId={currentUserId} />
         </CardContent>
       </Card>
 
