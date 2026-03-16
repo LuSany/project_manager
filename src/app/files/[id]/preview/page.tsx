@@ -44,7 +44,7 @@ export default function FilePreviewPage({
     if (config && !loading) {
       // 加载OnlyOffice编辑器API
       const loadOnlyOffice = () => {
-        const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || 'http://localhost:8080'
+        const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || config.url || 'http://localhost:8082'
         const script = document.createElement('script')
         script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
         script.onload = () => {

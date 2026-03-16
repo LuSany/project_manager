@@ -66,7 +66,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const documentKey = generateDocumentKey(file.id, 1);
 
     // 构建预签名文件URL
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.ONLYOFFICE_CALLBACK_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
     const fileUrl = `${appUrl}/api/v1/files/${file.id}`;
 
     // 获取文件类型
