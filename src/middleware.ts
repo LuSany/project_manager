@@ -73,12 +73,20 @@ export async function middleware(request: NextRequest) {
       '/api/v1/auth/login',
       '/api/v1/auth/register',
       '/api/v1/auth/forgot-password',
-      '/api/v1/auth/reset-password'
+      '/api/v1/auth/reset-password',
     ]
 
     // 精确匹配公开路由，不拦截登录请求
     if (publicRoutes.includes(pathname)) {
       return NextResponse.next()
+    }
+
+    // 文件下载 API 支持 document key 认证（OnlyOffice 服务访问）
+    if (pathname.match(/\/api\/v1\/files\/[^/]+\/download/)) {
+      const documentKey = request.nextUrl.searchParams.get('key')
+      if (documentKey) {
+        return NextResponse.next()
+      }
     }
 
     // 检查认证
@@ -113,19 +121,22 @@ export async function middleware(request: NextRequest) {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 60 * 60 * 24 // 24 hours
+          maxAge: 60 * 60 * 24,
+          path: '/',
         })
         response.cookies.set('user-email', (payload as any).email, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 60 * 60 * 24
+          maxAge: 60 * 60 * 24,
+          path: '/',
         })
         response.cookies.set('user-role', (payload as any).role, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
-          maxAge: 60 * 60 * 24
+          maxAge: 60 * 60 * 24,
+          path: '/',
         })
         return response
       } catch (error) {
