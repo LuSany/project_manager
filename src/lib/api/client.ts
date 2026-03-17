@@ -1,114 +1,143 @@
-"use client";
+'use client'
 
-import type {
-  ApiResponse,
-  PaginatedResponse,
-  PaginationParams,
-} from "@/types/api";
+import type { ApiResponse, PaginatedResponse, PaginationParams } from '@/types/api'
 
-const API_BASE = "/api/v1";
+const API_BASE = '/api/v1'
+const DEFAULT_TIMEOUT = 30000 // 30秒默认超时
+
+/**
+ * 自定义 API 错误类
+ */
+export class ApiError extends Error {
+  constructor(
+    public status: number,
+    public code: string,
+    message: string,
+    public data?: unknown
+  ) {
+    super(message)
+    this.name = 'ApiError'
+  }
+}
+
+/**
+ * API 请求选项
+ */
+interface RequestOptions extends RequestInit {
+  timeout?: number
+}
 
 export class ApiClient {
   private static async request<T>(
     endpoint: string,
-    options?: RequestInit
+    options?: RequestOptions
   ): Promise<ApiResponse<T>> {
-    const url = `${API_BASE}${endpoint}`;
+    const url = `${API_BASE}${endpoint}`
+    const { timeout = DEFAULT_TIMEOUT, ...fetchOptions } = options || {}
 
-    const response = await fetch(url, {
-      credentials: "include", // 确保包含 cookie
-      headers: {
-        "Content-Type": "application/json",
-        ...options?.headers,
-      },
-      ...options,
-    });
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), timeout)
 
-    // 检查 Content-Type 确保返回的是 JSON
-    const contentType = response.headers.get("content-type");
-    if (!contentType || !contentType.includes("application/json")) {
-      // 如果返回的是 HTML（如错误页面），返回错误响应
+    try {
+      const response = await fetch(url, {
+        credentials: 'include', // 确保包含 cookie
+        headers: {
+          'Content-Type': 'application/json',
+          ...fetchOptions?.headers,
+        },
+        signal: controller.signal,
+        ...fetchOptions,
+      })
+
+      // 检查 Content-Type 确保返回的是 JSON
+      const contentType = response.headers.get('content-type')
+      if (!contentType || !contentType.includes('application/json')) {
+        // 如果返回的是 HTML（如错误页面），返回错误响应
+        return {
+          success: false,
+          error: {
+            code: 'INVALID_RESPONSE',
+            message: response.status === 401 ? '请先登录' : '服务器返回了无效的响应格式',
+          },
+        } as ApiResponse<T>
+      }
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        return data as ApiResponse<T>
+      }
+
+      return data as ApiResponse<T>
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return {
+          success: false,
+          error: {
+            code: 'TIMEOUT',
+            message: '请求超时，请稍后重试',
+          },
+        } as ApiResponse<T>
+      }
       return {
         success: false,
         error: {
-          code: "INVALID_RESPONSE",
-          message: response.status === 401 ? "请先登录" : "服务器返回了无效的响应格式",
+          code: 'NETWORK_ERROR',
+          message: error instanceof Error ? error.message : '网络请求失败',
         },
-      } as ApiResponse<T>;
+      } as ApiResponse<T>
+    } finally {
+      clearTimeout(timeoutId)
     }
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      return data as ApiResponse<T>;
-    }
-
-    return data as ApiResponse<T>;
   }
 
   // ========================================================================
   // GET请求
   // ========================================================================
 
-  static async get<T>(
-    endpoint: string,
-    params?: PaginationParams
-  ): Promise<ApiResponse<T>> {
-    const queryString = params
-      ? `?${new URLSearchParams(params as any).toString()}`
-      : "";
+  static async get<T>(endpoint: string, params?: PaginationParams): Promise<ApiResponse<T>> {
+    const queryString = params ? `?${new URLSearchParams(params as any).toString()}` : ''
 
-    return this.request<T>(`${endpoint}${queryString}`);
+    return this.request<T>(`${endpoint}${queryString}`)
   }
 
   // ========================================================================
   // POST请求
   // ========================================================================
 
-  static async post<T>(
-    endpoint: string,
-    data?: unknown
-  ): Promise<ApiResponse<T>> {
+  static async post<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
-      method: "POST",
+      method: 'POST',
       body: JSON.stringify(data),
-    });
+    })
   }
 
   // ========================================================================
   // PUT请求
   // ========================================================================
 
-  static async put<T>(
-    endpoint: string,
-    data?: unknown
-  ): Promise<ApiResponse<T>> {
+  static async put<T>(endpoint: string, data?: unknown): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
-      method: "PUT",
+      method: 'PUT',
       body: JSON.stringify(data),
-    });
+    })
   }
 
   // ========================================================================
   // DELETE请求
   // ========================================================================
 
-  static async delete<T>(
-    endpoint: string
-  ): Promise<ApiResponse<T>> {
+  static async delete<T>(endpoint: string): Promise<ApiResponse<T>> {
     return this.request<T>(endpoint, {
-      method: "DELETE",
-    });
+      method: 'DELETE',
+    })
   }
 }
 
 // 导出便捷方法
 export const api = {
-  get: <T>(url: string, params?: PaginationParams) =>
-    ApiClient.get<T>(url, params),
-  post: <T>(url: string, data?: unknown) =>
-    ApiClient.post<T>(url, data),
-  put: <T>(url: string, data?: unknown) =>
-    ApiClient.put<T>(url, data),
+  get: <T>(url: string, params?: PaginationParams) => ApiClient.get<T>(url, params),
+  post: <T>(url: string, data?: unknown) => ApiClient.post<T>(url, data),
+  put: <T>(url: string, data?: unknown) => ApiClient.put<T>(url, data),
   delete: <T>(url: string) => ApiClient.delete<T>(url),
-};
+}
