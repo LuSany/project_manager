@@ -99,6 +99,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const editorUrl = generateOnlyOfficeUrl(config)
     const docConfig = buildDocumentConfig(config)
 
+    await prisma.fileStorage.update({
+      where: { id: file.id },
+      data: { documentKey },
+    })
+
     return success({
       url: editorUrl,
       config: docConfig,
