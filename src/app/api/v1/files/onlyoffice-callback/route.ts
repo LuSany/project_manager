@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { error } from '@/lib/api/response'
 import * as crypto from 'crypto'
-import { writeFile } from 'fs/promises'
+import { writeFile, rename, unlink } from 'fs/promises'
+import { existsSync } from 'fs'
 
 /**
  * POST /api/v1/files/onlyoffice-callback
@@ -69,21 +70,32 @@ export async function POST(request: NextRequest) {
         }
 
         const buffer = Buffer.from(await response.arrayBuffer())
+        const tempFilePath = `${matchedFile.filePath}.tmp`
 
-        await writeFile(matchedFile.filePath, buffer)
+        await writeFile(tempFilePath, buffer)
 
-        await prisma.fileStorage.update({
-          where: { id: matchedFile.id },
-          data: {
-            fileSize: buffer.length,
-            updatedAt: new Date(),
-          },
+        await prisma.$transaction(async (tx) => {
+          await tx.fileStorage.update({
+            where: { id: matchedFile.id },
+            data: {
+              fileSize: buffer.length,
+              updatedAt: new Date(),
+            },
+          })
+
+          await rename(tempFilePath, matchedFile.filePath)
         })
 
         console.log('OnlyOffice文件更新成功:', matchedFile.id)
         return NextResponse.json({ error: 0 })
       } catch (downloadError) {
         console.error('下载OnlyOffice更新文件失败:', downloadError)
+
+        const tempFilePath = `${matchedFile.filePath}.tmp`
+        if (existsSync(tempFilePath)) {
+          await unlink(tempFilePath).catch(() => {})
+        }
+
         return NextResponse.json({ error: 1 })
       }
     }
