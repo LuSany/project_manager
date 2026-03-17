@@ -349,7 +349,13 @@ export interface MockFileStorage {
   fileSize: number
   mimeType: string
   uploadedBy: string
+  documentKey?: string | null
+  version: number
+  lockedBy?: string | null
+  lockedAt?: DateTime | null
+  lockExpiresAt?: DateTime | null
   createdAt: DateTime
+  updatedAt: DateTime
 }
 
 export interface MockNotification {
