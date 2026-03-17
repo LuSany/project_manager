@@ -11,6 +11,7 @@ import {
   buildDocumentConfig,
 } from '@/lib/preview/onlyoffice'
 import { checkFilePreviewAccess } from '@/lib/file-permission'
+import { acquireDocumentLock } from '@/lib/document-lock'
 
 // GET /api/v1/files/:id/preview-edit - 获取OnlyOffice编辑URL
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -57,7 +58,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return error('SERVICE_UNAVAILABLE', 'OnlyOffice服务未配置或不可用', undefined, 503)
     }
 
-    // 生成文档键
+    if (mode === 'edit') {
+      const lockResult = await acquireDocumentLock(fileId, userId)
+      if (!lockResult.success && lockResult.lock) {
+        const lockInfo = {
+          locked: lockResult.lock.locked,
+          lockedBy: lockResult.lock.lockedBy,
+          lockedByName: lockResult.lock.lockedByName,
+          expiresAt: lockResult.lock.expiresAt?.toISOString(),
+        }
+        return error(
+          'FILE_LOCKED',
+          `文件正在被 ${lockResult.lock.lockedByName} 编辑中`,
+          lockInfo,
+          423
+        )
+      }
+    }
+
     const documentKey = generateDocumentKey(file.id, 1)
 
     // 构建文件下载URL（带文档密钥认证，供OnlyOffice访问）
