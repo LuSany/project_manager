@@ -34,14 +34,20 @@ export function FilePreview({ fileId, fileName }: FilePreviewProps) {
   const handlePreview = async () => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/v1/files/preview?fileId=${fileId}&service=${service}`)
+      const response = await fetch(`/api/v1/files/preview?fileId=${fileId}&service=${service}`, {
+        credentials: 'include',
+      })
       const data = await response.json()
       if (data.success) {
         if (service === 'native' || data.data.previewUrl.startsWith('/api/v1/files/')) {
-          // 原生预览：直接下载或新标签页打开
-          window.open(data.data.previewUrl, '_blank')
+          const link = document.createElement('a')
+          link.href = data.data.previewUrl
+          link.target = '_blank'
+          link.rel = 'noopener noreferrer'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
         } else {
-          // OnlyOffice/KKFileView预览：在iframe中打开
           setOpen(true)
         }
       }

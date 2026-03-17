@@ -194,42 +194,37 @@ export default function ReviewDetailPage({
   // 预览文件
   const handlePreview = async (material: ReviewMaterial) => {
     try {
-      // 获取预览 URL
       const response = await fetch(`/api/v1/files/preview?fileId=${material.fileId}&service=auto`, {
         credentials: 'include',
       })
       const data = await response.json()
 
-      if (data.success) {
-        const { previewType } = data.data
-
-        if (previewType === 'onlyoffice') {
-          // Office 文档：打开 OnlyOffice 预览页面
-          window.open(`/files/${material.fileId}/preview`, '_blank')
-        } else {
-          // 图片、PDF 等：使用 a 标签打开，确保 cookies 传递
-          const link = document.createElement('a')
-          link.href = `/api/v1/files/${material.fileId}`
-          link.target = '_blank'
-          link.rel = 'noopener noreferrer'
-          link.click()
-        }
+      if (data.success && data.data?.previewUrl) {
+        const link = document.createElement('a')
+        link.href = data.data.previewUrl
+        link.target = '_blank'
+        link.rel = 'noopener noreferrer'
+        document.body.appendChild(link)
+        link.click()
+        document.body.removeChild(link)
       } else {
-        // 降级：使用 a 标签打开文件
         const link = document.createElement('a')
         link.href = `/api/v1/files/${material.fileId}`
         link.target = '_blank'
         link.rel = 'noopener noreferrer'
+        document.body.appendChild(link)
         link.click()
+        document.body.removeChild(link)
       }
     } catch (err) {
       console.error('预览文件失败:', err)
-      // 降级：使用 a 标签打开文件
       const link = document.createElement('a')
       link.href = `/api/v1/files/${material.fileId}`
       link.target = '_blank'
       link.rel = 'noopener noreferrer'
+      document.body.appendChild(link)
       link.click()
+      document.body.removeChild(link)
     }
   }
 

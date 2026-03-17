@@ -52,8 +52,14 @@ export default function ReviewReportPage() {
     fetchReport()
   }, [reviewId])
 
-  const downloadReport = async (format: string) => {
-    window.open(`/api/v1/reports/review/${reviewId}?format=${format}`, '_blank')
+  const downloadReport = (format: string) => {
+    const link = document.createElement('a')
+    link.href = `/api/v1/reports/review/${reviewId}?format=${format}`
+    link.target = '_blank'
+    link.rel = 'noopener noreferrer'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
   }
 
   if (loading) return <div className="p-8">加载中...</div>
@@ -63,7 +69,7 @@ export default function ReviewReportPage() {
   return (
     <div className="mx-auto max-w-4xl p-8">
       {/* 返回导航 */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <Link href={`/reviews/${reviewId}`}>
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="h-4 w-4" />
