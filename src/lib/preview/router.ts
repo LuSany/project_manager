@@ -205,13 +205,16 @@ export class PreviewRouter {
 export function createDefaultPreviewRouter(): PreviewRouter {
   return new PreviewRouter({
     onlyOffice: {
-      baseUrl: process.env.ONLYOFFICE_URL || 'http://localhost:8080',
-      enabled: process.env.ONLYOFFICE_ENABLED === 'true',
+      baseUrl:
+        process.env.ONLYOFFICE_API_URL ||
+        process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL ||
+        'http://localhost:8082',
+      enabled: true,
       priority: 1,
     },
     kkFileView: {
       baseUrl: process.env.KKFILEVIEW_URL || 'http://localhost:8012',
-      enabled: process.env.KKFILEVIEW_ENABLED === 'true',
+      enabled: !!process.env.KKFILEVIEW_URL,
       priority: 2,
     },
     nativePreview: {
