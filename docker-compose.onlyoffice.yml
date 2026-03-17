@@ -8,12 +8,10 @@ services:
       - '8082:80'
     environment:
       - JWT_ENABLED=false
-      - ONLYOFFICE_HTTP_PORT=80
     volumes:
       - onlyoffice_data:/var/www/onlyoffice/Data
       - onlyoffice_logs:/var/log/onlyoffice
-      - onlyoffice_certs:/usr/share/trusted-ca
-      - ./onlyoffice/local.json:/etc/onlyoffice/documentserver/local.json:ro
+      - onlyoffice_db:/var/lib/postgresql
     networks:
       - pm-network
     restart: unless-stopped
@@ -22,7 +20,7 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 60s
+      start_period: 120s
     extra_hosts:
       - 'host.docker.internal:host-gateway'
 
@@ -34,4 +32,4 @@ networks:
 volumes:
   onlyoffice_data:
   onlyoffice_logs:
-  onlyoffice_certs:
+  onlyoffice_db:
