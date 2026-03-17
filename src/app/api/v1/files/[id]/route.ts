@@ -56,6 +56,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
   } catch (err) {
     console.error('下载文件失败:', err)
-    return error('INTERNAL_ERROR', '下载文件失败', undefined, 500)
+    console.error('错误详情:', err instanceof Error ? err.message : String(err))
+    console.error('错误堆栈:', err instanceof Error ? err.stack : '')
+    return error(
+      'INTERNAL_ERROR',
+      '下载文件失败: ' + (err instanceof Error ? err.message : '未知错误'),
+      undefined,
+      500
+    )
   }
 }
