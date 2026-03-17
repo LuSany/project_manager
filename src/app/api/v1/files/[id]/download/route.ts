@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { error } from '@/lib/api/response'
 import { createReadStream } from 'fs'
 import { verifyDocumentKey } from '@/lib/preview/onlyoffice'
+import { validateFilePath, validateFileExists } from '@/lib/file-security'
 
 /**
  * GET /api/v1/files/:id/download
@@ -36,7 +37,17 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const filePath = file.filePath
 
-    // 检查文件是否存在
+    const pathValidation = validateFilePath(filePath)
+    if (!pathValidation.valid) {
+      console.error('文件路径安全验证失败:', pathValidation.reason, filePath)
+      return error('INVALID_FILE_PATH', pathValidation.reason || '无效的文件路径', undefined, 403)
+    }
+
+    const existsValidation = validateFileExists(filePath)
+    if (!existsValidation.exists) {
+      return error('FILE_NOT_FOUND_ERROR', '文件不存在', undefined, 404)
+    }
+
     try {
       const stream = createReadStream(filePath)
 
