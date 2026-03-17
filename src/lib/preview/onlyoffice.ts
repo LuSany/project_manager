@@ -1,4 +1,5 @@
 import * as crypto from 'crypto'
+import { SignJWT, jwtVerify } from 'jose'
 
 export interface OnlyOfficeConfig {
   apiUrl: string
@@ -114,6 +115,44 @@ export function generateDocumentKey(fileId: string, version: number = 1): string
 export function verifyDocumentKey(key: string, fileId: string): boolean {
   const expectedKey = generateDocumentKey(fileId, 1)
   return key === expectedKey
+}
+
+export async function generateDocumentToken(
+  fileId: string,
+  userId: string,
+  expiresIn: string = '1h'
+): Promise<string> {
+  const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
+
+  const token = await new SignJWT({
+    fileId,
+    userId,
+    type: 'document-preview',
+  })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(expiresIn)
+    .sign(secret)
+
+  return token
+}
+
+export async function verifyDocumentToken(
+  token: string,
+  fileId: string
+): Promise<{ valid: boolean; userId?: string }> {
+  try {
+    const secret = new TextEncoder().encode(process.env.JWT_SECRET!)
+    const { payload } = await jwtVerify(token, secret)
+
+    if (payload.fileId !== fileId) {
+      return { valid: false }
+    }
+
+    return { valid: true, userId: payload.userId as string }
+  } catch {
+    return { valid: false }
+  }
 }
 
 /**
