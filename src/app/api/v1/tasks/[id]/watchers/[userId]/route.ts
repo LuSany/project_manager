@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tasks/[id]/watchers/[userId] - 移除关注者
@@ -25,11 +25,11 @@ export async function DELETE(
     const { id: taskId, userId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -46,7 +46,7 @@ export async function DELETE(
     }
 
     // 检查关注关系是否存在
-    const watcher = await db.taskWatcher.findUnique({
+    const watcher = await db.task_watchers.findUnique({
       where: {
         taskId_userId: {
           taskId,
@@ -63,7 +63,7 @@ export async function DELETE(
     }
 
     // 删除关注关系
-    await db.taskWatcher.delete({
+    await db.task_watchers.delete({
       where: {
         taskId_userId: {
           taskId,

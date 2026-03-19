@@ -20,11 +20,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证用户是否为项目成员
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
       include: {
-        members: {
-          where: { userId },
+        project_members: {
+          where: { users: { id: userId } },
         },
       },
     });
@@ -33,19 +33,19 @@ export async function GET(request: NextRequest) {
       return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404);
     }
 
-    if (project.ownerId !== userId && project.members.length === 0) {
+    if (project.ownerId !== userId && project.project_members.length === 0) {
       return error('FORBIDDEN_ERROR', '无权访问此项目', undefined, 403);
     }
 
     // 获取里程碑进度
-    const milestones = await prisma.milestone.findMany({
+    const milestones = await prisma.milestones.findMany({
       where: { projectId },
       orderBy: { dueDate: 'asc' },
     });
 
     // 获取任务完成率
-    const totalTasks = await prisma.task.count({ where: { projectId } });
-    const completedTasks = await prisma.task.count({ where: { projectId, status: 'DONE' } });
+    const totalTasks = await prisma.tasks.count({ where: { projectId } });
+    const completedTasks = await prisma.tasks.count({ where: { projectId, status: 'DONE' } });
 
     const milestoneProgress = milestones.map(m => ({
       id: m.id,

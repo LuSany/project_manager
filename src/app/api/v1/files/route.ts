@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 检查用户是否存在
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
     if (!user) {
@@ -27,10 +27,10 @@ export async function GET(request: NextRequest) {
     // 只允许用户查看自己上传的文件
     where.uploadedBy = userId;
 
-    const files = await prisma.fileStorage.findMany({
+    const files = await prisma.file_storage.findMany({
       where,
       include: {
-        uploader: {
+        users_file_storage_uploadedByTousers: {
           select: { id: true, name: true, email: true },
         },
       },

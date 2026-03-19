@@ -9,7 +9,7 @@ export interface OnlyOfficeConfig {
   fileName: string
   fileType: string
   mode: 'edit' | 'view'
-  user: {
+  users: {
     id: string
     name: string
   }
@@ -35,7 +35,8 @@ export interface OnlyOfficeDocumentConfig {
   editorConfig: {
     mode: 'edit' | 'view'
     callbackUrl?: string
-    user: {
+    serverUrl?: string // OnlyOffice服务器地址，解决跨域Service Worker问题
+    users: {
       id: string
       name: string
     }
@@ -160,6 +161,7 @@ export async function verifyDocumentToken(
  */
 export function buildDocumentConfig(config: OnlyOfficeConfig): OnlyOfficeDocumentConfig {
   const isEditMode = config.mode === 'edit'
+  const serverUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || 'http://localhost:8082'
 
   return {
     document: {
@@ -181,7 +183,8 @@ export function buildDocumentConfig(config: OnlyOfficeConfig): OnlyOfficeDocumen
     editorConfig: {
       mode: config.mode,
       callbackUrl: isEditMode ? generateCallbackUrl(config.documentKey) : undefined,
-      user: config.user,
+      serverUrl,
+      users: config.users,
       lang: 'zh-CN',
       region: 'zh-CN',
       customization: {
@@ -213,6 +216,52 @@ export function generateSignature(config: OnlyOfficeDocumentConfig, apiKey: stri
 }
 
 /**
+ * 生成 OnlyOffice 配置的 JWT Token
+ * OnlyOffice Document Server 需要 JWT token 来验证配置的有效性
+ */
+export async function generateOnlyOfficeToken(payload: Record<string, unknown>): Promise<string> {
+  const jwtSecret = process.env.ONLYOFFICE_JWT_SECRET
+
+  if (!jwtSecret) {
+    console.warn('ONLYOFFICE_JWT_SECRET is not configured, skipping JWT token generation')
+    return ''
+  }
+
+  const secret = new TextEncoder().encode(jwtSecret)
+
+  const token = await new SignJWT(payload)
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .sign(secret)
+
+  return token
+}
+
+/**
+ * 构建带 JWT Token 的 OnlyOffice 配置
+ * 返回前端可以直接使用的配置对象
+ */
+export async function buildDocumentConfigWithToken(config: OnlyOfficeConfig): Promise<{
+  config: OnlyOfficeDocumentConfig
+  token: string
+}> {
+  const docConfig = buildDocumentConfig(config)
+
+  // 生成 JWT token
+  const payload = {
+    document: docConfig.document,
+    editorConfig: docConfig.editorConfig,
+  }
+
+  const token = await generateOnlyOfficeToken(payload)
+
+  return {
+    config: docConfig,
+    token,
+  }
+}
+
+/**
  * 生成回调URL（用于保存编辑后的文档）
  */
 function generateCallbackUrl(documentKey: string): string {
@@ -221,7 +270,79 @@ function generateCallbackUrl(documentKey: string): string {
 }
 
 /**
+ * 从 MIME 类型获取 OnlyOffice 文件类型
+ */
+export function getFileTypeFromMime(mimeType: string): string {
+  const mimeToType: Record<string, string> = {
+    'application/msword': 'doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+    'application/vnd.ms-excel': 'xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+    'application/vnd.ms-powerpoint': 'ppt',
+    'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+    'application/pdf': 'pdf',
+    'text/plain': 'txt',
+    'text/csv': 'csv',
+    'text/html': 'html',
+  }
+  return mimeToType[mimeType] || ''
+}
+
+/**
+ * 从文件内容检测真实的 OnlyOffice 文件类型
+ * 用于处理扩展名与实际内容不匹配的情况
+ */
+export async function detectRealFileType(
+  filePath: string,
+  declaredMimeType: string
+): Promise<string> {
+  const { open } = await import('fs/promises')
+
+  try {
+    const handle = await open(filePath, 'r')
+    const buffer = Buffer.alloc(8)
+    await handle.read(buffer, 0, 8, 0)
+    await handle.close()
+
+    // OLE2 格式 (doc, xls, ppt) 的签名
+    const ole2Signature = [0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1]
+    const isOle2 = ole2Signature.every((byte, i) => buffer[i] === byte)
+
+    if (isOle2) {
+      // 根据声明的 MIME 类型推断实际的 Office 文件类型
+      if (declaredMimeType.includes('word') || declaredMimeType.includes('document')) {
+        return 'doc'
+      }
+      if (declaredMimeType.includes('excel') || declaredMimeType.includes('spreadsheet')) {
+        return 'xls'
+      }
+      if (declaredMimeType.includes('powerpoint') || declaredMimeType.includes('presentation')) {
+        return 'ppt'
+      }
+      // 默认返回 doc
+      return 'doc'
+    }
+
+    // ZIP 格式 (docx, xlsx, pptx) 的签名
+    const zipSignature = [0x50, 0x4b, 0x03, 0x04]
+    const isZip = zipSignature.every((byte, i) => buffer[i] === byte)
+
+    if (isZip) {
+      // 对于 ZIP 格式，信任声明的 MIME 类型
+      return getFileTypeFromMime(declaredMimeType) || 'docx'
+    }
+
+    // 其他情况，尝试从 MIME 类型推断
+    return getFileTypeFromMime(declaredMimeType)
+  } catch {
+    // 检测失败，从 MIME 类型推断
+    return getFileTypeFromMime(declaredMimeType)
+  }
+}
+
+/**
  * 从文件名获取文件类型
+ * 注意：这是基于扩展名的简单检测，不保证准确性
  */
 export function getFileType(fileName: string): string {
   const ext = fileName.split('.').pop()?.toLowerCase() || ''

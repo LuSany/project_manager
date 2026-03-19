@@ -30,12 +30,12 @@ export async function GET(req: NextRequest) {
       where.isActive = true
     }
 
-    const groups = await prisma.reviewGroup.findMany({
+    const groups = await prisma.review_groups.findMany({
       where,
       include: {
-        members: {
+        review_group_members: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -70,24 +70,27 @@ export async function POST(req: NextRequest) {
     const validatedData = createReviewGroupSchema.parse(body)
 
     // 创建评审组
-    const group = await prisma.reviewGroup.create({
+    const group = await prisma.review_groups.create({
       data: {
+        id: crypto.randomUUID(),
         name: validatedData.name,
         description: validatedData.description,
         createdById: user.id,
-        members: validatedData.members
+        review_group_members: validatedData.members
           ? {
               create: validatedData.members.map((member) => ({
-                userId: member.userId,
+                id: crypto.randomUUID(),
+                users: { connect: { id: member.userId } },
                 role: member.role,
               })),
             }
           : undefined,
+        updatedAt: new Date(),
       },
       include: {
-        members: {
+        review_group_members: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,

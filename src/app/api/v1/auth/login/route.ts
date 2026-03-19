@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const validatedData = loginSchema.parse(body);
 
     // 查找用户
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email: validatedData.email },
     });
 
@@ -60,7 +60,7 @@ export async function POST(req: NextRequest) {
     const response = NextResponse.json({
       success: true,
       data: {
-        user: {
+        users: {
           id: user.id,
           email: user.email,
           name: user.name,

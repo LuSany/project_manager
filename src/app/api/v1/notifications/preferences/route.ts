@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
     }
 
-    const preferences = await prisma.notificationPreference.findMany({
+    const preferences = await prisma.notification_preferences.findMany({
       where: { userId },
     });
 
@@ -95,14 +95,14 @@ export async function PUT(request: NextRequest) {
     }
 
     // 删除旧偏好设置
-    await prisma.notificationPreference.deleteMany({
+    await prisma.notification_preferences.deleteMany({
       where: { userId },
     });
 
     // 创建新偏好设置
     const newPreferences = await Promise.all(
       preferences.map((pref) =>
-        prisma.notificationPreference.create({
+        prisma.notification_preferences.create({
           data: {
             userId,
             type: pref.type as any,

@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import bcrypt from 'bcrypt'
 import type { AuthenticatedRequest } from '@/middleware'
+import { randomUUID } from 'crypto'
 
 // 注册请求验证Schema
 const registerSchema = z.object({
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
     const validatedData = registerSchema.parse(body)
 
     // 检查邮箱是否已存在
-    const existingUser = await prisma.user.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email: validatedData.email },
     })
 
@@ -34,14 +35,16 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
     // 创建用户（状态为PENDING，需要管理员审批）
-    const newUser = await prisma.user.create({
+    const newUser = await prisma.users.create({
       data: {
+        id: randomUUID(),
         email: validatedData.email,
         passwordHash,
         name: validatedData.name,
         phone: validatedData.phone || null,
         status: 'PENDING',
         role: 'EMPLOYEE',
+        updatedAt: new Date(),
       },
     })
 

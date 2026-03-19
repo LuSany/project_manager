@@ -39,7 +39,7 @@ const uploadFileSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return prisma.user.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 export async function POST(request: NextRequest) {
@@ -104,14 +104,16 @@ async function handleFormDataUpload(request: NextRequest, userId: string) {
   await writeFile(filePath, buffer);
 
   // 创建数据库记录
-  const fileRecord = await prisma.fileStorage.create({
+  const fileRecord = await prisma.file_storage.create({
     data: {
+      id: crypto.randomUUID(),
       fileName,
       originalName: file.name,
       filePath,
       fileSize: file.size,
       mimeType: file.type,
-      uploadedBy: userId,
+      users_file_storage_uploadedByTousers: { connect: { id: userId } },
+      updatedAt: new Date(),
     },
   });
 
@@ -135,14 +137,16 @@ async function handleJsonUpload(request: NextRequest, userId: string) {
     await mkdir(uploadDir, { recursive: true });
   }
 
-  const file = await prisma.fileStorage.create({
+  const file = await prisma.file_storage.create({
     data: {
+      id: crypto.randomUUID(),
       fileName,
       originalName: validated.fileName,
       filePath,
       fileSize: validated.fileSize,
       mimeType: validated.mimeType,
-      uploadedBy: userId,
+      users_file_storage_uploadedByTousers: { connect: { id: userId } },
+      updatedAt: new Date(),
     },
   });
 

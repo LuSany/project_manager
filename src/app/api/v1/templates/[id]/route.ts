@@ -7,7 +7,7 @@ import { ApiResponder } from "@/lib/api/response";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 模板更新验证Schema
@@ -39,7 +39,7 @@ export async function GET(
   }
 
   try {
-    const template = await db.taskTemplate.findUnique({
+    const template = await db.task_templates.findUnique({
       where: { id },
     });
 
@@ -75,7 +75,7 @@ export async function PUT(
     const validatedData = updateTemplateSchema.parse(body);
 
     // 检查模板是否存在
-    const existingTemplate = await db.taskTemplate.findUnique({
+    const existingTemplate = await db.task_templates.findUnique({
       where: { id },
     });
 
@@ -89,7 +89,7 @@ export async function PUT(
     if (validatedData.templateData !== undefined) updateData.templateData = JSON.stringify(validatedData.templateData);
     if (validatedData.isPublic !== undefined) updateData.isPublic = validatedData.isPublic;
 
-    const template = await db.taskTemplate.update({
+    const template = await db.task_templates.update({
       where: { id },
       data: updateData,
     });
@@ -128,7 +128,7 @@ export async function DELETE(
 
   try {
     // 检查模板是否存在
-    const existingTemplate = await db.taskTemplate.findUnique({
+    const existingTemplate = await db.task_templates.findUnique({
       where: { id },
     });
 
@@ -136,7 +136,7 @@ export async function DELETE(
       return ApiResponder.notFound("模板不存在");
     }
 
-    await db.taskTemplate.delete({
+    await db.task_templates.delete({
       where: { id },
     });
 

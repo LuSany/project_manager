@@ -3,13 +3,14 @@ import { db } from '@/lib/db'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
+import { randomUUID } from 'crypto'
 
 // 辅助函数：获取认证用户并检查管理员权限
 async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.user.findUnique({ where: { id: userId } })
+  const user = await db.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest) {
       where.role = role
     }
 
-    const users = await db.user.findMany({
+    const users = await db.users.findMany({
       where,
       select: {
         id: true,
@@ -92,7 +93,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createUserSchema.parse(body)
 
     // 检查邮箱是否已存在
-    const existingUser = await db.user.findUnique({
+    const existingUser = await db.users.findUnique({
       where: { email: validatedData.email },
     })
 
@@ -103,8 +104,9 @@ export async function POST(request: NextRequest) {
     // 加密密码
     const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
-    const user = await db.user.create({
+    const user = await db.users.create({
       data: {
+        id: randomUUID(),
         name: validatedData.name,
         email: validatedData.email,
         passwordHash,
@@ -112,6 +114,7 @@ export async function POST(request: NextRequest) {
         department: validatedData.department,
         position: validatedData.position,
         status: 'ACTIVE',
+        updatedAt: new Date(),
       },
       select: {
         id: true,

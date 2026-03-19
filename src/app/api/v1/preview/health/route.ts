@@ -8,7 +8,7 @@ import { PreviewServiceType } from '@/lib/preview/degradation'
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
-  return db.user.findUnique({ where: { id: userId } })
+  return db.users.findUnique({ where: { id: userId } })
 }
 
 // GET /api/v1/preview/health - 获取所有预览服务健康状态
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
       return error('VALIDATION_ERROR', '缺少服务类型', undefined, 400)
     }
 
-    const config = await db.previewServiceConfig.findFirst({
+    const config = await db.preview_service_configs.findFirst({
       where: { serviceType: serviceType as any, isEnabled: true },
     })
 

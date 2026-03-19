@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthenticatedUser } from '@/lib/auth'
+import { randomUUID } from 'crypto'
 
 const emailTemplateSchema = z.object({
   name: z.string().min(1, '模板名称不能为空'),
@@ -20,7 +21,7 @@ export async function GET(req: NextRequest) {
       return ApiResponder.forbidden('只有管理员可以访问邮件模板')
     }
 
-    const templates = await prisma.emailTemplate.findMany({
+    const templates = await prisma.email_templates.findMany({
       orderBy: { createdAt: 'desc' },
     })
 
@@ -41,14 +42,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = emailTemplateSchema.parse(body)
 
-    const template = await prisma.emailTemplate.create({
+    const template = await prisma.email_templates.create({
       data: {
+        id: randomUUID(),
         name: validatedData.name,
         type: validatedData.type,
         subject: validatedData.subject,
         body: validatedData.body,
         variables: validatedData.variables,
         isActive: validatedData.isActive ?? true,
+        updatedAt: new Date(),
       },
     })
 

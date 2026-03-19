@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // Issue 关联需求验证 Schema
@@ -35,10 +35,10 @@ export async function POST(
     const validatedData = linkRequirementSchema.parse(body);
 
     // 验证 Issue 是否存在
-    const issue = await db.issue.findUnique({
+    const issue = await db.issues.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             ownerId: true,
@@ -55,7 +55,7 @@ export async function POST(
     }
 
     // 验证需求是否存在
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id: validatedData.requirementId },
     });
 
@@ -75,16 +75,16 @@ export async function POST(
     }
 
     // 权限检查：只有项目成员可以关联需求
-    const membership = await db.projectMember.findUnique({
+    const membership = await db.project_members.findUnique({
       where: {
         projectId_userId: {
-          projectId: issue.projectId,
+          projectId: issue.projects.id,
           userId: user.id,
         },
       },
     });
 
-    const isOwner = issue.project.ownerId === user.id;
+    const isOwner = issue.projects.ownerId === user.id;
     const isAdmin = membership?.role === 'PROJECT_ADMIN';
     const isProjectOwner = membership?.role === 'PROJECT_OWNER';
     const isMember = !!membership;
@@ -105,20 +105,20 @@ export async function POST(
     }
 
     // 更新 Issue，关联需求
-    const updatedIssue = await db.issue.update({
+    const updatedIssue = await db.issues.update({
       where: { id },
       data: {
         requirementId: validatedData.requirementId,
       },
       include: {
-        requirement: {
+        requirements: {
           select: {
             id: true,
             title: true,
             status: true,
           },
         },
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -165,10 +165,10 @@ export async function DELETE(
 
   try {
     // 验证 Issue 是否存在
-    const issue = await db.issue.findUnique({
+    const issue = await db.issues.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             ownerId: true,
@@ -193,16 +193,16 @@ export async function DELETE(
     }
 
     // 权限检查
-    const membership = await db.projectMember.findUnique({
+    const membership = await db.project_members.findUnique({
       where: {
         projectId_userId: {
-          projectId: issue.projectId,
+          projectId: issue.projects.id,
           userId: user.id,
         },
       },
     });
 
-    const isOwner = issue.project.ownerId === user.id;
+    const isOwner = issue.projects.ownerId === user.id;
     const isAdmin = membership?.role === 'PROJECT_ADMIN';
     const isProjectOwner = membership?.role === 'PROJECT_OWNER';
 
@@ -214,13 +214,13 @@ export async function DELETE(
     }
 
     // 取消关联
-    const updatedIssue = await db.issue.update({
+    const updatedIssue = await db.issues.update({
       where: { id },
       data: {
         requirementId: null,
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

@@ -7,7 +7,7 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
 
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const user = await prisma.users.findUnique({ where: { id: userId } });
   if (!user || user.role !== 'ADMIN') return null;
 
   return user;
@@ -32,7 +32,7 @@ export async function DELETE(
     }
 
     // 检查项目是否存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
     });
 
@@ -41,7 +41,7 @@ export async function DELETE(
     }
 
     // 删除项目（Prisma 会级联删除相关数据）
-    await prisma.project.delete({
+    await prisma.projects.delete({
       where: { id },
     });
 

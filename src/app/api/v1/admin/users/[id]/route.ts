@@ -9,7 +9,7 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.user.findUnique({ where: { id: userId } })
+  const user = await db.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -40,7 +40,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const user = await db.user.findUnique({
+    const user = await db.users.findUnique({
       where: { id },
       select: {
         id: true,
@@ -56,9 +56,9 @@ export async function GET(
         updatedAt: true,
         _count: {
           select: {
-            projectMembers: true,
-            taskAssignees: true,
-            ownedProjects: true,
+            project_members: true,
+            task_assignees: true,
+            projects: true,
           },
         },
       },
@@ -91,14 +91,14 @@ export async function PUT(
     const validatedData = updateUserSchema.parse(body)
 
     // 检查用户是否存在
-    const existingUser = await db.user.findUnique({ where: { id } })
+    const existingUser = await db.users.findUnique({ where: { id } })
     if (!existingUser) {
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
     // 如果更新邮箱，检查是否已被其他用户使用
     if (validatedData.email && validatedData.email !== existingUser.email) {
-      const emailUser = await db.user.findUnique({
+      const emailUser = await db.users.findUnique({
         where: { email: validatedData.email },
       })
       if (emailUser) {
@@ -121,7 +121,7 @@ export async function PUT(
       updateData.passwordHash = await bcrypt.hash(validatedData.password, 10)
     }
 
-    const user = await db.user.update({
+    const user = await db.users.update({
       where: { id },
       data: updateData,
       select: {
@@ -167,7 +167,7 @@ export async function DELETE(
     }
 
     // 检查用户是否存在
-    const existingUser = await db.user.findUnique({ where: { id } })
+    const existingUser = await db.users.findUnique({ where: { id } })
     if (!existingUser) {
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
@@ -175,43 +175,43 @@ export async function DELETE(
     // 删除用户（级联删除相关数据）
     await db.$transaction(async (tx) => {
       // 删除用户的项目成员关系
-      await tx.projectMember.deleteMany({
+      await tx.project_members.deleteMany({
         where: { userId: id },
       })
 
       // 删除用户的任务分配关系
-      await tx.taskAssignee.deleteMany({
+      await tx.task_assignees.deleteMany({
         where: { userId: id },
       })
 
       // 删除用户的任务观察者关系
-      await tx.taskWatcher.deleteMany({
+      await tx.task_watchers.deleteMany({
         where: { userId: id },
       })
 
       // 删除用户的通知
-      await tx.notification.deleteMany({
+      await tx.notifications.deleteMany({
         where: { userId: id },
       })
 
       // 删除用户的通知偏好
-      await tx.notificationPreference.deleteMany({
+      await tx.notification_preferences.deleteMany({
         where: { userId: id },
       })
 
       // 删除用户的通知忽略设置
-      await tx.notificationIgnore.deleteMany({
+      await tx.notification_ignores.deleteMany({
         where: { userId: id },
       })
 
       // 将用户拥有的项目转移给管理员
-      await tx.project.updateMany({
+      await tx.projects.updateMany({
         where: { ownerId: id },
         data: { ownerId: admin.id },
       })
 
       // 删除用户
-      await tx.user.delete({
+      await tx.users.delete({
         where: { id },
       })
     })

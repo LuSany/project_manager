@@ -29,7 +29,7 @@ export async function PUT(request: NextRequest, context: any) {
     const body = await request.json();
     const validated = updateServiceSchema.parse(body);
 
-    const service = await prisma.previewServiceConfig.findUnique({
+    const service = await prisma.preview_service_configs.findUnique({
       where: { id },
     });
 
@@ -42,7 +42,7 @@ export async function PUT(request: NextRequest, context: any) {
     if (validated.isEnabled !== undefined) updateData.isEnabled = validated.isEnabled;
     if (validated.config !== undefined) updateData.config = validated.config;
 
-    const updatedService = await prisma.previewServiceConfig.update({
+    const updatedService = await prisma.preview_service_configs.update({
       where: { id },
       data: updateData,
     });
@@ -75,7 +75,7 @@ export async function DELETE(request: NextRequest, context: any) {
   const id = context.params.id;
 
   try {
-    const existing = await prisma.previewServiceConfig.findUnique({
+    const existing = await prisma.preview_service_configs.findUnique({
       where: { id },
     });
 
@@ -83,7 +83,7 @@ export async function DELETE(request: NextRequest, context: any) {
       return error('SERVICE_NOT_FOUND', '预览服务配置不存在', undefined, 404);
     }
 
-    await prisma.previewServiceConfig.delete({
+    await prisma.preview_service_configs.delete({
       where: { id },
     });
 

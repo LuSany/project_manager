@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 需求拒绝验证 Schema
@@ -36,12 +36,12 @@ export async function PUT(
     const userId = user.id; // 使用认证用户的ID
 
     // 验证需求是否存在
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: {
+            project_members: {
               where: {
                 userId,
               },
@@ -59,11 +59,11 @@ export async function PUT(
     }
 
     // 验证权限：必须是PROJECT_OWNER或PROJECT_ADMIN
-    const member = requirement.project.members.find(
+    const member = requirement.projects.project_members.find(
       (m) => m.role === "PROJECT_OWNER" || m.role === "PROJECT_ADMIN"
     );
 
-    if (!member && requirement.project.ownerId !== userId) {
+    if (!member && requirement.projects.ownerId !== userId) {
       return NextResponse.json(
         { success: false, error: "无权限拒绝需求" },
         { status: 403 }
@@ -71,7 +71,7 @@ export async function PUT(
     }
 
     // 更新需求状态为REJECTED
-    const updatedRequirement = await db.requirement.update({
+    const updatedRequirement = await db.requirements.update({
       where: { id },
       data: {
         status: "REJECTED",
@@ -80,7 +80,7 @@ export async function PUT(
         rejectReason,
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

@@ -33,13 +33,13 @@ export async function GET(req: NextRequest) {
     }
 
     const [webhooks, total] = await Promise.all([
-      prisma.webhook.findMany({
+      prisma.webhooks.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.webhook.count({ where }),
+      prisma.webhooks.count({ where }),
     ])
 
     return ApiResponder.success({
@@ -62,14 +62,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = createWebhookSchema.parse(body)
 
-    const webhook = await prisma.webhook.create({
+    const webhook = await prisma.webhooks.create({
       data: {
+        id: crypto.randomUUID(),
         name: validatedData.name,
         url: validatedData.url,
         events: JSON.stringify(validatedData.events),
         secret: validatedData.secret,
         isActive: validatedData.isActive ?? true,
         createdBy: user.id,
+        updatedAt: new Date(),
       },
     })
 

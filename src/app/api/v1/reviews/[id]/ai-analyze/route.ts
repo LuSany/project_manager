@@ -27,7 +27,7 @@ export async function POST(
     const { id: reviewId } = await params
     const userId = authResult.id
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       select: { id: true, projectId: true },
     })
@@ -59,7 +59,7 @@ export async function GET(
   try {
     const { id: reviewId } = await params
 
-    const analysis = await prisma.reviewAiAnalysis.findFirst({
+    const analysis = await prisma.review_ai_analysis.findFirst({
       where: { reviewId, analysisType: 'MATERIAL_ANALYSIS' },
       orderBy: { createdAt: 'desc' },
     })

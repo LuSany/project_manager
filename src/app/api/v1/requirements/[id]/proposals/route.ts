@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 方案创建验证 Schema
@@ -16,7 +16,7 @@ const createProposalSchema = z.object({
   estimatedCost: z.number().positive().optional(),
 });
 
-// POST /api/v1/requirements/[id]/proposals - 创建方案
+// POST /api/v1/requirements/[id]/proposalss - 创建方案
 export async function POST(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
@@ -37,12 +37,12 @@ export async function POST(
     const validatedData = createProposalSchema.parse(body);
 
     // 验证需求是否存在并检查项目成员权限
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: {
+            project_members: {
               where: { userId: user.id },
             },
           },
@@ -58,7 +58,7 @@ export async function POST(
     }
 
     // 检查用户是否为项目成员或管理员
-    if (requirement.project.ownerId !== user.id && requirement.project.members.length === 0 && user.role !== 'ADMIN') {
+    if (requirement.projects.ownerId !== user.id && requirement.projects.project_members.length === 0 && user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: "无权访问此需求" },
         { status: 403 }
@@ -66,21 +66,23 @@ export async function POST(
     }
 
     // 创建方案（使用认证用户的ID）
-    const proposal = await db.proposal.create({
+    const proposals = await db.proposals.create({
       data: {
-        requirementId: id,
-        userId: user.id,
+        id: crypto.randomUUID(),
+        requirements: { connect: { id } },
+        users: { connect: { id: user.id } },
         content: validatedData.content,
         estimatedHours: validatedData.estimatedHours,
         estimatedCost: validatedData.estimatedCost,
         status: "PENDING",
+        updatedAt: new Date(),
       },
     });
 
     return NextResponse.json(
       {
         success: true,
-        data: proposal,
+        data: proposals,
         message: "方案已创建",
       },
       { status: 201 }

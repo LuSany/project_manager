@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // Issue创建验证 Schema
@@ -66,12 +66,12 @@ export async function GET(request: NextRequest) {
     }
 
     const [issues, total] = await Promise.all([
-      db.issue.findMany({
+      db.issues.findMany({
         where,
         skip,
         take: pageSize,
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
           createdAt: "desc",
         },
       }),
-      db.issue.count({ where }),
+      db.issues.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createIssueSchema.parse(body);
 
     // 验证项目是否存在
-    const project = await db.project.findUnique({
+    const project = await db.projects.findUnique({
       where: { id: validatedData.projectId },
     });
 
@@ -131,17 +131,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const issue = await db.issue.create({
+    const issue = await db.issues.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         status: validatedData.status,
         priority: validatedData.priority,
-        projectId: validatedData.projectId,
-        requirementId: validatedData.requirementId || null,
+        projects: { connect: { id: validatedData.projectId } },
+        requirements: validatedData.requirementId ? { connect: { id: validatedData.requirementId } } : undefined,
+        updatedAt: new Date(),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

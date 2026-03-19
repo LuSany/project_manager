@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 任务标签关联验证 Schema
@@ -33,11 +33,11 @@ export async function POST(
     const { tagId } = addTagSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -54,7 +54,7 @@ export async function POST(
     }
 
     // 验证标签是否存在
-    const tag = await db.tag.findUnique({
+    const tag = await db.tags.findUnique({
       where: { id: tagId },
     });
 
@@ -66,7 +66,7 @@ export async function POST(
     }
 
     // 检查是否已经关联
-    const existingRelation = await db.taskTag.findUnique({
+    const existingRelation = await db.task_tags.findUnique({
       where: {
         taskId_tagId: {
           taskId,
@@ -83,19 +83,19 @@ export async function POST(
     }
 
     // 创建关联
-    const taskTag = await db.taskTag.create({
+    const task_tags = await db.task_tags.create({
       data: {
         taskId,
         tagId,
       },
       include: {
-        tag: true,
+        tags: true,
       },
     });
 
     return NextResponse.json({
       success: true,
-      data: taskTag,
+      data: task_tags,
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -129,11 +129,11 @@ export async function GET(
     const { id: taskId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -149,10 +149,10 @@ export async function GET(
       );
     }
 
-    const taskTags = await db.taskTag.findMany({
+    const task_tags = await db.task_tags.findMany({
       where: { taskId },
       include: {
-        tag: true,
+        tags: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -161,7 +161,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: taskTags.map((tt) => tt.tag),
+      data: task_tags.map((tt) => tt.tags),
     });
   } catch (error) {
     console.error("获取任务标签失败:", error);

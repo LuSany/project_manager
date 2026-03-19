@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, context: any) {
   }
 
   // 检查用户是否存在
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
   });
   if (!user) {
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, context: any) {
     where.isRead = false;
   }
 
-  const notifications = await prisma.notification.findMany({
+  const notifications = await prisma.notifications.findMany({
     where,
     orderBy: { createdAt: 'desc' },
     take: 50,
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     // 如果请求明确指定发送邮件（覆盖用户偏好）
     // 邮件通知功能暂时注释，等待后续实现
     // if (sendEmail === true) {
-    //   const user = await prisma.user.findUnique({
+    //   const user = await prisma.users.findUnique({
     //     where: { id: userId },
     //     select: { email: true },
     //   });
@@ -103,7 +103,7 @@ export async function PUT(request: NextRequest, context: any) {
 
   try {
     // 先检查通知是否属于当前用户
-    const notification = await prisma.notification.findUnique({
+    const notification = await prisma.notifications.findUnique({
       where: { id },
     });
 
@@ -115,7 +115,7 @@ export async function PUT(request: NextRequest, context: any) {
       return error('FORBIDDEN_ERROR', '无权操作此通知', undefined, 403);
     }
 
-    await prisma.notification.update({
+    await prisma.notifications.update({
       where: { id },
       data: { isRead: true },
     });
@@ -140,7 +140,7 @@ export async function DELETE(request: NextRequest, context: any) {
 
   try {
     // 先检查通知是否属于当前用户
-    const notification = await prisma.notification.findUnique({
+    const notification = await prisma.notifications.findUnique({
       where: { id },
     });
 
@@ -152,7 +152,7 @@ export async function DELETE(request: NextRequest, context: any) {
       return error('FORBIDDEN_ERROR', '无权操作此通知', undefined, 403);
     }
 
-    await prisma.notification.delete({
+    await prisma.notifications.delete({
       where: { id },
     });
 

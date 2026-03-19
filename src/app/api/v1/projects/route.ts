@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, context: any) {
   }
 
   // 检查用户是否存在
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
   });
   if (!user) {
@@ -47,17 +47,17 @@ export async function GET(request: NextRequest, context: any) {
   if (user.role !== 'ADMIN') {
     where.OR = [
       { ownerId: userId },
-      { members: { some: { userId: userId } } }
+      { project_members: { some: { userId: userId } } }
     ];
   }
 
   // 如果 all=true，返回所有项目（不分页）
   if (getAll) {
-    const projects = await prisma.project.findMany({
+    const projects = await prisma.projects.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest, context: any) {
         },
         _count: {
           select: {
-            members: true,
+            project_members: true,
             tasks: true,
             risks: true,
           },
@@ -82,20 +82,20 @@ export async function GET(request: NextRequest, context: any) {
 
   try {
     const [total, projects] = await Promise.all([
-      prisma.project.count({ where }),
-      prisma.project.findMany({
+      prisma.projects.count({ where }),
+      prisma.projects.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take,
         include: {
-          owner: {
+          users: {
             select: {
               id: true,
               name: true,
             },
           },
-          members: {
+          project_members: {
             where: { userId: userId },
             select: { role: true },
           },
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 检查用户是否存在
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -139,17 +139,19 @@ export async function POST(request: NextRequest) {
     const validatedData = createProjectSchema.parse(body);
 
     // 创建项目
-    const project = await prisma.project.create({
+    const project = await prisma.projects.create({
       data: {
+        id: crypto.randomUUID(),
         name: validatedData.name,
         description: validatedData.description,
         status: validatedData.status,
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
         endDate: validatedData.endDate ? new Date(validatedData.endDate) : null,
-        ownerId: userId,
+        users: { connect: { id: userId } },
+        updatedAt: new Date(),
       },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -168,7 +170,7 @@ export async function POST(request: NextRequest) {
         status: project.status,
         startDate: project.startDate,
         endDate: project.endDate,
-        owner: project.owner,
+        owner: project.users,
       },
       message: '项目创建成功',
     });

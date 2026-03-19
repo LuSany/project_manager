@@ -32,14 +32,14 @@ export async function GET(req: NextRequest) {
     }
 
     const [cacheEntries, total, stats] = await Promise.all([
-      prisma.aiResponseCache.findMany({
+      prisma.ai_response_cache.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { updatedAt: 'desc' },
       }),
-      prisma.aiResponseCache.count({ where }),
-      prisma.aiResponseCache.aggregate({
+      prisma.ai_response_cache.count({ where }),
+      prisma.ai_response_cache.aggregate({
         _avg: { hitCount: true },
         _count: true,
       }),
@@ -79,20 +79,20 @@ export async function DELETE(req: NextRequest) {
     let deletedCount = 0
 
     if (all) {
-      const result = await prisma.aiResponseCache.deleteMany({})
+      const result = await prisma.ai_response_cache.deleteMany({})
       deletedCount = result.count
     } else if (cacheKey) {
-      await prisma.aiResponseCache.delete({
+      await prisma.ai_response_cache.delete({
         where: { cacheKey },
       })
       deletedCount = 1
     } else if (serviceType) {
-      const result = await prisma.aiResponseCache.deleteMany({
+      const result = await prisma.ai_response_cache.deleteMany({
         where: { serviceType: serviceType as any },
       })
       deletedCount = result.count
     } else {
-      const result = await prisma.aiResponseCache.deleteMany({
+      const result = await prisma.ai_response_cache.deleteMany({
         where: {
           expiresAt: { lt: new Date() },
         },

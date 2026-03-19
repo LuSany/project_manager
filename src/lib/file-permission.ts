@@ -13,10 +13,10 @@ export async function checkFileAccess(fileId: string, userId: string): Promise<{
   reason?: string;
 }> {
   // 获取文件信息
-  const file = await prisma.fileStorage.findUnique({
+  const file = await prisma.file_storage.findUnique({
     where: { id: fileId },
     include: {
-      uploader: {
+      users_file_storage_uploadedByTousers: {
         select: { id: true, role: true },
       },
     },
@@ -32,7 +32,7 @@ export async function checkFileAccess(fileId: string, userId: string): Promise<{
   }
 
   // 获取用户信息
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { id: true, role: true },
   });
@@ -47,17 +47,17 @@ export async function checkFileAccess(fileId: string, userId: string): Promise<{
   }
 
   // 3. 检查用户是否是评审参与者（通过评审材料关联）
-  const reviewMaterial = await prisma.reviewMaterial.findFirst({
+  const review_materials = await prisma.review_materials.findFirst({
     where: { fileId },
     include: {
-      review: {
+      reviews: {
         include: {
-          participants: {
+          review_participants: {
             where: { userId },
           },
-          project: {
+          projects: {
             include: {
-              members: {
+              project_members: {
                 where: { userId },
               },
             },
@@ -67,17 +67,17 @@ export async function checkFileAccess(fileId: string, userId: string): Promise<{
     },
   });
 
-  if (reviewMaterial) {
+  if (review_materials) {
     // 用户是该评审的参与者
-    if (reviewMaterial.review.participants.length > 0) {
+    if (review_materials.reviews.review_participants.length > 0) {
       return { hasAccess: true };
     }
     // 用户是该评审所属项目的成员
-    if (reviewMaterial.review.project.members.length > 0) {
+    if (review_materials.reviews.projects.project_members.length > 0) {
       return { hasAccess: true };
     }
     // 用户是该评审所属项目的所有者
-    if (reviewMaterial.review.project.ownerId === userId) {
+    if (review_materials.reviews.projects.ownerId === userId) {
       return { hasAccess: true };
     }
   }
@@ -111,10 +111,10 @@ export async function checkFilePreviewAccess(
   };
 }> {
   // 获取文件信息
-  const file = await prisma.fileStorage.findUnique({
+  const file = await prisma.file_storage.findUnique({
     where: { id: fileId },
     include: {
-      uploader: {
+      users_file_storage_uploadedByTousers: {
         select: { id: true, name: true, role: true },
       },
     },
@@ -125,7 +125,7 @@ export async function checkFilePreviewAccess(
   }
 
   // 获取当前用户信息
-  const currentUser = await prisma.user.findUnique({
+  const currentUser = await prisma.users.findUnique({
     where: { id: userId },
     select: { id: true, name: true, role: true },
   });

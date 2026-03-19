@@ -21,17 +21,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id: reviewId } = await params
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('Review not found')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -48,15 +48,15 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     if (materialId) where.materialId = materialId
     if (itemId) where.itemId = itemId
 
-    const comments = await prisma.reviewComment.findMany({
+    const comments = await prisma.review_comments.findMany({
       where,
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
-        material: { select: { id: true, fileName: true } },
-        item: { select: { id: true, title: true } },
-        replies: {
+        users: { select: { id: true, name: true, avatar: true } },
+        review_materials: { select: { id: true, fileName: true } },
+        review_items: { select: { id: true, title: true } },
+        other_review_comments: {
           include: {
-            author: { select: { id: true, name: true, avatar: true } },
+            users: { select: { id: true, name: true, avatar: true } },
           },
           orderBy: { createdAt: 'asc' },
         },
@@ -82,17 +82,17 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json()
     const validatedData = createCommentSchema.parse(body)
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('Review not found')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (validatedData.parentId) {
-      const parentComment = await prisma.reviewComment.findUnique({
+      const parentComment = await prisma.review_comments.findUnique({
         where: { id: validatedData.parentId },
       })
       if (!parentComment || parentComment.reviewId !== reviewId) {
@@ -112,7 +112,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (validatedData.materialId) {
-      const material = await prisma.reviewMaterial.findUnique({
+      const material = await prisma.review_materials.findUnique({
         where: { id: validatedData.materialId },
       })
       if (!material || material.reviewId !== reviewId) {
@@ -121,7 +121,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     if (validatedData.itemId) {
-      const item = await prisma.reviewItem.findUnique({
+      const item = await prisma.review_items.findUnique({
         where: { id: validatedData.itemId },
       })
       if (!item || item.reviewId !== reviewId) {
@@ -129,19 +129,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       }
     }
 
-    const comment = await prisma.reviewComment.create({
+    const comment = await prisma.review_comments.create({
       data: {
-        reviewId,
-        authorId: user.id,
+        id: crypto.randomUUID(),
+        reviews: { connect: { id: reviewId } },
+        users: { connect: { id: user.id } },
         content: validatedData.content,
-        materialId: validatedData.materialId,
-        itemId: validatedData.itemId,
-        parentId: validatedData.parentId,
+        review_materials: validatedData.materialId ? { connect: { id: validatedData.materialId } } : undefined,
+        review_items: validatedData.itemId ? { connect: { id: validatedData.itemId } } : undefined,
+        other_review_comments: validatedData.parentId ? { connect: { id: validatedData.parentId } } : undefined,
+        updatedAt: new Date(),
       },
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
-        material: { select: { id: true, fileName: true } },
-        item: { select: { id: true, title: true } },
+        users: { select: { id: true, name: true, avatar: true } },
+        review_materials: { select: { id: true, fileName: true } },
+        review_items: { select: { id: true, title: true } },
       },
     })
 
@@ -149,7 +151,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     try {
       if (validatedData.parentId) {
         // 回复通知：通知父评论作者
-        const parentComment = await prisma.reviewComment.findUnique({
+        const parentComment = await prisma.review_comments.findUnique({
           where: { id: validatedData.parentId },
           select: { authorId: true },
         })

@@ -25,10 +25,10 @@ export async function GET(
     const { id } = await params
 
     // 验证项目存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
       include: {
-        members: true,
+        project_members: true,
       },
     })
 
@@ -38,7 +38,7 @@ export async function GET(
 
     // 验证权限：项目成员可查看里程碑
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -46,7 +46,7 @@ export async function GET(
     }
 
     // 获取里程碑列表
-    const milestones = await prisma.milestone.findMany({
+    const milestones = await prisma.milestones.findMany({
       where: { projectId: id },
       orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
       include: {
@@ -94,10 +94,10 @@ export async function POST(
     const { id: projectId } = await params
 
     // 验证项目存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
       include: {
-        members: true,
+        project_members: true,
       },
     })
 
@@ -107,7 +107,7 @@ export async function POST(
 
     // 验证权限：项目所有者、管理员或成员可创建里程碑
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -119,17 +119,19 @@ export async function POST(
     const validatedData = createMilestoneSchema.parse(body)
 
     // 创建里程碑
-    const milestone = await prisma.milestone.create({
+    const milestone = await prisma.milestones.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-        projectId: projectId,
+        projects: { connect: { id: projectId } },
         status: 'NOT_STARTED',
         progress: 0,
+        updatedAt: new Date(),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

@@ -24,10 +24,10 @@ export async function DELETE(
     }
 
     // 查找项目
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
       include: {
-        members: {
+        project_members: {
           where: {
             userId: userId,
             role: {
@@ -48,7 +48,7 @@ export async function DELETE(
     }
 
     // 检查成员是否存在
-    const member = await prisma.projectMember.findFirst({
+    const member = await prisma.project_members.findFirst({
       where: {
         projectId: id,
         userId: userId,
@@ -65,7 +65,7 @@ export async function DELETE(
       return ApiResponder.forbidden("不能删除项目所有者");
     }
 
-    await prisma.projectMember.deleteMany({
+    await prisma.project_members.deleteMany({
       where: {
         projectId: id,
         userId: userId,

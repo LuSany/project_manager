@@ -7,7 +7,7 @@ import { DependencyType } from "@/types/task-dependency";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 任务依赖创建验证 Schema
@@ -33,11 +33,11 @@ export async function GET(
     const { id: taskId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -54,12 +54,12 @@ export async function GET(
     }
 
     // 获取任务依赖列表（包含被依赖任务的信息）
-    const dependencies = await db.taskDependency.findMany({
+    const dependencies = await db.task_dependencies.findMany({
       where: {
         taskId,
       },
       include: {
-        task: {
+        tasks_task_dependencies_dependsOnIdTotasks: {
           select: {
             id: true,
             title: true,
@@ -79,7 +79,7 @@ export async function GET(
       dependsOnId: dep.dependsOnId,
       dependencyType: dep.dependencyType,
       createdAt: dep.createdAt,
-      dependsOnTask: dep.task,
+      dependsOnTask: dep.tasks_task_dependencies_dependsOnIdTotasks,
     }));
 
     return NextResponse.json({
@@ -114,11 +114,11 @@ export async function POST(
     const validatedData = createDependencySchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -143,7 +143,7 @@ export async function POST(
     }
 
     // 验证被依赖任务是否存在且在同一项目中
-    const dependsOnTask = await db.task.findFirst({
+    const dependsOnTask = await db.tasks.findFirst({
       where: {
         id: validatedData.dependsOnId,
         projectId: task.projectId,
@@ -158,7 +158,7 @@ export async function POST(
     }
 
     // 检查依赖关系是否已存在
-    const existingDependency = await db.taskDependency.findUnique({
+    const existingDependency = await db.task_dependencies.findUnique({
       where: {
         id: `${taskId}-${validatedData.dependsOnId}`,
       },
@@ -172,10 +172,11 @@ export async function POST(
     }
 
     // 创建依赖关系
-    const dependency = await db.taskDependency.create({
+    const dependency = await db.task_dependencies.create({
       data: {
-        taskId,
-        dependsOnId: validatedData.dependsOnId,
+        id: crypto.randomUUID(),
+        tasks_task_dependencies_taskIdTotasks: { connect: { id: taskId } },
+        tasks_task_dependencies_dependsOnIdTotasks: { connect: { id: validatedData.dependsOnId } },
         dependencyType: validatedData.dependencyType,
       },
     });

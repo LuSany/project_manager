@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 需求更新验证 Schema
@@ -34,10 +34,10 @@ export async function GET(
   }
 
   try {
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -87,7 +87,7 @@ export async function PUT(
     const validatedData = updateRequirementSchema.parse(body);
 
     // 验证需求是否存在
-    const existing = await db.requirement.findUnique({
+    const existing = await db.requirements.findUnique({
       where: { id },
     });
 
@@ -119,11 +119,11 @@ export async function PUT(
     }
 
     const [requirement] = await Promise.all([
-      db.requirement.update({
+      db.requirements.update({
         where: { id },
         data: validatedData,
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
@@ -133,9 +133,10 @@ export async function PUT(
       }),
       // 如果有变更，记录到历史
       changes.changeType
-        ? db.requirementHistory.create({
+        ? db.requirement_history.create({
             data: {
-              requirementId: id,
+              id: crypto.randomUUID(),
+              requirements: { connect: { id } },
               changeType: changes.changeType,
               oldValue: changes.oldValue,
               newValue: changes.newValue,
@@ -182,7 +183,7 @@ export async function DELETE(
 
   try {
     // 验证需求是否存在
-    const existing = await db.requirement.findUnique({
+    const existing = await db.requirements.findUnique({
       where: { id },
     });
 
@@ -193,7 +194,7 @@ export async function DELETE(
       );
     }
 
-    await db.requirement.delete({
+    await db.requirements.delete({
       where: { id },
     });
 

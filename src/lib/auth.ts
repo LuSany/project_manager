@@ -14,7 +14,7 @@ export async function getAuthenticatedUser(request: NextRequest) {
     return null;
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
   });
 
@@ -33,7 +33,7 @@ export async function requireAuth(request: NextRequest) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
   });
 

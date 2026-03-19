@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     const validatedData = forgotPasswordSchema.parse(body)
 
     // 查找用户
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { email: validatedData.email },
     })
 
@@ -34,10 +34,11 @@ export async function POST(req: NextRequest) {
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1小时后过期
 
     // 存储重置令牌到数据库
-    await prisma.passwordResetToken.create({
+    await prisma.password_reset_tokens.create({
       data: {
+        id: crypto.randomUUID(),
         token: resetToken,
-        userId: user.id,
+        users: { connect: { id: user.id } },
         expiresAt,
         used: false,
       },

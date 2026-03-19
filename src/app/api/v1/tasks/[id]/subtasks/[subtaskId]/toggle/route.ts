@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // PUT /api/v1/tasks/[id]/subtasks/[subtaskId]/toggle - 切换子任务完成状态
@@ -25,13 +25,13 @@ export async function PUT(
 
   try {
     // 验证子任务是否存在且属于指定任务，且用户有权限访问
-    const subTask = await db.subTask.findFirst({
+    const subTask = await db.subtasks.findFirst({
       where: {
         id: subtaskId,
         taskId: id,
-        task: {
-          project: {
-            members: {
+        tasks: {
+          projects: {
+            project_members: {
               some: {
                 userId: user.id
               }
@@ -49,7 +49,7 @@ export async function PUT(
     }
 
     // 切换完成状态
-    const updatedSubTask = await db.subTask.update({
+    const updatedSubTask = await db.subtasks.update({
       where: { id: subtaskId },
       data: {
         completed: !subTask.completed,

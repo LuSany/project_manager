@@ -19,12 +19,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = riskAnalysisSchema.parse(body)
 
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: validatedData.projectId },
       include: {
-        owner: true,
-        members: {
-          include: { user: true },
+        users: true,
+        project_members: {
+          include: { users: true },
         },
       },
     })
@@ -34,19 +34,19 @@ export async function POST(req: NextRequest) {
     }
 
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
       return ApiResponder.forbidden('无权分析此项目风险')
     }
 
-    const tasks = await prisma.task.findMany({
+    const tasks = await prisma.tasks.findMany({
       where: { projectId: validatedData.projectId },
       select: { title: true, status: true, progress: true },
     })
 
-    const milestones = await prisma.milestone.findMany({
+    const milestones = await prisma.milestones.findMany({
       where: { projectId: validatedData.projectId },
       select: { title: true, dueDate: true, status: true },
     })

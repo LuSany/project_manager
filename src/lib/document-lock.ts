@@ -13,9 +13,9 @@ export async function acquireDocumentLock(
   fileId: string,
   userId: string
 ): Promise<{ success: boolean; lock?: DocumentLock }> {
-  const file = await prisma.fileStorage.findUnique({
+  const file = await prisma.file_storage.findUnique({
     where: { id: fileId },
-    include: { locker: { select: { id: true, name: true } } },
+    include: { users_file_storage_lockedByTousers: { select: { id: true, name: true } } },
   })
 
   if (!file) {
@@ -29,14 +29,14 @@ export async function acquireDocumentLock(
         lock: {
           locked: true,
           lockedBy: file.lockedBy,
-          lockedByName: file.locker?.name ?? undefined,
+          lockedByName: file.users_file_storage_lockedByTousers?.name ?? undefined,
           expiresAt: file.lockExpiresAt ?? undefined,
         },
       }
     }
   }
 
-  await prisma.fileStorage.update({
+  await prisma.file_storage.update({
     where: { id: fileId },
     data: {
       lockedBy: userId,
@@ -49,7 +49,7 @@ export async function acquireDocumentLock(
 }
 
 export async function releaseDocumentLock(fileId: string, userId: string): Promise<void> {
-  await prisma.fileStorage.updateMany({
+  await prisma.file_storage.updateMany({
     where: {
       id: fileId,
       lockedBy: userId,
@@ -63,7 +63,7 @@ export async function releaseDocumentLock(fileId: string, userId: string): Promi
 }
 
 export async function extendDocumentLock(fileId: string, userId: string): Promise<boolean> {
-  const result = await prisma.fileStorage.updateMany({
+  const result = await prisma.file_storage.updateMany({
     where: {
       id: fileId,
       lockedBy: userId,
@@ -77,7 +77,7 @@ export async function extendDocumentLock(fileId: string, userId: string): Promis
 }
 
 export async function cleanupExpiredLocks(): Promise<number> {
-  const result = await prisma.fileStorage.updateMany({
+  const result = await prisma.file_storage.updateMany({
     where: {
       lockExpiresAt: { lt: new Date() },
     },

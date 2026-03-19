@@ -18,14 +18,14 @@ export async function POST(
   const { id: reviewId } = await params;
 
   try {
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        project: { include: { members: true } },
-        participants: {
+        projects: { include: { project_members: true } },
+        review_participants: {
           where: { role: "REVIEWER" },
         },
-        votes: true,
+        review_votes: true,
       },
     });
 
@@ -37,10 +37,10 @@ export async function POST(
     }
 
     // 检查是否是 MODERATOR 角色
-    const moderator = review.participants.find(
+    const moderator = review.review_participants.find(
       (p) => p.role === "MODERATOR" && p.userId === user.id
     );
-    const isProjectOwner = review.project.ownerId === user.id;
+    const isProjectOwner = review.projects.ownerId === user.id;
     const isAdmin = user.role === "ADMIN";
 
     if (!moderator && !isProjectOwner && !isAdmin) {
@@ -59,8 +59,8 @@ export async function POST(
     }
 
     // 检查所有 REVIEWER 是否都已投票同意
-    const reviewers = review.participants.filter((p) => p.role === "REVIEWER");
-    const agreedVotes = review.votes.filter((v) => v.agreed === true);
+    const reviewers = review.review_participants.filter((p) => p.role === "REVIEWER");
+    const agreedVotes = review.review_votes.filter((v) => v.agreed === true);
 
     if (reviewers.length === 0) {
       return NextResponse.json(
@@ -77,7 +77,7 @@ export async function POST(
           data: {
             total: reviewers.length,
             agreed: agreedVotes.length,
-            pending: reviewers.length - review.votes.length,
+            pending: reviewers.length - review.review_votes.length,
           },
         },
         { status: 400 }
@@ -85,15 +85,15 @@ export async function POST(
     }
 
     // 更新评审状态为已完成
-    const updatedReview = await prisma.review.update({
+    const updatedReview = await prisma.reviews.update({
       where: { id: reviewId },
       data: {
         status: "COMPLETED",
       },
       include: {
-        type: true,
-        author: { select: { id: true, name: true, avatar: true } },
-        project: { select: { id: true, name: true } },
+        ReviewTypeConfig: true,
+        users: { select: { id: true, name: true, avatar: true } },
+        projects: { select: { id: true, name: true } },
       },
     });
 

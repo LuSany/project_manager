@@ -59,9 +59,9 @@ export async function GET(req: NextRequest) {
     // 如果指定了项目ID，则只查询该项目的风险
     if (projectId) {
       // 验证项目存在且用户有权限访问
-      const project = await prisma.project.findUnique({
+      const project = await prisma.projects.findUnique({
         where: { id: projectId },
-        include: { members: true },
+        include: { project_members: true },
       })
 
       if (!project) {
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
       }
 
       const isOwner = project.ownerId === user.id
-      const isMember = project.members.some((m) => m.userId === user.id)
+      const isMember = project.project_members.some((m) => m.userId === user.id)
       const isAdmin = user.role === 'ADMIN'
 
       if (!isOwner && !isMember && !isAdmin) {
@@ -79,9 +79,9 @@ export async function GET(req: NextRequest) {
       where.projectId = projectId
     } else {
       // 如果没有指定项目ID，则查询用户有权限访问的所有项目的风险
-      const userProjects = await prisma.project.findMany({
+      const userProjects = await prisma.projects.findMany({
         where: {
-          OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }],
+          OR: [{ ownerId: user.id }, { project_members: { some: { userId: user.id } } }],
         },
         select: { id: true },
       })
@@ -122,16 +122,16 @@ export async function GET(req: NextRequest) {
 
     // 并行查询数据和总数
     const [risks, total] = await Promise.all([
-      prisma.risk.findMany({
+      prisma.risks.findMany({
         where,
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
             },
           },
-          owner: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -139,14 +139,14 @@ export async function GET(req: NextRequest) {
             },
           },
           _count: {
-            select: { riskTasks: true },
+            select: { risk_tasks: true },
           },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: [{ riskLevel: 'desc' }, { createdAt: 'desc' }],
       }),
-      prisma.risk.count({ where }),
+      prisma.risks.count({ where }),
     ])
 
     return ApiResponder.success({
@@ -177,10 +177,10 @@ export async function POST(req: NextRequest) {
     const validatedData = createRiskSchema.parse(body)
 
     // 验证项目存在且用户有权限
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: validatedData.projectId },
       include: {
-        members: true,
+        project_members: true,
       },
     })
 
@@ -190,7 +190,7 @@ export async function POST(req: NextRequest) {
 
     // 验证权限：项目所有者、管理员或成员可创建风险
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -203,8 +203,9 @@ export async function POST(req: NextRequest) {
     const riskLevel = calculateRiskLevel(probability, impact)
 
     // 创建风险
-    const risk = await prisma.risk.create({
+    const risk = await prisma.risks.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         category: validatedData.category ?? 'TECHNICAL',
@@ -215,18 +216,19 @@ export async function POST(req: NextRequest) {
         mitigation: validatedData.mitigation,
         contingency: validatedData.contingency,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-        projectId: validatedData.projectId,
-        ownerId: user.id,
+        projects: { connect: { id: validatedData.projectId } },
+        users: { connect: { id: user.id } },
         progress: 0,
+        updatedAt: new Date(),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
           },
         },
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,

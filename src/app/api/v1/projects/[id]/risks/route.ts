@@ -32,9 +32,9 @@ export async function GET(
     }
 
     // 验证项目存在且用户有权限
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
-      include: { members: true },
+      include: { project_members: true },
     })
 
     if (!project) {
@@ -42,7 +42,7 @@ export async function GET(
     }
 
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -50,10 +50,10 @@ export async function GET(
     }
 
     // 获取项目风险列表
-    const risks = await prisma.risk.findMany({
+    const risks = await prisma.risks.findMany({
       where: { projectId },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -61,7 +61,7 @@ export async function GET(
           },
         },
         _count: {
-          select: { riskTasks: true },
+          select: { risk_tasks: true },
         },
       },
       orderBy: [{ riskLevel: 'desc' }, { createdAt: 'desc' }],
@@ -88,9 +88,9 @@ export async function POST(
     }
 
     // 验证项目存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
-      include: { members: true },
+      include: { project_members: true },
     })
 
     if (!project) {
@@ -99,7 +99,7 @@ export async function POST(
 
     // 验证权限
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -115,8 +115,9 @@ export async function POST(
     const riskLevel = calculateRiskLevel(probability, impact)
 
     // 创建风险
-    const risk = await prisma.risk.create({
+    const risk = await prisma.risks.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         category: validatedData.category ?? 'TECHNICAL',
@@ -127,12 +128,13 @@ export async function POST(
         mitigation: validatedData.mitigation,
         contingency: validatedData.contingency,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : undefined,
-        projectId,
-        ownerId: user.id,
+        projects: { connect: { id: projectId } },
+        users: { connect: { id: user.id } },
         progress: 0,
+        updatedAt: new Date(),
       },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,

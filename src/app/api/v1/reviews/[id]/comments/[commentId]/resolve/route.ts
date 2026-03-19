@@ -19,12 +19,12 @@ export async function POST(
   const { id: reviewId, commentId } = await params;
 
   try {
-    const comment = await prisma.reviewComment.findUnique({
+    const comment = await prisma.review_comments.findUnique({
       where: { id: commentId },
       include: {
-        review: {
+        reviews: {
           include: {
-            project: { include: { members: true } }
+            projects: { include: { project_members: true } }
           }
         }
       },
@@ -39,8 +39,8 @@ export async function POST(
 
     // 检查权限：评论作者、评审作者或管理员可以标记已解决
     const isCommentAuthor = comment.authorId === user.id;
-    const isReviewAuthor = comment.review.authorId === user.id;
-    const isProjectOwner = comment.review.project.ownerId === user.id;
+    const isReviewAuthor = comment.reviews.authorId === user.id;
+    const isProjectOwner = comment.reviews.projects.ownerId === user.id;
     const isAdmin = user.role === "ADMIN";
 
     if (!isCommentAuthor && !isReviewAuthor && !isProjectOwner && !isAdmin) {
@@ -57,11 +57,11 @@ export async function POST(
       );
     }
 
-    const updatedComment = await prisma.reviewComment.update({
+    const updatedComment = await prisma.review_comments.update({
       where: { id: commentId },
       data: { status: "RESOLVED" },
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
+        users: { select: { id: true, name: true, avatar: true } },
       },
     });
 
@@ -70,8 +70,8 @@ export async function POST(
       if (comment.authorId !== user.id) {
         await notifyCommentResolved(
           comment.authorId,
-          comment.review.title,
-          comment.review.projectId
+          comment.reviews.title,
+          comment.reviews.projects.id
         );
       }
     } catch (notifyError) {

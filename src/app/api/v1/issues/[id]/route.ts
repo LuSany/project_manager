@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // Issue更新验证 Schema
@@ -35,10 +35,10 @@ export async function GET(
   }
 
   try {
-    const issue = await db.issue.findUnique({
+    const issue = await db.issues.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -88,7 +88,7 @@ export async function PUT(
     const validatedData = updateIssueSchema.parse(body);
 
     // 验证问题是否存在
-    const existing = await db.issue.findUnique({
+    const existing = await db.issues.findUnique({
       where: { id },
     });
 
@@ -114,11 +114,11 @@ export async function PUT(
       } as typeof validatedData & { resolvedAt?: Date | null };
     }
 
-    const issue = await db.issue.update({
+    const issue = await db.issues.update({
       where: { id },
       data: updateData,
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -165,7 +165,7 @@ export async function DELETE(
 
   try {
     // 验证问题是否存在
-    const existing = await db.issue.findUnique({
+    const existing = await db.issues.findUnique({
       where: { id },
     });
 
@@ -176,7 +176,7 @@ export async function DELETE(
       );
     }
 
-    await db.issue.delete({
+    await db.issues.delete({
       where: { id },
     });
 

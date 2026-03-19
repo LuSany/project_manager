@@ -19,19 +19,19 @@ export async function GET(
   const { id: reviewId } = await params;
 
   try {
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        project: { include: { members: true } },
-        participants: {
+        projects: { include: { project_members: true } },
+        review_participants: {
           where: { role: "REVIEWER" },
           include: {
-            user: { select: { id: true, name: true, avatar: true } },
+            users: { select: { id: true, name: true, avatar: true } },
           },
         },
-        votes: {
+        review_votes: {
           include: {
-            user: { select: { id: true, name: true, avatar: true } },
+            users: { select: { id: true, name: true, avatar: true } },
           },
         },
       },
@@ -45,8 +45,8 @@ export async function GET(
     }
 
     // 检查访问权限
-    const isOwner = review.project.ownerId === user.id;
-    const isMember = review.project.members.some((m) => m.userId === user.id);
+    const isOwner = review.projects.ownerId === user.id;
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id);
     const isAdmin = user.role === "ADMIN";
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -57,17 +57,17 @@ export async function GET(
     }
 
     // 构建投票状态
-    const voters = review.participants.map((participant) => {
-      const vote = review.votes.find((v) => v.userId === participant.userId);
+    const voters = review.review_participants.map((participant) => {
+      const vote = review.review_votes.find((v) => v.userId === participant.userId);
       return {
-        user: participant.user,
+        user: participant.users,
         agreed: vote?.agreed ?? null,
         votedAt: vote?.votedAt ?? null,
       };
     });
 
     const agreedCount = voters.filter((v) => v.agreed === true).length;
-    const totalReviewers = review.participants.length;
+    const totalReviewers = review.review_participants.length;
     const allAgreed = totalReviewers > 0 && agreedCount === totalReviewers;
 
     return NextResponse.json({
@@ -77,7 +77,7 @@ export async function GET(
         summary: {
           total: totalReviewers,
           agreed: agreedCount,
-          pending: totalReviewers - review.votes.length,
+          pending: totalReviewers - review.review_votes.length,
           allAgreed,
         },
       },
@@ -116,10 +116,10 @@ export async function POST(
   }
 
   try {
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        participants: true,
+        review_participants: true,
       },
     });
 
@@ -131,7 +131,7 @@ export async function POST(
     }
 
     // 检查是否是 REVIEWER 角色
-    const participant = review.participants.find(
+    const participant = review.review_participants.find(
       (p) => p.userId === user.id && p.role === "REVIEWER"
     );
 
@@ -143,7 +143,7 @@ export async function POST(
     }
 
     // 创建或更新投票
-    const vote = await prisma.reviewVote.upsert({
+    const vote = await prisma.review_votes.upsert({
       where: {
         reviewId_userId: {
           reviewId,
@@ -160,23 +160,23 @@ export async function POST(
         agreed,
       },
       include: {
-        user: { select: { id: true, name: true, avatar: true } },
+        users: { select: { id: true, name: true, avatar: true } },
       },
     });
 
     // 检查是否所有评审人都已同意
     if (agreed) {
       try {
-        const allVotes = await prisma.reviewVote.findMany({
+        const allVotes = await prisma.review_votes.findMany({
           where: { reviewId, agreed: true },
         });
-        const allReviewers = review.participants.filter(
+        const allReviewers = review.review_participants.filter(
           (p) => p.role === "REVIEWER"
         );
 
         if (allReviewers.length > 0 && allVotes.length === allReviewers.length) {
           // 找到主持人并发送通知
-          const moderator = review.participants.find(
+          const moderator = review.review_participants.find(
             (p) => p.role === "MODERATOR"
           );
           if (moderator) {

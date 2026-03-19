@@ -33,17 +33,17 @@ export async function GET(req: NextRequest, context: { params: Promise<{ id: str
 
     const { id } = await context.params
 
-    const template = await prisma.reviewTemplate.findUnique({
+    const template = await prisma.review_templates.findUnique({
       where: { id },
       include: {
-        type: {
+        ReviewTypeConfig: {
           select: {
             id: true,
             name: true,
             displayName: true,
           },
         },
-        items: {
+        review_template_items: {
           orderBy: { order: 'asc' },
         },
       },
@@ -73,10 +73,10 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
     const validatedData = updateReviewTemplateSchema.parse(body)
 
     // 检查模板是否存在
-    const existingTemplate = await prisma.reviewTemplate.findUnique({
+    const existingTemplate = await prisma.review_templates.findUnique({
       where: { id },
       include: {
-        items: true,
+        review_template_items: true,
       },
     })
 
@@ -95,7 +95,15 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       }
     }
 
-    const { items: newItems, ...templateData } = validatedData
+    const { items: newItems, typeId: newTypeId, ...templateData } = validatedData
+
+    // 构建更新数据
+    const updateData: any = { ...templateData }
+
+    // 如果提供了 typeId，使用 connect 语法
+    if (newTypeId) {
+      updateData.ReviewTypeConfig = { connect: { id: newTypeId } }
+    }
 
     // 处理 items 的更新
     let itemsUpdate:
@@ -120,7 +128,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       | undefined
 
     if (newItems) {
-      const existingItemIds = existingTemplate.items.map((item) => item.id)
+      const existingItemIds = existingTemplate.review_template_items.map((item) => item.id)
       const newItemIds = newItems.filter((item) => item.id).map((item) => item.id as string)
 
       // 要删除的 items
@@ -134,6 +142,7 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
 
       itemsUpdate = {
         create: toCreate.map((item, index) => ({
+          id: crypto.randomUUID(),
           title: item.title,
           content: item.content ?? null,
           order: item.order ?? index,
@@ -152,21 +161,21 @@ export async function PUT(req: NextRequest, context: { params: Promise<{ id: str
       }
     }
 
-    const template = await prisma.reviewTemplate.update({
+    const template = await prisma.review_templates.update({
       where: { id },
       data: {
-        ...templateData,
-        ...(itemsUpdate && { items: itemsUpdate }),
+        ...updateData,
+        ...(itemsUpdate && { review_template_items: itemsUpdate }),
       },
       include: {
-        type: {
+        ReviewTypeConfig: {
           select: {
             id: true,
             name: true,
             displayName: true,
           },
         },
-        items: {
+        review_template_items: {
           orderBy: { order: 'asc' },
         },
       },
@@ -193,7 +202,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     const { id } = await context.params
 
     // 检查模板是否存在
-    const template = await prisma.reviewTemplate.findUnique({
+    const template = await prisma.review_templates.findUnique({
       where: { id },
     })
 
@@ -202,7 +211,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
     }
 
     // 检查模板是否已被使用
-    const inUse = await prisma.review.count({
+    const inUse = await prisma.reviews.count({
       where: {
         typeId: template.typeId,
         status: { in: ['IN_PROGRESS', 'PENDING'] },
@@ -213,7 +222,7 @@ export async function DELETE(req: NextRequest, context: { params: Promise<{ id: 
       return ApiResponder.error('TEMPLATE_IN_USE', '模板正在使用中，无法删除')
     }
 
-    await prisma.reviewTemplate.delete({
+    await prisma.review_templates.delete({
       where: { id },
     })
 

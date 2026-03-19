@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthenticatedUser } from '@/lib/auth'
+import { randomUUID } from 'crypto'
 
 const emailConfigCreateSchema = z.object({
   name: z.string().min(1, '配置名称不能为空'),
@@ -25,7 +26,7 @@ export async function GET(req: NextRequest) {
       return ApiResponder.forbidden('只有管理员可以访问邮件配置')
     }
 
-    const configs = await prisma.emailConfig.findMany({
+    const configs = await prisma.email_configs.findMany({
       orderBy: { createdAt: 'desc' },
     })
 
@@ -47,14 +48,15 @@ export async function POST(req: NextRequest) {
     const validatedData = emailConfigCreateSchema.parse(body)
 
     if (validatedData.isDefault) {
-      await prisma.emailConfig.updateMany({
+      await prisma.email_configs.updateMany({
         where: { isDefault: true },
         data: { isDefault: false },
       })
     }
 
-    const config = await prisma.emailConfig.create({
+    const config = await prisma.email_configs.create({
       data: {
+        id: randomUUID(),
         name: validatedData.name,
         provider: validatedData.provider,
         apiKey: validatedData.apiKey,
@@ -66,6 +68,7 @@ export async function POST(req: NextRequest) {
         fromName: validatedData.fromName,
         isActive: validatedData.isActive,
         isDefault: validatedData.isDefault,
+        updatedAt: new Date(),
       },
     })
 

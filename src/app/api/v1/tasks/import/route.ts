@@ -8,7 +8,7 @@ import type { TaskImportResult, TemplateTask } from "@/types/task-template";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 任务导入验证Schema
@@ -35,16 +35,16 @@ const importFromJsonSchema = z.object({
 
 // 验证项目权限
 async function validateProjectAccess(projectId: string, userId: string): Promise<boolean> {
-  const project = await db.project.findUnique({
+  const project = await db.projects.findUnique({
     where: { id: projectId },
-    include: { members: true },
+    include: { project_members: true },
   });
 
   if (!project) return false;
 
   const isOwner = project.ownerId === userId;
-  const isMember = project.members.some((m) => m.userId === userId);
-  const isAdmin = (await db.user.findUnique({ where: { id: userId } }))?.role === 'ADMIN';
+  const isMember = project.project_members.some((m) => m.userId === userId);
+  const isAdmin = (await db.users.findUnique({ where: { id: userId } }))?.role === 'ADMIN';
 
   return isOwner || isMember || isAdmin === true;
 }
@@ -65,8 +65,9 @@ async function createTasks(
 
   for (const task of tasks) {
     try {
-      await db.task.create({
+      await db.tasks.create({
         data: {
+          id: crypto.randomUUID(),
           title: task.title,
           description: task.description,
           priority: task.priority === 'URGENT' ? 'CRITICAL' : task.priority ,
@@ -75,8 +76,9 @@ async function createTasks(
           dueDate: task.dueDate ? new Date(task.dueDate) : null,
           status: 'TODO',
           progress: 0,
-          projectId,
-          milestoneId,
+          projects: { connect: { id: projectId } },
+          milestones: milestoneId ? { connect: { id: milestoneId } } : undefined,
+          updatedAt: new Date(),
         },
       });
       result.created++;
@@ -134,7 +136,7 @@ async function importFromTemplate(body: any, user: any) {
   }
 
   // 获取模板
-  const template = await db.taskTemplate.findUnique({
+  const template = await db.task_templates.findUnique({
     where: { id: validatedData.templateId },
   });
 
@@ -152,7 +154,7 @@ async function importFromTemplate(body: any, user: any) {
 
   // 验证里程碑ID（如果提供）
   if (validatedData.milestoneId) {
-    const milestone = await db.milestone.findUnique({
+    const milestone = await db.milestones.findUnique({
       where: { id: validatedData.milestoneId },
     });
     if (!milestone || milestone.projectId !== validatedData.projectId) {
@@ -183,7 +185,7 @@ async function importFromJson(body: any, user: any) {
 
   // 验证里程碑ID（如果提供）
   if (validatedData.milestoneId) {
-    const milestone = await db.milestone.findUnique({
+    const milestone = await db.milestones.findUnique({
       where: { id: validatedData.milestoneId },
     });
     if (!milestone || milestone.projectId !== validatedData.projectId) {
@@ -246,7 +248,7 @@ async function handleFileImport(request: NextRequest, user: any) {
       
       // 验证里程碑ID（如果提供）
       if (milestoneId) {
-        const milestone = await db.milestone.findUnique({
+        const milestone = await db.milestones.findUnique({
           where: { id: milestoneId },
         });
         if (!milestone || milestone.projectId !== projectId) {

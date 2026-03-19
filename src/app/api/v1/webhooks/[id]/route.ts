@@ -21,10 +21,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id } = await params
 
-    const webhook = await prisma.webhook.findUnique({
+    const webhook = await prisma.webhooks.findUnique({
       where: { id },
       include: {
-        _count: { select: { deliveries: true } },
+        _count: { select: { webhook_deliveries: true } },
       },
     })
 
@@ -50,7 +50,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const validatedData = updateWebhookSchema.parse(body)
 
-    const webhook = await prisma.webhook.update({
+    const webhook = await prisma.webhooks.update({
       where: { id },
       data: {
         ...(validatedData.name && { name: validatedData.name }),
@@ -87,7 +87,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { id } = await params
 
-    await prisma.webhook.delete({
+    await prisma.webhooks.delete({
       where: { id },
     })
 

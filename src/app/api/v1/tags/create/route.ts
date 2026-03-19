@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 标签创建验证 Schema
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createTagSchema.parse(body);
 
     // 检查标签名是否已存在
-    const existingTag = await db.tag.findUnique({
+    const existingTag = await db.tags.findUnique({
       where: { name: validatedData.name },
     });
 
@@ -42,10 +42,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const tag = await db.tag.create({
+    const tag = await db.tags.create({
       data: {
+        id: crypto.randomUUID(),
         name: validatedData.name,
         color: validatedData.color,
+        updatedAt: new Date(),
       },
     });
 

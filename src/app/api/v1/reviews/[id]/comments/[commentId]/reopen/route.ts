@@ -18,12 +18,12 @@ export async function POST(
   const { id: reviewId, commentId } = await params;
 
   try {
-    const comment = await prisma.reviewComment.findUnique({
+    const comment = await prisma.review_comments.findUnique({
       where: { id: commentId },
       include: {
-        review: {
+        reviews: {
           include: {
-            project: { include: { members: true } }
+            projects: { include: { project_members: true } }
           }
         }
       },
@@ -54,11 +54,11 @@ export async function POST(
       );
     }
 
-    const updatedComment = await prisma.reviewComment.update({
+    const updatedComment = await prisma.review_comments.update({
       where: { id: commentId },
       data: { status: "OPEN" },
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
+        users: { select: { id: true, name: true, avatar: true } },
       },
     });
 

@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const services = await prisma.previewServiceConfig.findMany({
+    const services = await prisma.preview_service_configs.findMany({
       orderBy: { createdAt: 'desc' },
     });
 
@@ -56,8 +56,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = createServiceSchema.parse(body);
 
-    const service = await prisma.previewServiceConfig.create({
+    const service = await prisma.preview_service_configs.create({
       data: {
+        id: crypto.randomUUID(),
         serviceType: validated.serviceType,
         endpoint: validated.endpoint,
         isEnabled: validated.isEnabled,

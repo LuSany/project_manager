@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tasks/[id]/tags/[tagId] - 移除任务标签
@@ -25,11 +25,11 @@ export async function DELETE(
     const { id: taskId, tagId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -46,7 +46,7 @@ export async function DELETE(
     }
 
     // 验证标签是否存在
-    const tag = await db.tag.findUnique({
+    const tag = await db.tags.findUnique({
       where: { id: tagId },
     });
 
@@ -58,7 +58,7 @@ export async function DELETE(
     }
 
     // 检查关联是否存在
-    const taskTag = await db.taskTag.findUnique({
+    const task_tags = await db.task_tags.findUnique({
       where: {
         taskId_tagId: {
           taskId,
@@ -67,7 +67,7 @@ export async function DELETE(
       },
     });
 
-    if (!taskTag) {
+    if (!task_tags) {
       return NextResponse.json(
         { success: false, error: "任务未关联该标签" },
         { status: 404 }
@@ -75,7 +75,7 @@ export async function DELETE(
     }
 
     // 删除关联
-    await db.taskTag.delete({
+    await db.task_tags.delete({
       where: {
         taskId_tagId: {
           taskId,

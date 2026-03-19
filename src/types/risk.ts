@@ -8,7 +8,7 @@ export interface Risk {
   impact: number; // 1-5
   riskLevel: RiskLevel; // 计算得出: probability × impact
   status: RiskStatus;
-  owner: {
+  users: {
     id: string;
     name: string;
     email: string;
@@ -22,7 +22,7 @@ export interface Risk {
     name: string;
   };
   _count?: {
-    riskTasks: number;
+    risk_tasks: number;
   };
 }
 

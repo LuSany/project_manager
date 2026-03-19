@@ -8,7 +8,8 @@ import {
   isSupportedFileType,
   isOnlyOfficeAvailable,
   generateMockOnlyOfficeResponse,
-  buildDocumentConfig,
+  buildDocumentConfigWithToken,
+  detectRealFileType,
 } from '@/lib/preview/onlyoffice'
 import { checkFilePreviewAccess } from '@/lib/file-permission'
 import { acquireDocumentLock } from '@/lib/document-lock'
@@ -34,7 +35,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // 获取文件信息
-    const file = await prisma.fileStorage.findUnique({
+    const file = await prisma.file_storage.findUnique({
       where: { id: fileId },
     })
 
@@ -76,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const documentKey = generateDocumentKey(file.id, 1)
+    const documentKey = generateDocumentKey(file.id, file.version || 1)
 
     // 构建文件下载URL（带文档密钥认证，供OnlyOffice访问）
     const appUrl =
@@ -85,8 +86,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       'http://localhost:3000'
     const fileUrl = `${appUrl}/api/v1/files/${file.id}/download?key=${documentKey}`
 
-    // 获取文件类型
-    const fileType = getFileType(file.fileName)
+    // 检测真实的文件类型（基于文件内容，而非扩展名）
+    const fileType = await detectRealFileType(file.filePath, file.mimeType)
 
     const config = {
       apiUrl: process.env.ONLYOFFICE_API_URL || process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || '',
@@ -96,7 +97,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       fileName: file.fileName,
       fileType,
       mode: mode as 'edit' | 'view',
-      user: {
+      users: {
         id: accessCheck.user!.id,
         name: accessCheck.user!.name,
       },
@@ -113,11 +114,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       })
     }
 
-    // 生成OnlyOffice编辑器URL
+    // 生成OnlyOffice编辑器URL和带JWT Token的配置
     const editorUrl = generateOnlyOfficeUrl(config)
-    const docConfig = buildDocumentConfig(config)
+    const { config: docConfig, token } = await buildDocumentConfigWithToken(config)
 
-    await prisma.fileStorage.update({
+    await prisma.file_storage.update({
       where: { id: file.id },
       data: { documentKey },
     })
@@ -125,6 +126,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return success({
       url: editorUrl,
       config: docConfig,
+      token,
       fileName: file.fileName,
       fileType: file.mimeType,
       documentKey,

@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 1 })
       }
 
-      const matchedFile = await prisma.fileStorage.findFirst({
+      const matchedFile = await prisma.file_storage.findFirst({
         where: { documentKey: key },
       })
 
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
         await writeFile(tempFilePath, buffer)
 
         await prisma.$transaction(async (tx) => {
-          await tx.fileStorage.update({
+          await tx.file_storage.update({
             where: { id: matchedFile.id },
             data: {
               fileSize: buffer.length,

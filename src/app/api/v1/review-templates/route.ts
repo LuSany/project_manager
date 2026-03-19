@@ -39,12 +39,14 @@ export async function POST(req: NextRequest) {
       return ApiResponder.notFound('评审类型不存在')
     }
 
-    const template = await prisma.reviewTemplate.create({
+    const template = await prisma.review_templates.create({
       data: {
-        typeId: validatedData.typeId,
+        id: crypto.randomUUID(),
+        ReviewTypeConfig: { connect: { id: validatedData.typeId } },
         name: validatedData.name,
         description: validatedData.description,
         isActive: validatedData.isActive ?? true,
+        updatedAt: new Date(),
       },
     })
 
@@ -82,11 +84,11 @@ export async function GET(req: NextRequest) {
       where.isActive = false
     }
 
-    const templates = await prisma.reviewTemplate.findMany({
+    const templates = await prisma.review_templates.findMany({
       where,
       include: {
-        type: true,
-        items: {
+        ReviewTypeConfig: true,
+        review_template_items: {
           orderBy: { order: 'asc' },
         },
       },

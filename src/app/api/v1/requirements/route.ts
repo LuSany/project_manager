@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 需求创建验证 Schema
@@ -53,12 +53,12 @@ export async function GET(request: NextRequest) {
     }
 
     const [requirements, total] = await Promise.all([
-      db.requirement.findMany({
+      db.requirements.findMany({
         where,
         skip,
         take: pageSize,
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
           createdAt: "desc",
         },
       }),
-      db.requirement.count({ where }),
+      db.requirements.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -106,16 +106,18 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createRequirementSchema.parse(body);
 
-    const requirement = await db.requirement.create({
+    const requirement = await db.requirements.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         status: "PENDING",
         priority: validatedData.priority || "MEDIUM",
-        projectId: validatedData.projectId,
+        projects: { connect: { id: validatedData.projectId } },
+        updatedAt: new Date(),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

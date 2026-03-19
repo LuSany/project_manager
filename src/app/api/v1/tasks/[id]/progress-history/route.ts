@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // GET /api/v1/tasks/[id]/progress-history - 获取任务进展历史
@@ -26,7 +26,7 @@ export async function GET(
 
   try {
     // 验证任务是否存在
-    const task = await db.task.findUnique({
+    const task = await db.tasks.findUnique({
       where: { id },
       select: { id: true, projectId: true },
     });
@@ -39,10 +39,10 @@ export async function GET(
     }
 
     // 获取进展历史
-    const history = await db.taskProgressHistory.findMany({
+    const history = await db.task_progress_history.findMany({
       where: { taskId: id },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -92,7 +92,7 @@ export async function POST(
     const validatedData = createProgressSchema.parse(body);
 
     // 获取当前任务
-    const task = await db.task.findUnique({
+    const task = await db.tasks.findUnique({
       where: { id },
       select: { id: true, progress: true, status: true, projectId: true },
     });
@@ -106,17 +106,18 @@ export async function POST(
 
     // 创建进展历史记录并更新任务
     const [historyRecord] = await db.$transaction([
-      db.taskProgressHistory.create({
+      db.task_progress_history.create({
         data: {
-          taskId: id,
+          id: crypto.randomUUID(),
+          tasks: { connect: { id } },
+          users: { connect: { id: user.id } },
           progress: validatedData.progress,
           status: validatedData.status || null,
           comment: validatedData.comment || null,
           previousProgress: task.progress,
-          userId: user.id,
         },
         include: {
-          user: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -125,7 +126,7 @@ export async function POST(
           },
         },
       }),
-      db.task.update({
+      db.tasks.update({
         where: { id },
         data: {
           progress: validatedData.progress,

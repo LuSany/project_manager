@@ -24,12 +24,12 @@ export async function GET(
 
     const { id } = await params
 
-    const group = await prisma.reviewGroup.findUnique({
+    const group = await prisma.review_groups.findUnique({
       where: { id },
       include: {
-        members: {
+        review_group_members: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -71,7 +71,7 @@ export async function PUT(
     const body = await req.json()
     const validatedData = updateReviewGroupSchema.parse(body)
 
-    const existingGroup = await prisma.reviewGroup.findUnique({
+    const existingGroup = await prisma.review_groups.findUnique({
       where: { id },
     })
 
@@ -79,13 +79,13 @@ export async function PUT(
       return ApiResponder.notFound('评审组不存在')
     }
 
-    const group = await prisma.reviewGroup.update({
+    const group = await prisma.review_groups.update({
       where: { id },
       data: validatedData,
       include: {
-        members: {
+        review_group_members: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -121,7 +121,7 @@ export async function DELETE(
 
     const { id } = await params
 
-    const existingGroup = await prisma.reviewGroup.findUnique({
+    const existingGroup = await prisma.review_groups.findUnique({
       where: { id },
     })
 
@@ -129,7 +129,7 @@ export async function DELETE(
       return ApiResponder.notFound('评审组不存在')
     }
 
-    await prisma.reviewGroup.delete({
+    await prisma.review_groups.delete({
       where: { id },
     })
 

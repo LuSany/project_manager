@@ -6,7 +6,7 @@ import { z } from 'zod'
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
-  return db.user.findUnique({ where: { id: userId } })
+  return db.users.findUnique({ where: { id: userId } })
 }
 
 // 用户更新 Schema
@@ -58,7 +58,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const validatedData = updateUserSchema.parse(body)
 
-    const updatedUser = await db.user.update({
+    const updatedUser = await db.users.update({
       where: { id: user.id },
       data: validatedData,
     })

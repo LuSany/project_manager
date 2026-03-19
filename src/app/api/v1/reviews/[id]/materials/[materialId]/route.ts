@@ -15,14 +15,14 @@ export async function DELETE(
 
     const { id: reviewId, materialId } = await params
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       select: {
         authorId: true,
-        project: {
+        projects: {
           select: {
             ownerId: true,
-            members: { select: { userId: true } },
+            project_members: { select: { userId: true } },
           },
         },
       },
@@ -32,7 +32,7 @@ export async function DELETE(
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
+    const isOwner = review.projects.ownerId === user.id
     const isAuthor = review.authorId === user.id
     const isAdmin = user.role === 'ADMIN'
 
@@ -41,7 +41,7 @@ export async function DELETE(
     }
 
     // 检查材料是否属于该评审
-    const material = await prisma.reviewMaterial.findFirst({
+    const material = await prisma.review_materials.findFirst({
       where: { id: materialId, reviewId },
     })
 
@@ -49,7 +49,7 @@ export async function DELETE(
       return ApiResponder.notFound('材料不存在')
     }
 
-    await prisma.reviewMaterial.delete({
+    await prisma.review_materials.delete({
       where: { id: materialId },
     })
 

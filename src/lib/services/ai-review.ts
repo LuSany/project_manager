@@ -194,11 +194,11 @@ export async function analyzeMaterials(
       return { success: true, result: cachedResult }
     }
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        materials: true,
-        type: true,
+        review_materials: true,
+        ReviewTypeConfig: true,
       },
     })
 
@@ -206,7 +206,7 @@ export async function analyzeMaterials(
       return { success: false, error: '评审不存在' }
     }
 
-    const materials = review.materials.map(m => ({
+    const materials = review.review_materials.map(m => ({
       name: m.fileName,
       type: m.fileType,
       size: m.fileSize,
@@ -216,7 +216,7 @@ export async function analyzeMaterials(
       return { success: false, error: '没有评审材料' }
     }
 
-    const prompt = PROMPTS.MATERIAL_ANALYSIS(review.type.name, materials)
+    const prompt = PROMPTS.MATERIAL_ANALYSIS(review.ReviewTypeConfig.name, materials)
     const aiResult = await callAI(prompt, 'REVIEW_AUDIT', userId, review.projectId)
     
     if (!aiResult.success || !aiResult.response) {
@@ -226,9 +226,10 @@ export async function analyzeMaterials(
     try {
       const parsed: MaterialAnalysisResult = JSON.parse(aiResult.response)
       cache.set(cacheKey, parsed, 5 * 60 * 1000, ['ai-review', reviewId])
-      
-      await prisma.reviewAiAnalysis.create({
+
+      await prisma.review_ai_analysis.create({
         data: {
+          id: crypto.randomUUID(),
           reviewId,
           analysisType: 'MATERIAL_ANALYSIS',
           result: JSON.stringify(parsed),
@@ -262,11 +263,11 @@ export async function generateCriteria(
       return { success: true, result: cachedResult }
     }
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        materials: true,
-        type: true,
+        review_materials: true,
+        ReviewTypeConfig: true,
       },
     })
 
@@ -274,12 +275,12 @@ export async function generateCriteria(
       return { success: false, error: '评审不存在' }
     }
 
-    const materials = review.materials.map(m => ({
+    const materials = review.review_materials.map(m => ({
       name: m.fileName,
       type: m.fileType,
     }))
 
-    const prompt = PROMPTS.CRITERIA_GENERATION(review.type.name, materials)
+    const prompt = PROMPTS.CRITERIA_GENERATION(review.ReviewTypeConfig.name, materials)
     const aiResult = await callAI(prompt, 'REVIEW_AUDIT', userId, review.projectId)
     
     if (!aiResult.success || !aiResult.response) {
@@ -315,11 +316,11 @@ export async function identifyRisks(
       return { success: true, result: cachedResult }
     }
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        materials: true,
-        type: true,
+        review_materials: true,
+        ReviewTypeConfig: true,
       },
     })
 
@@ -327,12 +328,12 @@ export async function identifyRisks(
       return { success: false, error: '评审不存在' }
     }
 
-    const materials = review.materials.map(m => ({
+    const materials = review.review_materials.map(m => ({
       name: m.fileName,
       type: m.fileType,
     }))
 
-    const prompt = PROMPTS.RISK_IDENTIFICATION(review.type.name, materials)
+    const prompt = PROMPTS.RISK_IDENTIFICATION(review.ReviewTypeConfig.name, materials)
     const aiResult = await callAI(prompt, 'RISK_ANALYSIS', userId, review.projectId)
     
     if (!aiResult.success || !aiResult.response) {
@@ -372,10 +373,10 @@ export async function generateSummary(
       return { success: true, result: cachedResult }
     }
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
       include: {
-        type: true,
+        ReviewTypeConfig: true,
       },
     })
 
@@ -384,14 +385,14 @@ export async function generateSummary(
     }
 
     const [materialAnalysis, criteriaResults, risks] = await Promise.all([
-      prisma.reviewAiAnalysis.findFirst({
+      prisma.review_ai_analysis.findFirst({
         where: { reviewId, analysisType: 'MATERIAL_ANALYSIS' },
       }),
-      prisma.reviewItem.findMany({
+      prisma.review_items.findMany({
         where: { reviewId },
         orderBy: { order: 'asc' },
       }),
-      prisma.reviewAiAnalysis.findFirst({
+      prisma.review_ai_analysis.findFirst({
         where: { reviewId, analysisType: 'RISK_IDENTIFICATION' },
       }),
     ])
@@ -404,7 +405,7 @@ export async function generateSummary(
 
     const prompt = PROMPTS.SUMMARY_GENERATION(
       review.title,
-      review.type.name,
+      review.ReviewTypeConfig.name,
       analysisText,
       criteriaText,
       risksText
@@ -419,9 +420,10 @@ export async function generateSummary(
     try {
       const parsed: ReviewSummary = JSON.parse(aiResult.response)
       cache.set(cacheKey, parsed, 15 * 60 * 1000, ['ai-review', reviewId])
-      
-      await prisma.reviewAiAnalysis.create({
+
+      await prisma.review_ai_analysis.create({
         data: {
+          id: crypto.randomUUID(),
           reviewId,
           analysisType: 'SUMMARY',
           result: JSON.stringify(parsed),

@@ -34,7 +34,7 @@ async function getUserNotificationPreference(
   userId: string,
   type: NotificationType
 ): Promise<{ enabled: boolean; channel: NotificationChannel } | null> {
-  const preference = await prisma.notificationPreference.findUnique({
+  const preference = await prisma.notification_preferences.findUnique({
     where: {
       userId_type_channel: {
         userId,
@@ -61,7 +61,7 @@ async function getUserNotificationPreference(
 async function getAllUserNotificationPreferences(
   userId: string
 ): Promise<Array<{ type: NotificationType; enabled: boolean; channel: NotificationChannel }>> {
-  const preferences = await prisma.notificationPreference.findMany({
+  const preferences = await prisma.notification_preferences.findMany({
     where: { userId },
   })
 
@@ -87,7 +87,7 @@ async function shouldSendEmail(
   }
 
   // 检查是否配置了邮件渠道
-  const emailPreference = await prisma.notificationPreference.findUnique({
+  const emailPreference = await prisma.notification_preferences.findUnique({
     where: {
       userId_type_channel: {
         userId,
@@ -109,7 +109,7 @@ async function sendEmailNotification(
   title: string,
   content: string
 ): Promise<void> {
-  const user = await prisma.user.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { email: true, name: true },
   })
@@ -135,7 +135,7 @@ async function shouldSendNotification(userId: string): Promise<boolean> {
 async function isProjectIgnored(userId: string, projectId?: string): Promise<boolean> {
   if (!projectId) return false
 
-  const ignore = await prisma.notificationIgnore.findUnique({
+  const ignore = await prisma.notification_ignores.findUnique({
     where: {
       userId_projectId: {
         userId,
@@ -169,15 +169,17 @@ export async function createNotification(options: CreateNotificationOptions): Pr
   }
 
   // 创建站内通知
-  await prisma.notification.create({
+  await prisma.notifications.create({
     data: {
-      userId,
+      id: crypto.randomUUID(),
+      users: { connect: { id: userId } },
       type,
       title,
       content,
       link: link || null,
       projectId: projectId || null,
       isRead: false,
+      createdAt: new Date(),
     },
   })
 

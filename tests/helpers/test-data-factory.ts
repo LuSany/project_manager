@@ -22,11 +22,13 @@ export async function createTestReviewTypeConfig(
 ) {
   return testPrisma.reviewTypeConfig.create({
     data: {
+      id: crypto.randomUUID(),
       name: overrides.name ? `${overrides.name}_${Date.now()}` : `${faker.word.noun().toUpperCase()}_${Date.now()}`,
       displayName: overrides.displayName ?? faker.word.words(2),
       description: overrides.description,
       isSystem: overrides.isSystem ?? false,
       isActive: overrides.isActive ?? true,
+      updatedAt: new Date(),
     },
   })
 }
@@ -34,11 +36,13 @@ export async function createTestReviewTypeConfig(
 /**
  * 创建测试标签
  */
-export async function createTestTag(overrides: Partial<Prisma.TagCreateInput> = {}) {
-  return testPrisma.tag.create({
+export async function createTestTag(overrides: Partial<Prisma.tagsCreateInput> = {}) {
+  return testPrisma.tags.create({
     data: {
+      id: faker.string.uuid(),
       name: overrides.name ?? `tag-${faker.string.alphanumeric(8)}`,
       color: overrides.color ?? faker.color.rgb(),
+      updatedAt: new Date(),
     },
   })
 }
@@ -46,15 +50,17 @@ export async function createTestTag(overrides: Partial<Prisma.TagCreateInput> = 
 /**
  * 创建测试 AI 配置
  */
-export async function createTestAIConfig(overrides: Partial<Prisma.AIConfigCreateInput> = {}) {
-  return testPrisma.aIConfig.create({
+export async function createTestAIConfig(overrides: Partial<Prisma.ai_configsCreateInput> = {}) {
+  return testPrisma.ai_configs.create({
     data: {
+      id: faker.string.uuid(),
       name: overrides.name ?? `ai-config-${faker.string.alphanumeric(8)}`,
       provider: overrides.provider ?? 'OPENAI',
       apiKey: overrides.apiKey ?? faker.string.alphanumeric(32),
       model: overrides.model ?? 'gpt-4o-mini',
       isActive: overrides.isActive ?? true,
       isDefault: overrides.isDefault ?? false,
+      updatedAt: new Date(),
     },
   })
 }
@@ -63,10 +69,11 @@ export async function createTestAIConfig(overrides: Partial<Prisma.AIConfigCreat
  * 创建测试邮件配置
  */
 export async function createTestEmailConfig(
-  overrides: Partial<Prisma.EmailConfigCreateInput> = {}
+  overrides: Partial<Prisma.email_configsCreateInput> = {}
 ) {
-  return testPrisma.emailConfig.create({
+  return testPrisma.email_configs.create({
     data: {
+      id: faker.string.uuid(),
       name: overrides.name ?? `email-config-${faker.string.alphanumeric(8)}`,
       provider: overrides.provider ?? 'smtp',
       smtpHost: overrides.smtpHost ?? 'smtp.test.com',
@@ -77,6 +84,7 @@ export async function createTestEmailConfig(
       fromName: overrides.fromName ?? faker.person.fullName(),
       isActive: overrides.isActive ?? true,
       isDefault: overrides.isDefault ?? false,
+      updatedAt: new Date(),
     },
   })
 }
@@ -88,11 +96,12 @@ export async function createTestEmailConfig(
 /**
  * 创建测试用户
  */
-export async function createTestUser(overrides: Partial<Prisma.UserCreateInput> = {}) {
+export async function createTestUser(overrides: Partial<Prisma.usersCreateInput> = {}) {
   const email = overrides.email ?? `test-${Date.now()}-${faker.string.alphanumeric(6)}@example.com`
 
-  return testPrisma.user.create({
+  return testPrisma.users.create({
     data: {
+      id: faker.string.uuid(),
       email,
       passwordHash: overrides.passwordHash ?? faker.string.alphanumeric(60),
       name: overrides.name ?? faker.person.fullName(),
@@ -102,6 +111,7 @@ export async function createTestUser(overrides: Partial<Prisma.UserCreateInput> 
       position: overrides.position,
       status: overrides.status ?? 'ACTIVE',
       role: overrides.role ?? 'EMPLOYEE',
+      updatedAt: new Date(),
     },
   })
 }
@@ -109,14 +119,14 @@ export async function createTestUser(overrides: Partial<Prisma.UserCreateInput> 
 /**
  * 创建测试管理员用户
  */
-export async function createTestAdminUser(overrides: Partial<Prisma.UserCreateInput> = {}) {
+export async function createTestAdminUser(overrides: Partial<Prisma.usersCreateInput> = {}) {
   return createTestUser({ ...overrides, role: 'ADMIN' })
 }
 
 /**
  * 创建待审批用户
  */
-export async function createTestPendingUser(overrides: Partial<Prisma.UserCreateInput> = {}) {
+export async function createTestPendingUser(overrides: Partial<Prisma.usersCreateInput> = {}) {
   return createTestUser({ ...overrides, status: 'PENDING' })
 }
 
@@ -129,16 +139,18 @@ export async function createTestPendingUser(overrides: Partial<Prisma.UserCreate
  */
 export async function createTestProject(
   ownerId: string,
-  overrides: Partial<Prisma.ProjectCreateInput> = {}
+  overrides: Partial<Prisma.projectsCreateInput> = {}
 ) {
-  return testPrisma.project.create({
+  return testPrisma.projects.create({
     data: {
+      id: faker.string.uuid(),
       name: overrides.name ?? faker.company.name(),
       description: overrides.description,
       status: overrides.status ?? 'PLANNING',
       startDate: overrides.startDate,
       endDate: overrides.endDate,
-      ownerId,
+      users: { connect: { id: ownerId } },
+      updatedAt: new Date(),
     },
   })
 }
@@ -149,12 +161,12 @@ export async function createTestProject(
 export async function createTestProjectMember(
   projectId: string,
   userId: string,
-  overrides: Partial<Prisma.ProjectMemberCreateInput> = {}
+  overrides: Partial<Prisma.project_membersCreateInput> = {}
 ) {
-  return testPrisma.projectMember.create({
+  return testPrisma.project_members.create({
     data: {
-      projectId,
-      userId,
+      projects: { connect: { id: projectId } },
+      users: { connect: { id: userId } },
       role: overrides.role ?? 'PROJECT_MEMBER',
     },
   })
@@ -169,16 +181,18 @@ export async function createTestProjectMember(
  */
 export async function createTestMilestone(
   projectId: string,
-  overrides: Partial<Prisma.MilestoneCreateInput> = {}
+  overrides: Partial<Prisma.milestonesCreateInput> = {}
 ) {
-  return testPrisma.milestone.create({
+  return testPrisma.milestones.create({
     data: {
+      id: faker.string.uuid(),
       title: overrides.title ?? faker.word.words(3),
       description: overrides.description,
       status: overrides.status ?? 'NOT_STARTED',
       progress: overrides.progress ?? 0,
       dueDate: overrides.dueDate,
-      projectId,
+      projects: { connect: { id: projectId } },
+      updatedAt: new Date(),
     },
   })
 }
@@ -188,9 +202,9 @@ export async function createTestMilestone(
  */
 export async function createTestTask(
   projectId: string,
-  overrides: Partial<Prisma.TaskCreateInput> & { milestoneId?: string; acceptorId?: string } = {}
+  overrides: Partial<Prisma.tasksCreateInput> & { milestoneId?: string; acceptorId?: string } = {}
 ) {
-  return testPrisma.task.create({
+  return testPrisma.tasks.create({
     data: {
       title: overrides.title ?? faker.hacker.phrase(),
       description: overrides.description,
@@ -212,9 +226,9 @@ export async function createTestTask(
  */
 export async function createTestSubTask(
   taskId: string,
-  overrides: Partial<Prisma.SubTaskCreateInput> & { parentId?: string } = {}
+  overrides: Partial<Prisma.subtasksCreateInput> & { parentId?: string } = {}
 ) {
-  return testPrisma.subTask.create({
+  return testPrisma.subtasks.create({
     data: {
       title: overrides.title ?? faker.word.words(3),
       description: overrides.description,
@@ -230,9 +244,9 @@ export async function createTestSubTask(
  */
 export async function createTestRequirement(
   projectId: string,
-  overrides: Partial<Prisma.RequirementCreateInput> & { reviewedBy?: string } = {}
+  overrides: Partial<Prisma.requirementsCreateInput> & { reviewedBy?: string } = {}
 ) {
-  return testPrisma.requirement.create({
+  return testPrisma.requirements.create({
     data: {
       title: overrides.title ?? faker.word.words(4),
       description: overrides.description,
@@ -249,9 +263,9 @@ export async function createTestRequirement(
  */
 export async function createTestIssue(
   projectId: string,
-  overrides: Partial<Prisma.IssueCreateInput> & { requirementId?: string } = {}
+  overrides: Partial<Prisma.issuesCreateInput> & { requirementId?: string } = {}
 ) {
-  return testPrisma.issue.create({
+  return testPrisma.issues.create({
     data: {
       title: overrides.title ?? faker.word.words(4),
       description: overrides.description,
@@ -270,12 +284,12 @@ export async function createTestReview(
   projectId: string,
   typeId: string,
   authorId?: string,  // 可选作者ID
-  overrides: Partial<Prisma.ReviewCreateInput> = {}
+  overrides: Partial<Prisma.reviewsCreateInput> = {}
 ) {
   // 如果没有提供作者ID，获取项目所有者
   let reviewAuthorId = authorId;
   if (!reviewAuthorId) {
-    const project = await testPrisma.project.findUnique({
+    const project = await testPrisma.projects.findUnique({
       where: { id: projectId },
       select: { ownerId: true },
     });
@@ -286,15 +300,17 @@ export async function createTestReview(
     throw new Error('Cannot determine review author: no authorId provided and project has no owner');
   }
 
-  return testPrisma.review.create({
+  return testPrisma.reviews.create({
     data: {
+      id: faker.string.uuid(),
       title: overrides.title ?? faker.word.words(4),
       description: overrides.description,
-      projectId,
-      typeId,
-      authorId: reviewAuthorId,
+      projects: { connect: { id: projectId } },
+      ReviewTypeConfig: { connect: { id: typeId } },
+      users: { connect: { id: reviewAuthorId } },
       scheduledAt: overrides.scheduledAt,
       status: overrides.status ?? 'PENDING',
+      updatedAt: new Date(),
     },
   })
 }
@@ -305,19 +321,21 @@ export async function createTestReview(
 export async function createTestRisk(
   projectId: string,
   ownerId: string,
-  overrides: Partial<Prisma.RiskCreateInput> = {}
+  overrides: Partial<Prisma.risksCreateInput> = {}
 ) {
-  return testPrisma.risk.create({
+  return testPrisma.risks.create({
     data: {
+      id: faker.string.uuid(),
       title: overrides.title ?? faker.word.words(4),
       description: overrides.description,
-      projectId,
-      ownerId,
+      projects: { connect: { id: projectId } },
+      users: { connect: { id: ownerId } },
       category: overrides.category ?? 'TECHNICAL',
       probability: overrides.probability ?? 3,
       impact: overrides.impact ?? 3,
       riskLevel: overrides.riskLevel ?? 'MEDIUM',
       status: overrides.status ?? 'IDENTIFIED',
+      updatedAt: new Date(),
     },
   })
 }
@@ -331,17 +349,19 @@ export async function createTestRisk(
  */
 export async function createTestNotification(
   userId: string,
-  overrides: Partial<Prisma.NotificationCreateInput> = {}
+  overrides: Partial<Prisma.notificationsCreateInput> = {}
 ) {
-  return testPrisma.notification.create({
+  return testPrisma.notifications.create({
     data: {
+      id: faker.string.uuid(),
       type: overrides.type ?? 'TASK_ASSIGNED',
       title: overrides.title ?? faker.word.words(3),
       content: overrides.content ?? faker.lorem.sentence(),
       link: overrides.link,
       isRead: overrides.isRead ?? false,
-      userId,
+      users: { connect: { id: userId } },
       projectId: overrides.projectId as string | undefined,
+      createdAt: new Date(),
     },
   })
 }
@@ -354,16 +374,19 @@ export async function createTestReviewComment(
   authorId: string,
   overrides: Partial<{ content?: string; status?: CommentStatus; materialId?: string | null; itemId?: string | null; parentId?: string | null }> = {}
 ) {
-  return testPrisma.reviewComment.create({
+  return testPrisma.review_comments.create({
     data: {
-      reviewId,
-      authorId,
+      id: faker.string.uuid(),
+      reviews: { connect: { id: reviewId } },
+      users: { connect: { id: authorId } },
       content: overrides.content ?? faker.lorem.sentence(),
       status: overrides.status ?? CommentStatus.OPEN,
-      materialId: overrides.materialId,
-      itemId: overrides.itemId,
-      parentId: overrides.parentId,
-    },
+      review_materials: overrides.materialId ? { connect: { id: overrides.materialId } } : undefined,
+      review_items: overrides.itemId ? { connect: { id: overrides.itemId } } : undefined,
+      other_review_comments: overrides.parentId ? { connect: { id: overrides.parentId } } : undefined,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as any,
   })
 }
 
@@ -375,11 +398,12 @@ export async function createTestReviewVote(
   userId: string,
   overrides: Partial<{ agreed?: boolean }> = {}
 ) {
-  return testPrisma.reviewVote.create({
+  return testPrisma.review_votes.create({
     data: {
-      reviewId,
-      userId,
+      reviews: { connect: { id: reviewId } },
+      users: { connect: { id: userId } },
       agreed: overrides.agreed ?? true,
+      votedAt: new Date(),
     },
   })
 }
@@ -389,10 +413,11 @@ export async function createTestReviewVote(
  */
 export async function createTestAuditLog(
   userId: string,
-  overrides: Partial<Prisma.AuditLogCreateInput> = {}
+  overrides: Partial<Prisma.audit_logsCreateInput> = {}
 ) {
-  return testPrisma.auditLog.create({
+  return testPrisma.audit_logs.create({
     data: {
+      id: faker.string.uuid(),
       userId,
       action: overrides.action ?? 'CREATE',
       entityType: overrides.entityType ?? 'Task',
@@ -400,6 +425,7 @@ export async function createTestAuditLog(
       description: overrides.description,
       ipAddress: overrides.ipAddress ?? faker.internet.ipv4(),
       userAgent: overrides.userAgent ?? faker.internet.userAgent(),
+      createdAt: new Date(),
     },
   })
 }

@@ -26,15 +26,15 @@ export async function GET(
 
     const { id } = await params
 
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
             ownerId: true,
-            members: {
+            project_members: {
               select: {
                 userId: true,
               },
@@ -57,8 +57,8 @@ export async function GET(
     }
 
     // 验证权限
-    const isOwner = milestone.project.ownerId === user.id
-    const isMember = milestone.project.members.some((m) => m.userId === user.id)
+    const isOwner = milestone.projects.ownerId === user.id
+    const isMember = milestone.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -88,12 +88,12 @@ export async function PUT(
     const validatedData = updateMilestoneSchema.parse(body)
 
     // 验证里程碑存在
-    const existing = await prisma.milestone.findUnique({
+    const existing = await prisma.milestones.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: true,
+            project_members: true,
           },
         },
       },
@@ -104,7 +104,7 @@ export async function PUT(
     }
 
     // 验证权限：项目所有者或管理员可更新
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
@@ -112,7 +112,7 @@ export async function PUT(
     }
 
     // 更新里程碑
-    const milestone = await prisma.milestone.update({
+    const milestone = await prisma.milestones.update({
       where: { id },
       data: {
         ...(validatedData.title !== undefined && { title: validatedData.title }),
@@ -122,7 +122,7 @@ export async function PUT(
         ...(validatedData.dueDate !== undefined && { dueDate: new Date(validatedData.dueDate) }),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -162,10 +162,10 @@ export async function DELETE(
     const { id } = await params
 
     // 验证里程碑存在
-    const existing = await prisma.milestone.findUnique({
+    const existing = await prisma.milestones.findUnique({
       where: { id },
       include: {
-        project: true,
+        projects: true,
       },
     })
 
@@ -174,7 +174,7 @@ export async function DELETE(
     }
 
     // 验证权限：项目所有者或系统管理员可删除
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
@@ -182,7 +182,7 @@ export async function DELETE(
     }
 
     // 删除里程碑
-    await prisma.milestone.delete({
+    await prisma.milestones.delete({
       where: { id },
     })
 

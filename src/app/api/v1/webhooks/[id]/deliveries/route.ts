@@ -23,13 +23,13 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const [deliveries, total] = await Promise.all([
-      prisma.webhookDelivery.findMany({
+      prisma.webhook_deliveries.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { attemptedAt: 'desc' },
       }),
-      prisma.webhookDelivery.count({ where }),
+      prisma.webhook_deliveries.count({ where }),
     ])
 
     return ApiResponder.success({

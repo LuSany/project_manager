@@ -19,16 +19,16 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = reviewAuditSchema.parse(body)
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: validatedData.reviewId },
       include: {
-        type: true,
-        project: {
+        ReviewTypeConfig: true,
+        projects: {
           include: {
-            members: true,
+            project_members: true,
           },
         },
-        materials: true,
+        review_materials: true,
       },
     })
 
@@ -36,15 +36,15 @@ export async function POST(req: NextRequest) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
       return ApiResponder.forbidden('无权审核此评审')
     }
 
-    const materials = review.materials.map((m) => ({
+    const materials = review.review_materials.map((m) => ({
       name: m.fileName,
       type: m.fileType || 'document',
       content: '', // ReviewMaterial doesn't have content field
@@ -52,10 +52,10 @@ export async function POST(req: NextRequest) {
 
     const result = await auditReview(
       review.title,
-      review.type?.displayName || 'general',
+      review.ReviewTypeConfig?.displayName || 'general',
       materials,
       user.id,
-      review.projectId
+      review.projects.id
     )
 
     if (!result.success) {

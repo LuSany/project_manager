@@ -25,13 +25,13 @@ export async function GET(req: NextRequest) {
     }
 
     const [logs, total] = await Promise.all([
-      prisma.emailLog.findMany({
+      prisma.email_logs.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip: (page - 1) * pageSize,
         take: pageSize,
       }),
-      prisma.emailLog.count({ where }),
+      prisma.email_logs.count({ where }),
     ])
 
     return ApiResponder.success({

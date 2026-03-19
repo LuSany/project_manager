@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     // 检查用户是否存在
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     if (user.role !== 'ADMIN') {
       where.OR = [
         { ownerId: userId },
-        { members: { some: { userId: userId } } }
+        { project_members: { some: { users: { id: userId } } } }
       ];
     }
 
@@ -38,19 +38,19 @@ export async function GET(request: NextRequest) {
       myTasksCount,
       highRisksCount
     ] = await Promise.all([
-      prisma.project.count({ where }),
-      prisma.project.count({ where: { ...where, status: 'ACTIVE' } }),
-      prisma.project.count({ where: { ...where, status: 'COMPLETED' } }),
-      prisma.task.count({
+      prisma.projects.count({ where }),
+      prisma.projects.count({ where: { ...where, status: 'ACTIVE' } }),
+      prisma.projects.count({ where: { ...where, status: 'COMPLETED' } }),
+      prisma.tasks.count({
         where: {
           OR: [
-            { assignees: { some: { userId } } },
+            { task_assignees: { some: { users: { id: userId } } } },
             { acceptorId: userId }
           ],
           status: { not: 'DONE' }
         }
       }),
-      prisma.risk.count({
+      prisma.risks.count({
         where: {
           riskLevel: 'HIGH',
           status: { not: 'RESOLVED' }

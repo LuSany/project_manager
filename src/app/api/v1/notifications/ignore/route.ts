@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
       return error('项目ID不能为空_ERROR', '项目ID不能为空', undefined, 400);
     }
 
-    const ignore = await prisma.notificationIgnore.create({
+    const ignore = await prisma.notification_ignores.create({
       data: {
         userId, // 使用当前认证用户的ID
         projectId,
@@ -50,7 +50,7 @@ export async function DELETE(request: NextRequest) {
       return error('项目ID不能为空_ERROR', '项目ID不能为空', undefined, 400);
     }
 
-    await prisma.notificationIgnore.deleteMany({
+    await prisma.notification_ignores.deleteMany({
       where: {
         userId, // 只能删除当前用户的忽略设置
         projectId,

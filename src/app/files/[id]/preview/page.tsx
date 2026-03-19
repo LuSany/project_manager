@@ -43,9 +43,15 @@ export default function FilePreviewPage({ params }: { params: Promise<{ id: stri
       const existingScript = document.querySelector(
         `script[src="${onlyOfficeUrl}/web-apps/apps/api/documents/api.js"]`
       )
+
+      const editorConfig = config.config
+      if (config.token) {
+        editorConfig.token = config.token
+      }
+
       if (existingScript) {
         if ((window as any).DocsAPI) {
-          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', config.config)
+          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
         }
         return
       }
@@ -54,7 +60,7 @@ export default function FilePreviewPage({ params }: { params: Promise<{ id: stri
       script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
       script.onload = () => {
         if ((window as any).DocsAPI) {
-          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', config.config)
+          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
         }
       }
       script.onerror = () => {

@@ -12,7 +12,7 @@ const createSubTaskSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // GET /api/v1/tasks/[id]/subtasks - 获取子任务列表
@@ -32,11 +32,11 @@ export async function GET(
 
   try {
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -53,7 +53,7 @@ export async function GET(
     }
 
     // 获取子任务列表
-    const subTasks = await db.subTask.findMany({
+    const subtasks = await db.subtasks.findMany({
       where: {
         taskId: id,
         parentId: null, // 只获取顶级子任务
@@ -63,7 +63,7 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      data: subTasks,
+      data: subtasks,
     });
   } catch (error) {
     console.error("获取子任务列表失败:", error);
@@ -94,11 +94,11 @@ export async function POST(
     const validatedData = createSubTaskSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -115,11 +115,13 @@ export async function POST(
     }
 
     // 创建子任务
-    const subTask = await db.subTask.create({
+    const subTask = await db.subtasks.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
-        taskId: id,
+        tasks: { connect: { id } },
+        updatedAt: new Date(),
       },
     });
 

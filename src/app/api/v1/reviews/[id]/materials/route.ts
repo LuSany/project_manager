@@ -20,24 +20,24 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id: reviewId } = await params
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
       return ApiResponder.forbidden('无权访问此评审')
     }
 
-    const materials = await prisma.reviewMaterial.findMany({
+    const materials = await prisma.review_materials.findMany({
       where: { reviewId },
       orderBy: { uploadedAt: 'desc' },
     })
@@ -60,26 +60,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json()
     const validatedData = createMaterialSchema.parse(body)
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
       return ApiResponder.forbidden('无权添加评审材料')
     }
 
-    const material = await prisma.reviewMaterial.create({
+    const material = await prisma.review_materials.create({
       data: {
-        reviewId,
+        id: crypto.randomUUID(),
+        reviews: { connect: { id: reviewId } },
         fileId: validatedData.fileId,
         fileName: validatedData.fileName,
         fileType: validatedData.fileType,

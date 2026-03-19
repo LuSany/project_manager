@@ -17,11 +17,11 @@ export async function DELETE(
     const { id: riskId, taskId } = await params
 
     // 验证风险存在
-    const risk = await prisma.risk.findUnique({
+    const risk = await prisma.risks.findUnique({
       where: { id: riskId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -31,10 +31,10 @@ export async function DELETE(
     }
 
     // 验证权限：项目所有者、管理员或风险负责人可移除关联
-    const isOwner = risk.project.ownerId === user.id
+    const isOwner = risk.projects.ownerId === user.id
     const isRiskOwner = risk.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
-    const isProjectAdmin = risk.project.members.some(
+    const isProjectAdmin = risk.projects.project_members.some(
       (m) => m.userId === user.id && m.role === 'PROJECT_ADMIN'
     )
 
@@ -43,7 +43,7 @@ export async function DELETE(
     }
 
     // 查找关联记录
-    const riskTask = await prisma.riskTask.findFirst({
+    const riskTask = await prisma.risk_tasks.findFirst({
       where: {
         riskId,
         taskId,
@@ -55,7 +55,7 @@ export async function DELETE(
     }
 
     // 删除关联
-    await prisma.riskTask.delete({
+    await prisma.risk_tasks.delete({
       where: {
         id: riskTask.id,
       },

@@ -39,12 +39,12 @@ export interface ReportData {
 }
 
 export async function getReportData(reviewId: string): Promise<ReportData> {
-  const review = await prisma.review.findUnique({
+  const review = await prisma.reviews.findUnique({
     where: { id: reviewId },
     include: {
-      type: true,
-      materials: true,
-      criteria: true,
+      ReviewTypeConfig: true,
+      review_materials: true,
+      review_criteria: true,
     },
   })
 
@@ -52,7 +52,7 @@ export async function getReportData(reviewId: string): Promise<ReportData> {
     throw new Error('评审不存在')
   }
 
-  const summaryAnalysis = await prisma.reviewAiAnalysis.findFirst({
+  const summaryAnalysis = await prisma.review_ai_analysis.findFirst({
     where: { reviewId, analysisType: 'SUMMARY' },
   })
 
@@ -65,7 +65,7 @@ export async function getReportData(reviewId: string): Promise<ReportData> {
     }
   }
 
-  const risks = await prisma.reviewAiAnalysis.findFirst({
+  const risks = await prisma.review_ai_analysis.findFirst({
     where: { reviewId, analysisType: 'RISK_IDENTIFICATION' },
   })
 
@@ -83,16 +83,16 @@ export async function getReportData(reviewId: string): Promise<ReportData> {
     review: {
       id: review.id,
       title: review.title,
-      type: review.type.displayName,
+      type: review.ReviewTypeConfig.displayName,
       status: review.status,
       createdAt: review.createdAt.toISOString(),
     },
-    materials: review.materials.map((m) => ({
+    materials: review.review_materials.map((m) => ({
       fileName: m.fileName,
       fileType: m.fileType,
       fileSize: m.fileSize,
     })),
-    criteria: review.criteria.map((c) => ({
+    criteria: review.review_criteria.map((c) => ({
       title: c.title,
       description: c.description || undefined,
     })),

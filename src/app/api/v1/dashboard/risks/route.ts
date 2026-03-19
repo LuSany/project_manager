@@ -18,11 +18,11 @@ export async function GET(request: NextRequest) {
     // 获取高风险项目（不指定 projectId 时返回全局数据）
     if (!projectId) {
       // 获取用户参与的项目
-      const userProjects = await prisma.project.findMany({
+      const userProjects = await prisma.projects.findMany({
         where: {
           OR: [
             { ownerId: userId },
-            { members: { some: { userId } } },
+            { project_members: { some: { users: { id: userId } } } },
           ],
         },
         select: { id: true },
@@ -31,20 +31,20 @@ export async function GET(request: NextRequest) {
       const projectIds = userProjects.map(p => p.id);
 
       // 获取高风险和关键风险
-      const highRisks = await prisma.risk.findMany({
+      const highRisks = await prisma.risks.findMany({
         where: {
           projectId: { in: projectIds },
           riskLevel: { in: ['HIGH', 'CRITICAL'] },
           status: { not: 'CLOSED' },
         },
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
             },
           },
-          owner: {
+          users: {
             select: {
               id: true,
               name: true,
@@ -60,16 +60,16 @@ export async function GET(request: NextRequest) {
 
       // 统计各风险级别数量
       const riskStats = {
-        critical: await prisma.risk.count({
+        critical: await prisma.risks.count({
           where: { projectId: { in: projectIds }, riskLevel: 'CRITICAL', status: { not: 'CLOSED' } },
         }),
-        high: await prisma.risk.count({
+        high: await prisma.risks.count({
           where: { projectId: { in: projectIds }, riskLevel: 'HIGH', status: { not: 'CLOSED' } },
         }),
-        medium: await prisma.risk.count({
+        medium: await prisma.risks.count({
           where: { projectId: { in: projectIds }, riskLevel: 'MEDIUM', status: { not: 'CLOSED' } },
         }),
-        low: await prisma.risk.count({
+        low: await prisma.risks.count({
           where: { projectId: { in: projectIds }, riskLevel: 'LOW', status: { not: 'CLOSED' } },
         }),
       };
@@ -81,11 +81,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 验证用户是否为项目成员
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
       include: {
-        members: {
-          where: { userId },
+        project_members: {
+          where: { users: { id: userId } },
         },
       },
     });
@@ -94,18 +94,18 @@ export async function GET(request: NextRequest) {
       return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404);
     }
 
-    if (project.ownerId !== userId && project.members.length === 0) {
+    if (project.ownerId !== userId && project.project_members.length === 0) {
       return error('FORBIDDEN_ERROR', '无权访问此项目', undefined, 403);
     }
 
     // 获取项目风险
-    const risks = await prisma.risk.findMany({
+    const risks = await prisma.risks.findMany({
       where: {
         projectId,
         status: { not: 'CLOSED' },
       },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,

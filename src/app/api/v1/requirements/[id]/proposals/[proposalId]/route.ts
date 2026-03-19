@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 方案更新验证 Schema
@@ -38,14 +38,14 @@ export async function PUT(
     const validatedData = updateProposalSchema.parse(body);
 
     // 验证方案是否存在
-    const existingProposal = await db.proposal.findUnique({
+    const existingProposal = await db.proposals.findUnique({
       where: { id: proposalId },
       include: {
-        requirement: {
+        requirements: {
           include: {
-            project: {
+            projects: {
               include: {
-                members: {
+                project_members: {
                   where: { userId: user.id },
                 },
               },
@@ -72,8 +72,8 @@ export async function PUT(
 
     // 检查用户是否为方案作者、项目所有者、项目成员或管理员
     const isProposalAuthor = existingProposal.userId === user.id;
-    const isProjectOwner = existingProposal.requirement.project.ownerId === user.id;
-    const isProjectMember = existingProposal.requirement.project.members.length > 0;
+    const isProjectOwner = existingProposal.requirements.projects.ownerId === user.id;
+    const isProjectMember = existingProposal.requirements.projects.project_members.length > 0;
     const isAdmin = user.role === 'ADMIN';
 
     if (!isProposalAuthor && !isProjectOwner && !isProjectMember && !isAdmin) {
@@ -84,7 +84,7 @@ export async function PUT(
     }
 
     // 更新方案
-    const proposal = await db.proposal.update({
+    const proposal = await db.proposals.update({
       where: { id: proposalId },
       data: validatedData,
     });

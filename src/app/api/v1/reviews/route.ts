@@ -40,9 +40,9 @@ export async function GET(req: NextRequest) {
     const where: any = {}
 
     if (projectId) {
-      const project = await prisma.project.findUnique({
+      const project = await prisma.projects.findUnique({
         where: { id: projectId },
-        include: { members: true },
+        include: { project_members: true },
       })
 
       if (!project) {
@@ -50,7 +50,7 @@ export async function GET(req: NextRequest) {
       }
 
       const isOwner = project.ownerId === user.id
-      const isMember = project.members.some((m) => m.userId === user.id)
+      const isMember = project.project_members.some((m) => m.userId === user.id)
       const isAdmin = user.role === 'ADMIN'
 
       if (!isOwner && !isMember && !isAdmin) {
@@ -59,9 +59,9 @@ export async function GET(req: NextRequest) {
 
       where.projectId = projectId
     } else {
-      const userProjects = await prisma.project.findMany({
+      const userProjects = await prisma.projects.findMany({
         where: {
-          OR: [{ ownerId: user.id }, { members: { some: { userId: user.id } } }],
+          OR: [{ ownerId: user.id }, { project_members: { some: { userId: user.id } } }],
         },
         select: { id: true },
       })
@@ -86,18 +86,18 @@ export async function GET(req: NextRequest) {
     }
 
     const [reviews, total] = await Promise.all([
-      prisma.review.findMany({
+      prisma.reviews.findMany({
         where,
         include: {
-          project: { select: { id: true, name: true } },
-          type: { select: { id: true, displayName: true } },
-          _count: { select: { materials: true, participants: true } },
+          projects: { select: { id: true, name: true } },
+          ReviewTypeConfig: { select: { id: true, displayName: true } },
+          _count: { select: { review_materials: true, review_participants: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { scheduledAt: 'desc' },
       }),
-      prisma.review.count({ where }),
+      prisma.reviews.count({ where }),
     ])
 
     return ApiResponder.success({
@@ -125,9 +125,9 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const validatedData = createReviewSchema.parse(body)
 
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: validatedData.projectId },
-      include: { members: true },
+      include: { project_members: true },
     })
 
     if (!project) {
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
     }
 
     const isOwner = project.ownerId === user.id
-    const isMember = project.members.some((m) => m.userId === user.id)
+    const isMember = project.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -150,17 +150,19 @@ export async function POST(req: NextRequest) {
       return ApiResponder.notFound('评审类型不存在')
     }
 
-    const review = await prisma.review.create({
+    const review = await prisma.reviews.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
-        projectId: validatedData.projectId,
-        typeId: validatedData.typeId,
-        authorId: user.id,  // 设置评审作者为当前用户
+        projects: { connect: { id: validatedData.projectId } },
+        ReviewTypeConfig: { connect: { id: validatedData.typeId } },
+        users: { connect: { id: user.id } },
         scheduledAt: validatedData.scheduledAt ? new Date(validatedData.scheduledAt) : undefined,
         status: 'PENDING',
+        updatedAt: new Date(),
         // 新增：创建参与者和材料
-        participants: validatedData.participants
+        review_participants: validatedData.participants
           ? {
               create: validatedData.participants.map((p) => ({
                 userId: p.userId,
@@ -168,9 +170,10 @@ export async function POST(req: NextRequest) {
               })),
             }
           : undefined,
-        materials: validatedData.materials
+        review_materials: validatedData.materials
           ? {
               create: validatedData.materials.map((m) => ({
+                id: crypto.randomUUID(),
                 fileId: m.fileId,
                 fileName: m.fileName,
                 fileType: m.fileType,
@@ -180,14 +183,14 @@ export async function POST(req: NextRequest) {
           : undefined,
       },
       include: {
-        project: { select: { id: true, name: true } },
-        type: { select: { id: true, displayName: true } },
-        participants: {
+        projects: { select: { id: true, name: true } },
+        ReviewTypeConfig: { select: { id: true, displayName: true } },
+        review_participants: {
           include: {
-            user: { select: { id: true, name: true, email: true } },
+            users: { select: { id: true, name: true, email: true } },
           },
         },
-        materials: true,
+        review_materials: true,
       },
     })
 

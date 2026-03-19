@@ -22,7 +22,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return error('FORBIDDEN_ERROR', accessCheck.reason || '无权访问此文件', undefined, 403)
     }
 
-    const file = await prisma.fileStorage.findUnique({
+    const file = await prisma.file_storage.findUnique({
       where: { id: fileId },
     })
 

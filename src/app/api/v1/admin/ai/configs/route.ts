@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthenticatedUser } from '@/lib/auth'
+import { randomUUID } from 'crypto'
 
 const aiConfigCreateSchema = z.object({
   name: z.string().min(1, '配置名称不能为空'),
@@ -24,7 +25,7 @@ export async function GET(req: NextRequest) {
       return ApiResponder.forbidden('只有管理员可以访问AI配置')
     }
 
-    const configs = await prisma.aIConfig.findMany({
+    const configs = await prisma.ai_configs.findMany({
       orderBy: { createdAt: 'desc' },
     })
 
@@ -46,14 +47,15 @@ export async function POST(req: NextRequest) {
     const validatedData = aiConfigCreateSchema.parse(body)
 
     if (validatedData.isDefault) {
-      await prisma.aIConfig.updateMany({
+      await prisma.ai_configs.updateMany({
         where: { isDefault: true },
         data: { isDefault: false },
       })
     }
 
-    const config = await prisma.aIConfig.create({
+    const config = await prisma.ai_configs.create({
       data: {
+        id: randomUUID(),
         name: validatedData.name,
         provider: validatedData.provider,
         apiKey: validatedData.apiKey,
@@ -62,6 +64,7 @@ export async function POST(req: NextRequest) {
         isActive: validatedData.isActive,
         isDefault: validatedData.isDefault,
         config: validatedData.config,
+        updatedAt: new Date(),
       },
     })
 

@@ -12,11 +12,13 @@ export async function GET(request: NextRequest) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
     }
 
-    const tasks = await prisma.task.findMany({
+    const tasks = await prisma.tasks.findMany({
       where: {
-        assignees: {
+        task_assignees: {
           some: {
-            userId: userId,
+            users: {
+              id: userId,
+            },
           },
         },
         status: { in: ['TODO', 'IN_PROGRESS', 'REVIEW'] },

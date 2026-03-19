@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 更新讨论验证 Schema
@@ -31,17 +31,17 @@ export async function GET(
   }
 
   try {
-    const discussion = await db.requirementDiscussion.findUnique({
+    const discussion = await db.requirement_discussions.findUnique({
       where: { id: discussionId, requirementId },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        task: {
+        tasks: {
           select: {
             id: true,
             title: true,
@@ -91,7 +91,7 @@ export async function PUT(
     const validatedData = updateDiscussionSchema.parse(body);
 
     // 验证讨论是否存在
-    const existingDiscussion = await db.requirementDiscussion.findUnique({
+    const existingDiscussion = await db.requirement_discussions.findUnique({
       where: { id: discussionId },
     });
 
@@ -110,21 +110,21 @@ export async function PUT(
       );
     }
 
-    const discussion = await db.requirementDiscussion.update({
+    const discussion = await db.requirement_discussions.update({
       where: { id: discussionId },
       data: {
         ...validatedData,
         updatedAt: new Date(),
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        task: {
+        tasks: {
           select: {
             id: true,
             title: true,
@@ -171,7 +171,7 @@ export async function DELETE(
 
   try {
     // 验证讨论是否存在
-    const existingDiscussion = await db.requirementDiscussion.findUnique({
+    const existingDiscussion = await db.requirement_discussions.findUnique({
       where: { id: discussionId },
     });
 
@@ -185,24 +185,24 @@ export async function DELETE(
     // 权限检查：只有作者或管理员可以删除
     if (existingDiscussion.userId !== user.id) {
       // 检查是否为项目管理员
-      const requirement = await db.requirement.findUnique({
+      const requirement = await db.requirements.findUnique({
         where: { id: requirementId },
         include: {
-          project: true,
+          projects: true,
         },
       });
 
       if (requirement) {
-        const membership = await db.projectMember.findUnique({
+        const membership = await db.project_members.findUnique({
           where: {
             projectId_userId: {
-              projectId: requirement.project.id,
+              projectId: requirement.projects.id,
               userId: user.id,
             },
           },
         });
 
-        const isOwner = requirement.project.ownerId === user.id;
+        const isOwner = requirement.projects.ownerId === user.id;
         const isAdmin = membership?.role === 'PROJECT_ADMIN';
 
         if (!isOwner && !isAdmin) {
@@ -214,7 +214,7 @@ export async function DELETE(
       }
     }
 
-    await db.requirementDiscussion.delete({
+    await db.requirement_discussions.delete({
       where: { id: discussionId },
     });
 

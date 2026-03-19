@@ -7,7 +7,7 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.user.findUnique({ where: { id: userId } })
+  const user = await db.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       where.serviceType = serviceType
     }
 
-    const logs = await db.aILog.findMany({
+    const logs = await db.ai_logs.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,

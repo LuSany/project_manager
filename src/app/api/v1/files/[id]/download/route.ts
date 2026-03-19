@@ -2,7 +2,7 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { error } from '@/lib/api/response'
 import { createReadStream } from 'fs'
-import { verifyDocumentKey } from '@/lib/preview/onlyoffice'
+import { generateDocumentKey } from '@/lib/preview/onlyoffice'
 import { validateFilePath, validateFileExists } from '@/lib/file-security'
 
 /**
@@ -19,22 +19,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   // 方式1：Cookie 认证
   const userId = request.cookies.get('user-id')?.value
 
-  // 方式2：Document Key 认证（用于 OnlyOffice）
-  const isValidKey = documentKey && verifyDocumentKey(documentKey, fileId)
+  // 先获取文件信息（需要版本号来验证文档密钥）
+  const file = await prisma.file_storage.findUnique({
+    where: { id: fileId },
+  })
+
+  if (!file) {
+    return error('文件不存在_ERROR', '文件不存在', undefined, 404)
+  }
+
+  // 方式2：Document Key 认证（用于 OnlyOffice）- 使用实际的文件版本
+  const expectedKey = generateDocumentKey(fileId, file.version || 1)
+  const isValidKey = documentKey && documentKey === expectedKey
 
   if (!userId && !isValidKey) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录或提供有效的文档密钥', undefined, 401)
   }
 
   try {
-    const file = await prisma.fileStorage.findUnique({
-      where: { id: fileId },
-    })
-
-    if (!file) {
-      return error('文件不存在_ERROR', '文件不存在', undefined, 404)
-    }
-
     const filePath = file.filePath
 
     const pathValidation = validateFilePath(filePath)
@@ -48,25 +50,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return error('FILE_NOT_FOUND_ERROR', '文件不存在', undefined, 404)
     }
 
-    try {
-      const stream = createReadStream(filePath)
+    const stream = createReadStream(filePath)
 
-      return new Response(stream as any, {
-        headers: {
-          'Content-Type': file.mimeType,
-          'Content-Disposition': `inline; filename="${encodeURIComponent(file.fileName)}"`,
-          'Cache-Control': 'private, max-age=3600',
-        },
-      })
-    } catch (fsError: any) {
-      console.error('文件读取失败:', fsError)
-      if (fsError.code === 'ENOENT') {
-        return error('FILE_NOT_FOUND_ERROR', '文件物理路径不存在', undefined, 404)
-      }
-      throw fsError
+    return new Response(stream as any, {
+      headers: {
+        'Content-Type': file.mimeType,
+        'Content-Disposition': `inline; filename="${encodeURIComponent(file.fileName)}"`,
+        'Cache-Control': 'private, max-age=3600',
+      },
+    })
+  } catch (fsError: any) {
+    console.error('文件读取失败:', fsError)
+    if (fsError.code === 'ENOENT') {
+      return error('FILE_NOT_FOUND_ERROR', '文件物理路径不存在', undefined, 404)
     }
-  } catch (err) {
-    console.error('下载文件失败:', err)
     return error('INTERNAL_ERROR', '下载文件失败', undefined, 500)
   }
 }

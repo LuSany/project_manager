@@ -22,6 +22,8 @@ export async function seedReviewTypes() {
         displayName: reviewType.displayName,
         isSystem: true,
         isActive: true,
+        id: crypto.randomUUID(),
+        updatedAt: new Date(),
       },
     });
   }

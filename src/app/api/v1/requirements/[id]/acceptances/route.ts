@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { z } from "zod";
+import crypto from 'crypto';
 
 // 辅助函数：获取已认证用户
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 需求验收创建验证 Schema
@@ -36,12 +37,12 @@ export async function POST(
     const validatedData = createAcceptanceSchema.parse(body);
 
     // 验证需求是否存在并检查项目成员权限
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: {
+            project_members: {
               where: { userId: user.id },
             },
           },
@@ -57,18 +58,19 @@ export async function POST(
     }
 
     // 检查用户是否为项目成员或管理员
-    if (requirement.project.ownerId !== user.id && requirement.project.members.length === 0 && user.role !== 'ADMIN') {
+    if (requirement.projects.ownerId !== user.id && requirement.projects.project_members.length === 0 && user.role !== 'ADMIN') {
       return NextResponse.json(
         { success: false, error: "无权访问此需求" },
         { status: 403 }
       );
     }
 
-    // 创建验收记录（使用认证用户的ID）
-    const acceptance = await db.requirementAcceptance.create({
+    // 创建验收记录（使用认证用户的 ID）
+    const acceptance = await db.requirement_acceptances.create({
       data: {
-        requirementId: id,
-        userId: user.id,
+        id: crypto.randomUUID(),
+        requirements: { connect: { id } },
+        users: { connect: { id: user.id } },
         result: validatedData.result,
         notes: validatedData.notes,
       },

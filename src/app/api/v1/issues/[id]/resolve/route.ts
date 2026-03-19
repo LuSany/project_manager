@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // Issue 翻转验证 Schema
@@ -36,10 +36,10 @@ export async function POST(
     const validatedData = resolveIssueSchema.parse(body);
 
     // 验证 Issue 是否存在
-    const existingIssue = await db.issue.findUnique({
+    const existingIssue = await db.issues.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
@@ -57,16 +57,16 @@ export async function POST(
     }
 
     // 权限检查：只有项目所有者或项目管理员可以解决/重新打开 Issue
-    const membership = await db.projectMember.findUnique({
+    const membership = await db.project_members.findUnique({
       where: {
         projectId_userId: {
-          projectId: existingIssue.projectId,
+          projectId: existingIssue.projects.id,
           userId: user.id,
         },
       },
     });
 
-    const isOwner = existingIssue.project.ownerId === user.id;
+    const isOwner = existingIssue.projects.ownerId === user.id;
     const isAdmin = membership?.role === 'PROJECT_ADMIN';
     const isProjectOwner = membership?.role === 'PROJECT_OWNER';
 
@@ -88,14 +88,14 @@ export async function POST(
         );
       }
 
-      updatedIssue = await db.issue.update({
+      updatedIssue = await db.issues.update({
         where: { id },
         data: {
           status: 'RESOLVED',
           resolvedAt: new Date(),
         },
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,
@@ -106,7 +106,7 @@ export async function POST(
 
       // 如果 autoClose 为 true，自动关闭关联的任务
       if (existingIssue.autoClose) {
-        await db.task.updateMany({
+        await db.tasks.updateMany({
           where: {
             issueId: id,
             status: { not: 'DONE' },
@@ -126,14 +126,14 @@ export async function POST(
         );
       }
 
-      updatedIssue = await db.issue.update({
+      updatedIssue = await db.issues.update({
         where: { id },
         data: {
           status: 'REOPENED',
           resolvedAt: null,
         },
         include: {
-          project: {
+          projects: {
             select: {
               id: true,
               name: true,

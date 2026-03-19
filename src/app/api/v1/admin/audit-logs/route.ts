@@ -49,13 +49,13 @@ export async function GET(req: NextRequest) {
     }
 
     const [logs, total] = await Promise.all([
-      prisma.auditLog.findMany({
+      prisma.audit_logs.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.auditLog.count({ where }),
+      prisma.audit_logs.count({ where }),
     ])
 
     return ApiResponder.success({

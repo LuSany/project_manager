@@ -27,7 +27,7 @@ export async function PUT(
   }
 
   try {
-    const comment = await prisma.reviewComment.findUnique({
+    const comment = await prisma.review_comments.findUnique({
       where: { id: commentId },
     });
 
@@ -45,13 +45,13 @@ export async function PUT(
       );
     }
 
-    const updatedComment = await prisma.reviewComment.update({
+    const updatedComment = await prisma.review_comments.update({
       where: { id: commentId },
       data: { content },
       include: {
-        author: { select: { id: true, name: true, avatar: true } },
-        material: { select: { id: true, fileName: true } },
-        item: { select: { id: true, title: true } },
+        users: { select: { id: true, name: true, avatar: true } },
+        review_materials: { select: { id: true, fileName: true } },
+        review_items: { select: { id: true, title: true } },
       },
     });
 
@@ -85,12 +85,12 @@ export async function DELETE(
   const { id: reviewId, commentId } = await params;
 
   try {
-    const comment = await prisma.reviewComment.findUnique({
+    const comment = await prisma.review_comments.findUnique({
       where: { id: commentId },
       include: {
-        review: {
+        reviews: {
           include: {
-            project: true,
+            projects: true,
           },
         },
       },
@@ -113,7 +113,7 @@ export async function DELETE(
       );
     }
 
-    await prisma.reviewComment.delete({
+    await prisma.review_comments.delete({
       where: { id: commentId },
     });
 

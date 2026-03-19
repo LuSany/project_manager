@@ -16,7 +16,7 @@ export async function DELETE(
     }
 
     // 检查权限
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
     });
 
@@ -28,7 +28,7 @@ export async function DELETE(
       return ApiResponder.forbidden("无权删除此项目");
     }
 
-    await prisma.project.delete({
+    await prisma.projects.delete({
       where: { id },
     });
 

@@ -29,7 +29,7 @@ export async function GET(
     }
 
     // 检查用户是否存在
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -38,19 +38,19 @@ export async function GET(
     }
 
     // 获取项目
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
       include: {
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        members: {
+        project_members: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -81,7 +81,7 @@ export async function GET(
     }
 
     // 检查权限：项目所有者、项目成员或管理员可以查看
-    const isMember = project.members.some(m => m.userId === userId);
+    const isMember = project.project_members.some(m => m.userId === userId);
     const isOwner = project.ownerId === userId;
     const isAdmin = user.role === 'ADMIN';
 
@@ -97,8 +97,7 @@ export async function GET(
       startDate: project.startDate,
       endDate: project.endDate,
       ownerId: project.ownerId,
-      owner: project.owner,
-      members: project.members,
+      members: project.project_members,
       milestones: project.milestones,
       tasks: project.tasks,
       requirements: project.requirements,
@@ -126,7 +125,7 @@ export async function DELETE(
       return ApiResponder.unauthorized("请先登录");
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -134,7 +133,7 @@ export async function DELETE(
       return ApiResponder.notFound("用户不存在");
     }
 
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
     });
 
@@ -147,7 +146,7 @@ export async function DELETE(
       return ApiResponder.forbidden("只有项目所有者或管理员可以删除项目");
     }
 
-    await prisma.project.delete({
+    await prisma.projects.delete({
       where: { id },
     });
 
@@ -171,7 +170,7 @@ export async function PUT(
     }
 
     // 检查权限
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
     });
 
@@ -204,7 +203,7 @@ export async function PUT(
       updateData.endDate = validatedData.endDate;
     }
 
-    const updatedProject = await prisma.project.update({
+    const updatedProject = await prisma.projects.update({
       where: { id },
       data: updateData,
     });

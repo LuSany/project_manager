@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 添加关注者验证 Schema
@@ -31,11 +31,11 @@ export async function GET(
     const { id: taskId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -51,10 +51,10 @@ export async function GET(
       );
     }
 
-    const watchers = await db.taskWatcher.findMany({
+    const watchers = await db.task_watchers.findMany({
       where: { taskId },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -100,11 +100,11 @@ export async function POST(
     const { userId } = addWatcherSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -121,7 +121,7 @@ export async function POST(
     }
 
     // 验证目标用户是否为项目成员
-    const targetUser = await db.projectMember.findFirst({
+    const targetUser = await db.project_members.findFirst({
       where: {
         projectId: task.projectId,
         userId,
@@ -136,7 +136,7 @@ export async function POST(
     }
 
     // 检查是否已经关注
-    const existingWatcher = await db.taskWatcher.findUnique({
+    const existingWatcher = await db.task_watchers.findUnique({
       where: {
         taskId_userId: {
           taskId,
@@ -153,13 +153,13 @@ export async function POST(
     }
 
     // 创建关注关系
-    const watcher = await db.taskWatcher.create({
+    const watcher = await db.task_watchers.create({
       data: {
         taskId,
         userId,
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,

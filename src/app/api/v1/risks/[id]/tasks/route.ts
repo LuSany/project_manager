@@ -27,11 +27,11 @@ export async function GET(
     const pageSize = parseInt(searchParams.get('pageSize') || '20')
 
     // 验证风险存在且用户有权限访问
-    const risk = await prisma.risk.findUnique({
+    const risk = await prisma.risks.findUnique({
       where: { id: riskId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -40,8 +40,8 @@ export async function GET(
       return ApiResponder.notFound('风险不存在')
     }
 
-    const isOwner = risk.project.ownerId === user.id
-    const isMember = risk.project.members.some((m) => m.userId === user.id)
+    const isOwner = risk.projects.ownerId === user.id
+    const isMember = risk.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -49,15 +49,15 @@ export async function GET(
     }
 
     // 查询关联任务
-    const [riskTasks, total] = await Promise.all([
-      prisma.riskTask.findMany({
+    const [risk_tasks, total] = await Promise.all([
+      prisma.risk_tasks.findMany({
         where: { riskId },
         include: {
-          task: {
+          tasks: {
             include: {
-              assignees: {
+              task_assignees: {
                 include: {
-                  user: {
+                  users: {
                     select: {
                       id: true,
                       name: true,
@@ -73,11 +73,11 @@ export async function GET(
         take: pageSize,
         orderBy: { createdAt: 'desc' },
       }),
-      prisma.riskTask.count({ where: { riskId } }),
+      prisma.risk_tasks.count({ where: { riskId } }),
     ])
 
     return ApiResponder.success({
-      data: riskTasks,
+      data: risk_tasks,
       meta: {
         page,
         pageSize,
@@ -107,11 +107,11 @@ export async function POST(
     const validatedData = associateTaskSchema.parse(body)
 
     // 验证风险存在
-    const risk = await prisma.risk.findUnique({
+    const risk = await prisma.risks.findUnique({
       where: { id: riskId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -121,10 +121,10 @@ export async function POST(
     }
 
     // 验证任务存在
-    const task = await prisma.task.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: validatedData.taskId },
       include: {
-        project: true,
+        projects: true,
       },
     })
 
@@ -140,8 +140,8 @@ export async function POST(
     }
 
     // 验证权限：项目所有者、管理员或成员可关联任务
-    const isOwner = risk.project.ownerId === user.id
-    const isMember = risk.project.members.some((m) => m.userId === user.id)
+    const isOwner = risk.projects.ownerId === user.id
+    const isMember = risk.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -149,7 +149,7 @@ export async function POST(
     }
 
     // 检查是否已经关联
-    const existing = await prisma.riskTask.findFirst({
+    const existing = await prisma.risk_tasks.findFirst({
       where: {
         riskId,
         taskId: validatedData.taskId,
@@ -163,14 +163,15 @@ export async function POST(
     }
 
     // 创建关联
-    const riskTask = await prisma.riskTask.create({
+    const riskTask = await prisma.risk_tasks.create({
       data: {
-        riskId,
-        taskId: validatedData.taskId,
+        id: crypto.randomUUID(),
+        risks: { connect: { id: riskId } },
+        tasks: { connect: { id: validatedData.taskId } },
         relationType: validatedData.relationType ?? 'RELATED',
       },
       include: {
-        task: {
+        tasks: {
           select: {
             id: true,
             title: true,

@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     const validatedData = resetPasswordSchema.parse(body);
 
     // 查找有效的重置token
-    const resetToken = await prisma.passwordResetToken.findFirst({
+    const resetToken = await prisma.password_reset_tokens.findFirst({
       where: {
         token: validatedData.token,
         expiresAt: { gte: new Date() },
@@ -37,13 +37,13 @@ export async function POST(req: NextRequest) {
     const passwordHash = await bcrypt.hash(validatedData.password, 10);
 
     // 更新用户密码
-    await prisma.user.update({
+    await prisma.users.update({
       where: { id: resetToken.userId },
       data: { passwordHash },
     });
 
     // 标记token为已使用
-    await prisma.passwordResetToken.update({
+    await prisma.password_reset_tokens.update({
       where: { id: resetToken.id },
       data: { used: true },
     });

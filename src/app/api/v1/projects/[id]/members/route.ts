@@ -24,15 +24,15 @@ export async function GET(
   }
 
   try {
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
       include: {
-        members: {
+        project_members: {
           select: {
             userId: true,
             role: true,
             joinedAt: true,
-            user: {
+            users: {
               select: {
                 id: true,
                 email: true,
@@ -51,7 +51,7 @@ export async function GET(
 
     // 权限检查 - 项目成员、项目所有者或管理员可以查看
     const isProjectOwner = project.ownerId === userId;
-    const isProjectMember = project.members.some(m => m.userId === userId);
+    const isProjectMember = project.project_members.some(m => m.userId === userId);
     const isAdmin = userRole === "ADMIN";
 
     if (!isProjectOwner && !isProjectMember && !isAdmin) {
@@ -59,10 +59,10 @@ export async function GET(
     }
 
     // 格式化成员数据
-    const formattedMembers = project.members.map(m => ({
+    const formattedMembers = project.project_members.map(m => ({
       userId: m.userId,
-      userName: m.user.name,
-      userEmail: m.user.email,
+      userName: m.users.name,
+      userEmail: m.users.email,
       role: m.role,
       joinedAt: m.joinedAt,
     }));
@@ -91,9 +91,9 @@ export async function POST(
 
   try {
     // 验证项目存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
-      include: { members: true },
+      include: { project_members: true },
     });
 
     if (!project) {
@@ -102,7 +102,7 @@ export async function POST(
 
     // 权限检查 - 只有项目所有者、项目管理员或系统管理员可以添加成员
     const isProjectOwner = project.ownerId === currentUserId;
-    const isProjectAdmin = project.members.some(
+    const isProjectAdmin = project.project_members.some(
       m => m.userId === currentUserId && m.role === "PROJECT_ADMIN"
     );
     const isAdmin = currentUserRole === "ADMIN";
@@ -116,7 +116,7 @@ export async function POST(
     const validatedData = addMemberSchema.parse(body);
 
     // 查找要添加的用户
-    const userToAdd = await prisma.user.findUnique({
+    const userToAdd = await prisma.users.findUnique({
       where: { email: validatedData.email },
     });
 
@@ -125,7 +125,7 @@ export async function POST(
     }
 
     // 检查用户是否已是项目成员
-    const existingMember = await prisma.projectMember.findUnique({
+    const existingMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: id,
@@ -139,14 +139,14 @@ export async function POST(
     }
 
     // 添加成员
-    const newMember = await prisma.projectMember.create({
+    const newMember = await prisma.project_members.create({
       data: {
         projectId: id,
         userId: userToAdd.id,
         role: validatedData.role,
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -158,8 +158,8 @@ export async function POST(
 
     return ApiResponder.success({
       userId: newMember.userId,
-      userName: newMember.user.name,
-      userEmail: newMember.user.email,
+      userName: newMember.users.name,
+      userEmail: newMember.users.email,
       role: newMember.role,
       joinedAt: newMember.joinedAt,
     }, "成员添加成功");
@@ -197,9 +197,9 @@ export async function DELETE(
     }
 
     // 验证项目存在
-    const project = await prisma.project.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id },
-      include: { members: true },
+      include: { project_members: true },
     });
 
     if (!project) {
@@ -208,7 +208,7 @@ export async function DELETE(
 
     // 权限检查 - 只有项目所有者、项目管理员或系统管理员可以移除成员
     const isProjectOwner = project.ownerId === currentUserId;
-    const isProjectAdmin = project.members.some(
+    const isProjectAdmin = project.project_members.some(
       m => m.userId === currentUserId && m.role === "PROJECT_ADMIN"
     );
     const isAdmin = currentUserRole === "ADMIN";
@@ -223,7 +223,7 @@ export async function DELETE(
     }
 
     // 删除成员关系
-    await prisma.projectMember.delete({
+    await prisma.project_members.delete({
       where: {
         projectId_userId: {
           projectId: id,

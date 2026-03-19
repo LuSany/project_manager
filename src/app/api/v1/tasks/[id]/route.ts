@@ -21,7 +21,7 @@ const updateTaskSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 export async function GET(
@@ -40,12 +40,12 @@ export async function GET(
   }
 
   try {
-    const task = await db.task.findUnique({
+    const task = await db.tasks.findUnique({
       where: { id },
       include: {
-        assignees: {
+        task_assignees: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -54,20 +54,20 @@ export async function GET(
             },
           },
         },
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
             ownerId: true,
           },
         },
-        milestone: {
+        milestones: {
           select: {
             id: true,
             title: true,
           },
         },
-        subTasks: {
+        subtasks: {
           select: {
             id: true,
             title: true,
@@ -86,12 +86,12 @@ export async function GET(
     }
 
     // 检查用户是否为项目成员或管理员
-    const isProjectOwner = task.project.ownerId === user.id;
-    const isAssignee = task.assignees.some(a => a.userId === user.id);
+    const isProjectOwner = task.projects.ownerId === user.id;
+    const isAssignee = task.task_assignees.some(a => a.userId === user.id);
     const isAdmin = user.role === 'ADMIN';
 
     // 查询项目成员关系
-    const projectMember = await db.projectMember.findUnique({
+    const projectMember = await db.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -137,10 +137,10 @@ export async function DELETE(
   }
 
   try {
-    const task = await db.task.findUnique({
+    const task = await db.tasks.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             ownerId: true,
@@ -157,11 +157,11 @@ export async function DELETE(
     }
 
     // 检查权限：项目所有者、管理员或任务创建者可以删除
-    const isProjectOwner = task.project.ownerId === user.id;
+    const isProjectOwner = task.projects.ownerId === user.id;
     const isAdmin = user.role === 'ADMIN';
 
     // 查询项目成员关系
-    const projectMember = await db.projectMember.findUnique({
+    const projectMember = await db.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -180,27 +180,27 @@ export async function DELETE(
     // 删除任务的相关数据
     await db.$transaction(async (tx) => {
       // 删除任务分配
-      await tx.taskAssignee.deleteMany({
+      await tx.task_assignees.deleteMany({
         where: { taskId: id },
       });
       // 删除任务标签
-      await tx.taskTag.deleteMany({
+      await tx.task_tags.deleteMany({
         where: { taskId: id },
       });
       // 删除任务依赖
-      await tx.taskDependency.deleteMany({
+      await tx.task_dependencies.deleteMany({
         where: { OR: [{ taskId: id }, { dependsOnId: id }] },
       });
       // 删除任务观察者
-      await tx.taskWatcher.deleteMany({
+      await tx.task_watchers.deleteMany({
         where: { taskId: id },
       });
       // 删除子任务
-      await tx.subTask.deleteMany({
+      await tx.subtasks.deleteMany({
         where: { taskId: id },
       });
       // 删除任务
-      await tx.task.delete({
+      await tx.tasks.delete({
         where: { id },
       });
     });
@@ -235,10 +235,10 @@ export async function PUT(
   }
 
   try {
-    const task = await db.task.findUnique({
+    const task = await db.tasks.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             ownerId: true,
@@ -255,10 +255,10 @@ export async function PUT(
     }
 
     // 检查权限
-    const isProjectOwner = task.project.ownerId === user.id;
+    const isProjectOwner = task.projects.ownerId === user.id;
     const isAdmin = user.role === 'ADMIN';
 
-    const projectMember = await db.projectMember.findUnique({
+    const projectMember = await db.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -300,12 +300,12 @@ export async function PUT(
     // 处理负责人更新
     if (validatedData.assigneeIds !== undefined) {
       // 删除现有的负责人
-      await db.taskAssignee.deleteMany({
+      await db.task_assignees.deleteMany({
         where: { taskId: id },
       });
       // 添加新的负责人
       if (validatedData.assigneeIds.length > 0) {
-        await db.taskAssignee.createMany({
+        await db.task_assignees.createMany({
           data: validatedData.assigneeIds.map((userId) => ({
             taskId: id,
             userId,
@@ -315,13 +315,13 @@ export async function PUT(
     }
 
     // 更新任务
-    const updatedTask = await db.task.update({
+    const updatedTask = await db.tasks.update({
       where: { id },
       data: updateData,
       include: {
-        assignees: {
+        task_assignees: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -330,19 +330,19 @@ export async function PUT(
             },
           },
         },
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
           },
         },
-        milestone: {
+        milestones: {
           select: {
             id: true,
             title: true,
           },
         },
-        subTasks: {
+        subtasks: {
           select: {
             id: true,
             title: true,

@@ -7,7 +7,7 @@ import { ApiResponder } from "@/lib/api/response";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 模板创建验证Schema
@@ -62,7 +62,7 @@ export async function GET(req: NextRequest) {
     }
 
     const [templates, total] = await Promise.all([
-      db.taskTemplate.findMany({
+      db.task_templates.findMany({
         where,
         skip,
         take: pageSize,
@@ -70,7 +70,7 @@ export async function GET(req: NextRequest) {
           createdAt: "desc",
         },
       }),
-      db.taskTemplate.count({ where }),
+      db.task_templates.count({ where }),
     ]);
 
     // 将templateData从JSON字符串解析为对象
@@ -104,12 +104,14 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validatedData = createTemplateSchema.parse(body);
 
-    const template = await db.taskTemplate.create({
+    const template = await db.task_templates.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         templateData: JSON.stringify(validatedData.templateData),
         isPublic: validatedData.isPublic,
+        updatedAt: new Date(),
       },
     });
 

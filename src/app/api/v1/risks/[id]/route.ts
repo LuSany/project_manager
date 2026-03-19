@@ -33,31 +33,31 @@ export async function GET(
 
     const { id } = await params
 
-    const risk = await prisma.risk.findUnique({
+    const risk = await prisma.risks.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
             ownerId: true,
-            members: {
+            project_members: {
               select: {
                 userId: true,
               },
             },
           },
         },
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        riskTasks: {
+        risk_tasks: {
           include: {
-            task: {
+            tasks: {
               select: {
                 id: true,
                 title: true,
@@ -75,8 +75,8 @@ export async function GET(
     }
 
     // 验证权限
-    const isOwner = risk.project.ownerId === user.id
-    const isMember = risk.project.members.some((m) => m.userId === user.id)
+    const isOwner = risk.projects.ownerId === user.id
+    const isMember = risk.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -106,12 +106,12 @@ export async function PUT(
     const validatedData = updateRiskSchema.parse(body)
 
     // 验证风险存在
-    const existing = await prisma.risk.findUnique({
+    const existing = await prisma.risks.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: true,
+            project_members: true,
           },
         },
       },
@@ -122,10 +122,10 @@ export async function PUT(
     }
 
     // 验证权限：项目所有者、管理员或风险负责人可更新
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isRiskOwner = existing.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
-    const isProjectAdmin = existing.project.members.some(
+    const isProjectAdmin = existing.projects.project_members.some(
       (m) => m.userId === user.id && m.role === 'PROJECT_ADMIN'
     )
 
@@ -157,7 +157,7 @@ export async function PUT(
     }
 
     // 更新风险
-    const risk = await prisma.risk.update({
+    const risk = await prisma.risks.update({
       where: { id },
       data: {
         ...(validatedData.title !== undefined && { title: validatedData.title }),
@@ -177,13 +177,13 @@ export async function PUT(
         ...(resolvedDate !== existing.resolvedDate && { resolvedDate }),
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,
           },
         },
-        owner: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -224,12 +224,12 @@ export async function DELETE(
     const { id } = await params
 
     // 验证风险存在
-    const existing = await prisma.risk.findUnique({
+    const existing = await prisma.risks.findUnique({
       where: { id },
       include: {
-        project: {
+        projects: {
           include: {
-            members: true,
+            project_members: true,
           },
         },
       },
@@ -240,9 +240,9 @@ export async function DELETE(
     }
 
     // 验证权限：项目所有者、管理员可删除
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
-    const isProjectAdmin = existing.project.members.some(
+    const isProjectAdmin = existing.projects.project_members.some(
       (m) => m.userId === user.id && m.role === 'PROJECT_ADMIN'
     )
 
@@ -251,7 +251,7 @@ export async function DELETE(
     }
 
     // 删除风险（级联删除关联的任务）
-    await prisma.risk.delete({
+    await prisma.risks.delete({
       where: { id },
     })
 

@@ -1,5 +1,5 @@
 import * as nodemailer from 'nodemailer'
-import { EmailConfig } from '@prisma/client'
+import { email_configs } from '@prisma/client'
 import { prisma } from '@/lib/prisma'
 
 //邮件发送队列类
@@ -35,7 +35,7 @@ class SMTPSender {
   private transporter: any
   private queue: EmailQueue
 
-  constructor(config: EmailConfig) {
+  constructor(config: email_configs) {
     this.transporter = {
         sendMail: async (message: nodemailer.SendMailOptions) => {
         //使用 nodemailer 发送
@@ -92,8 +92,8 @@ export async function sendSMTPEmail(
   configId?: string
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const config = configId
-    ? await prisma.emailConfig.findUnique({ where: { id: configId } })
-    : await prisma.emailConfig.findFirst({ where: { isDefault: true, isActive: true } })
+    ? await prisma.email_configs.findUnique({ where: { id: configId } })
+    : await prisma.email_configs.findFirst({ where: { isDefault: true, isActive: true } })
 
   if (!config) {
     return { success: false, error: 'No email configuration found' }
@@ -115,8 +115,9 @@ export async function sendSMTPEmail(
     })
 
     //记录邮件日志
-    await prisma.emailLog.create({
+    await prisma.email_logs.create({
       data: {
+        id: crypto.randomUUID(),
         to,
         subject,
         content: html,
@@ -129,8 +130,9 @@ export async function sendSMTPEmail(
     return { success: true, messageId: info.messageId }
   } catch (error) {
     //记录失败日志
-    await prisma.emailLog.create({
+    await prisma.email_logs.create({
       data: {
+        id: crypto.randomUUID(),
         to,
         subject,
         content: html,
@@ -148,7 +150,7 @@ export async function sendSMTPEmail(
 
 //测试连接
 export async function testSMTPConnection(
-  config: EmailConfig
+  config: email_configs
 ): Promise<{ success: boolean; error?: string }> {
   const sender = new SMTPSender(config)
   if (await sender.verify()) {

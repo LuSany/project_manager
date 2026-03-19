@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -27,12 +27,12 @@ export async function GET(request: NextRequest) {
     if (user.role !== 'ADMIN') {
       projectWhere.OR = [
         { ownerId: userId },
-        { members: { some: { userId: userId } } }
+        { project_members: { some: { userId: userId } } }
       ];
     }
 
     // 获取用户有权限的项目 ID
-    const projects = await prisma.project.findMany({
+    const projects = await prisma.projects.findMany({
       where: projectWhere,
       select: { id: true },
     });
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     // 获取即将到来的里程碑（未完成且截止日期在未来）
     const now = new Date();
-    const milestones = await prisma.milestone.findMany({
+    const milestones = await prisma.milestones.findMany({
       where: {
         projectId: { in: projectIds },
         status: { notIn: ['COMPLETED', 'CANCELLED'] },
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
         },
       },
       include: {
-        project: {
+        projects: {
           select: {
             id: true,
             name: true,

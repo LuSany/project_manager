@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // 创建讨论验证 Schema
@@ -32,17 +32,17 @@ export async function GET(
   }
 
   try {
-    const discussions = await db.requirementDiscussion.findMany({
+    const discussions = await db.requirement_discussions.findMany({
       where: { requirementId },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        task: {
+        tasks: {
           select: {
             id: true,
             title: true,
@@ -88,7 +88,7 @@ export async function POST(
     const validatedData = createDiscussionSchema.parse(body);
 
     // 验证需求是否存在
-    const requirement = await db.requirement.findUnique({
+    const requirement = await db.requirements.findUnique({
       where: { id: requirementId },
     });
 
@@ -101,7 +101,7 @@ export async function POST(
 
     // 验证任务是否存在（如果提供了 taskId）
     if (validatedData.taskId) {
-      const task = await db.task.findUnique({
+      const task = await db.tasks.findUnique({
         where: { id: validatedData.taskId },
       });
 
@@ -113,21 +113,24 @@ export async function POST(
       }
     }
 
-    const discussion = await db.requirementDiscussion.create({
+    const discussion = await db.requirement_discussions.create({
       data: {
-        ...validatedData,
-        requirementId,
-        userId: user.id,
+        id: crypto.randomUUID(),
+        content: validatedData.content,
+        requirements: { connect: { id: requirementId } },
+        users: { connect: { id: user.id } },
+        tasks: validatedData.taskId ? { connect: { id: validatedData.taskId } } : undefined,
+        updatedAt: new Date(),
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
             email: true,
           },
         },
-        task: {
+        tasks: {
           select: {
             id: true,
             title: true,
@@ -137,9 +140,10 @@ export async function POST(
     });
 
     // 自动记录到变更历史
-    await db.requirementHistory.create({
+    await db.requirement_history.create({
       data: {
-        requirementId,
+        id: crypto.randomUUID(),
+        requirements: { connect: { id: requirementId } },
         changeType: "DISCUSSION_ADDED",
         oldValue: null,
         newValue: `添加了新讨论`,

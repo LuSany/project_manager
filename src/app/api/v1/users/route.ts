@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
     }
 
     const [users, total] = await Promise.all([
-      prisma.user.findMany({
+      prisma.users.findMany({
         where,
         select: {
           id: true,
@@ -60,7 +60,7 @@ export async function GET(req: NextRequest) {
         take: pageSize,
         orderBy: { name: "asc" },
       }),
-      prisma.user.count({ where }),
+      prisma.users.count({ where }),
     ]);
 
     return ApiResponder.success({

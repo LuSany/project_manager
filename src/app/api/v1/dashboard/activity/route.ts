@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
     }
 
-    const user = await prisma.user.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: userId },
     });
 
@@ -42,19 +42,19 @@ export async function GET(request: NextRequest) {
     if (user.role !== 'ADMIN') {
       projectWhere.OR = [
         { ownerId: userId },
-        { members: { some: { userId: userId } } }
+        { project_members: { some: { userId: userId } } }
       ];
     }
 
     // 获取项目 ID 列表
-    const projects = await prisma.project.findMany({
+    const projects = await prisma.projects.findMany({
       where: projectWhere,
       select: { id: true },
     });
     const projectIds = projects.map(p => p.id);
 
     // 获取任务完成数据
-    const completedTasks = await prisma.task.findMany({
+    const completedTasks = await prisma.tasks.findMany({
       where: {
         projectId: { in: projectIds },
         status: 'DONE',
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 获取项目创建数据
-    const createdProjects = await prisma.project.findMany({
+    const createdProjects = await prisma.projects.findMany({
       where: {
         ...projectWhere,
         createdAt: { gte: startDate, lte: endDate },
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
     });
 
     // 获取评审完成数据
-    const completedReviews = await prisma.review.findMany({
+    const completedReviews = await prisma.reviews.findMany({
       where: {
         projectId: { in: projectIds },
         status: 'COMPLETED',

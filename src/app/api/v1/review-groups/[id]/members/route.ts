@@ -26,7 +26,7 @@ export async function POST(
     const validatedData = addMemberSchema.parse(body)
 
     // 检查评审组是否存在
-    const group = await prisma.reviewGroup.findUnique({
+    const group = await prisma.review_groups.findUnique({
       where: { id: groupId },
     })
 
@@ -35,7 +35,7 @@ export async function POST(
     }
 
     // 检查用户是否存在
-    const targetUser = await prisma.user.findUnique({
+    const targetUser = await prisma.users.findUnique({
       where: { id: validatedData.userId },
     })
 
@@ -44,7 +44,7 @@ export async function POST(
     }
 
     // 检查是否已是成员
-    const existingMember = await prisma.reviewGroupMember.findUnique({
+    const existingMember = await prisma.review_group_members.findUnique({
       where: {
         groupId_userId: {
           groupId,
@@ -58,14 +58,15 @@ export async function POST(
     }
 
     // 添加成员
-    const member = await prisma.reviewGroupMember.create({
+    const member = await prisma.review_group_members.create({
       data: {
-        groupId,
-        userId: validatedData.userId,
+        id: crypto.randomUUID(),
+        review_groups: { connect: { id: groupId } },
+        users: { connect: { id: validatedData.userId } },
         role: validatedData.role,
       },
       include: {
-        user: {
+        users: {
           select: {
             id: true,
             name: true,
@@ -102,7 +103,7 @@ export async function DELETE(
     const { id: groupId, userId } = await params
 
     // 检查成员是否存在
-    const member = await prisma.reviewGroupMember.findUnique({
+    const member = await prisma.review_group_members.findUnique({
       where: {
         groupId_userId: {
           groupId,
@@ -116,7 +117,7 @@ export async function DELETE(
     }
 
     // 删除成员
-    await prisma.reviewGroupMember.delete({
+    await prisma.review_group_members.delete({
       where: {
         groupId_userId: {
           groupId,

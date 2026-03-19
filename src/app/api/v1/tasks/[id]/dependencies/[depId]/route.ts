@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tasks/[id]/dependencies/[depId] - 移除任务依赖
@@ -25,11 +25,11 @@ export async function DELETE(
     const { id: taskId, depId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id: taskId,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -46,7 +46,7 @@ export async function DELETE(
     }
 
     // 验证依赖关系是否存在
-    const dependency = await db.taskDependency.findUnique({
+    const dependency = await db.task_dependencies.findUnique({
       where: { id: depId },
     });
 
@@ -66,7 +66,7 @@ export async function DELETE(
     }
 
     // 删除依赖关系
-    await db.taskDependency.delete({
+    await db.task_dependencies.delete({
       where: { id: depId },
     });
 

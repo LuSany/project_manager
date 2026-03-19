@@ -7,7 +7,7 @@ import { notifyTaskAssigned } from '@/lib/notification'
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
-  return db.user.findUnique({ where: { id: userId } })
+  return db.users.findUnique({ where: { id: userId } })
 }
 
 // 任务创建验证 Schema
@@ -69,14 +69,14 @@ export async function GET(request: NextRequest) {
     }
 
     const [tasks, total] = await Promise.all([
-      db.task.findMany({
+      db.tasks.findMany({
         where,
         skip,
         take: pageSize,
         include: {
-          assignees: {
+          task_assignees: {
             include: {
-              user: {
+              users: {
                 select: {
                   id: true,
                   name: true,
@@ -90,7 +90,7 @@ export async function GET(request: NextRequest) {
           createdAt: 'desc',
         },
       }),
-      db.task.count({ where }),
+      db.tasks.count({ where }),
     ])
 
     return NextResponse.json({
@@ -121,8 +121,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = createTaskSchema.parse(body)
 
-    const task = await db.task.create({
+    const task = await db.tasks.create({
       data: {
+        id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
         status: validatedData.status || 'TODO',
@@ -131,19 +132,20 @@ export async function POST(request: NextRequest) {
         startDate: validatedData.startDate ? new Date(validatedData.startDate) : null,
         dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
         estimatedHours: validatedData.estimatedHours,
-        projectId: validatedData.projectId,
-        assignees: validatedData.assigneeIds
+        projects: { connect: { id: validatedData.projectId } },
+        task_assignees: validatedData.assigneeIds
           ? {
               create: validatedData.assigneeIds.map((userId) => ({
                 userId,
               })),
             }
           : undefined,
+        updatedAt: new Date(),
       },
       include: {
-        assignees: {
+        task_assignees: {
           include: {
-            user: {
+            users: {
               select: {
                 id: true,
                 name: true,
@@ -152,7 +154,7 @@ export async function POST(request: NextRequest) {
             },
           },
         },
-        project: {
+        projects: {
           select: {
             name: true,
           },
@@ -161,7 +163,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (validatedData.assigneeIds && validatedData.assigneeIds.length > 0) {
-      const project = await db.project.findUnique({
+      const project = await db.projects.findUnique({
         where: { id: validatedData.projectId },
         select: { name: true },
       })

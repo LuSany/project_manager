@@ -21,21 +21,21 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id } = await params
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
-        type: true,
-        author: { select: { id: true, name: true, avatar: true, email: true } },  // 包含作者信息
-        materials: true,
-        participants: {
+        ReviewTypeConfig: true,
+        users: { select: { id: true, name: true, avatar: true, email: true } },  // 包含作者信息
+        review_materials: true,
+        review_participants: {
           include: {
-            user: { select: { id: true, name: true, avatar: true } },
+            users: { select: { id: true, name: true, avatar: true } },
           },
         },
-        items: { orderBy: { order: 'asc' } },
+        review_items: { orderBy: { order: 'asc' } },
       },
     })
 
@@ -43,8 +43,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -69,23 +69,23 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const validatedData = updateReviewSchema.parse(body)
 
-    const existing = await prisma.review.findUnique({
+    const existing = await prisma.reviews.findUnique({
       where: { id },
-      include: { project: true },
+      include: { projects: true },
     })
 
     if (!existing) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
       return ApiResponder.forbidden('只有项目所有者或管理员可以更新评审')
     }
 
-    const review = await prisma.review.update({
+    const review = await prisma.reviews.update({
       where: { id },
       data: {
         ...(validatedData.title !== undefined && { title: validatedData.title }),
@@ -99,8 +99,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...(validatedData.status !== undefined && { status: validatedData.status }),
       },
       include: {
-        project: { select: { id: true, name: true } },
-        type: { select: { id: true, displayName: true } },
+        projects: { select: { id: true, name: true } },
+        ReviewTypeConfig: { select: { id: true, displayName: true } },
       },
     })
 
@@ -130,23 +130,23 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { id } = await params
 
-    const existing = await prisma.review.findUnique({
+    const existing = await prisma.reviews.findUnique({
       where: { id },
-      include: { project: true },
+      include: { projects: true },
     })
 
     if (!existing) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = existing.project.ownerId === user.id
+    const isOwner = existing.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
       return ApiResponder.forbidden('只有项目所有者或管理员可以删除评审')
     }
 
-    await prisma.review.delete({
+    await prisma.reviews.delete({
       where: { id },
     })
 

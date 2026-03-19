@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
       return ApiResponder.forbidden('只有管理员可以访问定时任务')
     }
 
-    const jobs = await prisma.scheduledJob.findMany({
+    const jobs = await prisma.scheduled_jobs.findMany({
       orderBy: { createdAt: 'desc' },
     })
 

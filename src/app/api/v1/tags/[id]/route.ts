@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tags/[id] - 删除标签
@@ -26,12 +26,12 @@ export async function DELETE(
     const { id } = await params;
 
     // 验证标签是否存在
-    const tag = await db.tag.findUnique({
+    const tag = await db.tags.findUnique({
       where: { id },
       include: {
         _count: {
           select: {
-            taskTags: true,
+            task_tags: true,
           },
         },
       },
@@ -45,7 +45,7 @@ export async function DELETE(
     }
 
     // 删除标签（级联删除关联的TaskTag记录）
-    await db.tag.delete({
+    await db.tags.delete({
       where: { id },
     });
 

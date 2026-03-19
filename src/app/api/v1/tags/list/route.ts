@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 // GET /api/v1/tags/list - 获取所有标签
@@ -20,14 +20,14 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const tags = await db.tag.findMany({
+    const tags = await db.tags.findMany({
       orderBy: {
         createdAt: "desc",
       },
       include: {
         _count: {
           select: {
-            taskTags: true,
+            task_tags: true,
           },
         },
       },

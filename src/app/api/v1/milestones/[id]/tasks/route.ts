@@ -22,11 +22,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const page = parseInt(searchParams.get('page') || '1')
     const pageSize = parseInt(searchParams.get('pageSize') || '20')
 
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id: milestoneId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -35,8 +35,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return ApiResponder.notFound('里程碑不存在')
     }
 
-    const isOwner = milestone.project.ownerId === user.id
-    const isMember = milestone.project.members.some((m) => m.userId === user.id)
+    const isOwner = milestone.projects.ownerId === user.id
+    const isMember = milestone.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -49,23 +49,23 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const [tasks, total] = await Promise.all([
-      prisma.task.findMany({
+      prisma.tasks.findMany({
         where,
         include: {
-          assignees: {
+          task_assignees: {
             include: {
-              user: {
+              users: {
                 select: { id: true, name: true, avatar: true },
               },
             },
           },
-          _count: { select: { subTasks: true, taskTags: true } },
+          _count: { select: { subtasks: true, task_tags: true } },
         },
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: [{ priority: 'desc' }, { dueDate: 'asc' }],
       }),
-      prisma.task.count({ where }),
+      prisma.tasks.count({ where }),
     ])
 
     return ApiResponder.success({
@@ -95,11 +95,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json()
     const validatedData = linkTaskSchema.parse(body)
 
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id: milestoneId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -108,8 +108,8 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return ApiResponder.notFound('里程碑不存在')
     }
 
-    const isOwner = milestone.project.ownerId === user.id
-    const isMember = milestone.project.members.some((m) => m.userId === user.id)
+    const isOwner = milestone.projects.ownerId === user.id
+    const isMember = milestone.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // 验证任务存在且属于同一项目
-    const task = await prisma.task.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: validatedData.taskId },
     })
 
@@ -130,13 +130,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
 
     // 更新任务的milestoneId
-    const updatedTask = await prisma.task.update({
+    const updatedTask = await prisma.tasks.update({
       where: { id: validatedData.taskId },
       data: { milestoneId },
       include: {
-        assignees: {
+        task_assignees: {
           include: {
-            user: {
+            users: {
               select: { id: true, name: true, avatar: true },
             },
           },
@@ -170,11 +170,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return ApiResponder.error('MISSING_TASK_ID', '缺少任务ID')
     }
 
-    const milestone = await prisma.milestone.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id: milestoneId },
       include: {
-        project: {
-          include: { members: true },
+        projects: {
+          include: { project_members: true },
         },
       },
     })
@@ -183,8 +183,8 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return ApiResponder.notFound('里程碑不存在')
     }
 
-    const isOwner = milestone.project.ownerId === user.id
-    const isMember = milestone.project.members.some((m) => m.userId === user.id)
+    const isOwner = milestone.projects.ownerId === user.id
+    const isMember = milestone.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
@@ -192,7 +192,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     // 取消任务与里程碑的关联
-    await prisma.task.update({
+    await prisma.tasks.update({
       where: { id: taskId },
       data: { milestoneId: null },
     })

@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { getAuthenticatedUser } from '@/lib/auth'
 import { ApiResponder } from '@/lib/api/response'
 import { DEFAULT_REVIEW_TYPES } from '@/lib/constants/review-types'
+import { randomUUID } from 'crypto'
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,7 +21,14 @@ export async function POST(req: NextRequest) {
 
       if (!existing) {
         const created = await prisma.reviewTypeConfig.create({
-          data: type,
+          data: {
+            id: randomUUID(),
+            name: type.name,
+            displayName: type.displayName,
+            description: type.description,
+            isSystem: type.isSystem,
+            updatedAt: new Date(),
+          },
         })
         results.push({ name: type.name, status: 'created', id: created.id })
       } else {

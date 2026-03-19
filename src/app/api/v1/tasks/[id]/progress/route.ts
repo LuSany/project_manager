@@ -6,7 +6,7 @@ import { z } from "zod";
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value;
   if (!userId) return null;
-  return db.user.findUnique({ where: { id: userId } });
+  return db.users.findUnique({ where: { id: userId } });
 }
 
 const updateProgressSchema = z.object({
@@ -31,11 +31,11 @@ export async function PUT(
     const validatedData = updateProgressSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.task.findFirst({
+    const task = await db.tasks.findFirst({
       where: {
         id,
-        project: {
-          members: {
+        projects: {
+          project_members: {
             some: {
               userId: user.id
             }
@@ -51,7 +51,7 @@ export async function PUT(
       );
     }
 
-    const updatedTask = await db.task.update({
+    const updatedTask = await db.tasks.update({
       where: { id },
       data: validatedData,
     });

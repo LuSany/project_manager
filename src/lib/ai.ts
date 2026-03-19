@@ -47,7 +47,7 @@ export interface ReviewAuditResult {
 }
 
 async function getDefaultAIConfig() {
-  return await prisma.aIConfig.findFirst({
+  return await prisma.ai_configs.findFirst({
     where: {
       isActive: true,
       isDefault: true,
@@ -82,8 +82,9 @@ export async function callAI(
 
   try {
     if (!effectiveApiKey) {
-      const log = await prisma.aILog.create({
+      const log = await prisma.ai_logs.create({
         data: {
+          id: crypto.randomUUID(),
           serviceType,
           provider: config?.provider || 'OPENAI',
           model: effectiveModel,
@@ -116,8 +117,9 @@ export async function callAI(
 
     if (!response.ok) {
       const errorText = await response.text()
-      const log = await prisma.aILog.create({
+      const log = await prisma.ai_logs.create({
         data: {
+          id: crypto.randomUUID(),
           serviceType,
           provider: config?.provider || 'OPENAI',
           model: effectiveModel,
@@ -135,8 +137,9 @@ export async function callAI(
     const data: AIResponse = await response.json()
     const content = data.choices[0]?.message?.content || ''
 
-    const log = await prisma.aILog.create({
+    const log = await prisma.ai_logs.create({
       data: {
+        id: crypto.randomUUID(),
         serviceType,
         provider: config?.provider || 'OPENAI',
         model: effectiveModel,
@@ -152,8 +155,9 @@ export async function callAI(
 
     return { success: true, response: content, logId: log.id }
   } catch (error) {
-    const log = await prisma.aILog.create({
+    const log = await prisma.ai_logs.create({
       data: {
+        id: crypto.randomUUID(),
         serviceType,
         provider: config?.provider || 'OPENAI',
         model: model,

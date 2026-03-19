@@ -18,27 +18,27 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { id: reviewId } = await params
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
-    const isMember = review.project.members.some((m) => m.userId === user.id)
+    const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isMember && !isAdmin) {
       return ApiResponder.forbidden('无权访问此评审')
     }
 
-    const participants = await prisma.reviewParticipant.findMany({
+    const participants = await prisma.review_participants.findMany({
       where: { reviewId },
       include: {
-        user: { select: { id: true, name: true, avatar: true, email: true } },
+        users: { select: { id: true, name: true, avatar: true, email: true } },
       },
       orderBy: { joinedAt: 'asc' },
     })
@@ -61,23 +61,23 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const body = await req.json()
     const validatedData = addParticipantSchema.parse(body)
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: { include: { members: true } } },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!review) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
+    const isOwner = review.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
       return ApiResponder.forbidden('无权添加评审参与者')
     }
 
-    const userExists = await prisma.user.findUnique({
+    const userExists = await prisma.users.findUnique({
       where: { id: validatedData.userId },
     })
 
@@ -85,7 +85,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return ApiResponder.notFound('用户不存在')
     }
 
-    const existingParticipant = await prisma.reviewParticipant.findUnique({
+    const existingParticipant = await prisma.review_participants.findUnique({
       where: {
         reviewId_userId: {
           reviewId,
@@ -98,14 +98,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       return ApiResponder.error('ALREADY_EXISTS', '该用户已经是评审参与者', undefined, 400)
     }
 
-    const participant = await prisma.reviewParticipant.create({
+    const participant = await prisma.review_participants.create({
       data: {
         reviewId,
         userId: validatedData.userId,
         role: validatedData.role,
       },
       include: {
-        user: { select: { id: true, name: true, avatar: true } },
+        users: { select: { id: true, name: true, avatar: true } },
       },
     })
 
@@ -141,23 +141,23 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return ApiResponder.error('MISSING_PARAM', '用户ID不能为空', undefined, 400)
     }
 
-    const review = await prisma.review.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: reviewId },
-      include: { project: true },
+      include: { projects: true },
     })
 
     if (!review) {
       return ApiResponder.notFound('评审不存在')
     }
 
-    const isOwner = review.project.ownerId === user.id
+    const isOwner = review.projects.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
     if (!isOwner && !isAdmin) {
       return ApiResponder.forbidden('无权移除评审参与者')
     }
 
-    await prisma.reviewParticipant.delete({
+    await prisma.review_participants.delete({
       where: {
         reviewId_userId: {
           reviewId,

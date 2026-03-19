@@ -38,8 +38,9 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
 
   try {
     // 创建邮件日志记录
-    emailLog = await prisma.emailLog.create({
+    emailLog = await prisma.email_logs.create({
       data: {
+        id: crypto.randomUUID(),
         to,
         subject,
         content: body,
@@ -62,7 +63,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
     console.log('='.repeat(50))
 
     // 模拟发送成功
-    await prisma.emailLog.update({
+    await prisma.email_logs.update({
       where: { id: emailLog.id },
       data: {
         status: 'SENT',
@@ -79,7 +80,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
 
     // 记录失败状态
     if (emailLog?.id) {
-      await prisma.emailLog.update({
+      await prisma.email_logs.update({
         where: { id: emailLog.id },
         data: {
           status: 'FAILED',
@@ -102,7 +103,7 @@ export async function getEmailTemplate(
   type: string,
   variables: EmailTemplateVariables
 ): Promise<{ subject: string; body: string } | null> {
-  const template = await prisma.emailTemplate.findFirst({
+  const template = await prisma.email_templates.findFirst({
     where: {
       type,
       isActive: true,
@@ -175,7 +176,7 @@ export async function sendPasswordResetEmail(
  * 获取默认邮件配置
  */
 export async function getDefaultEmailConfig() {
-  return await prisma.emailConfig.findFirst({
+  return await prisma.email_configs.findFirst({
     where: {
       isActive: true,
       isDefault: true,

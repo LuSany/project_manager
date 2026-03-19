@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
+import { randomUUID } from 'crypto'
 
 const updateStatusSchema = z.object({
   status: z.enum(['PENDING', 'ACTIVE', 'DISABLED']),
@@ -12,7 +13,7 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.user.findUnique({ where: { id: userId } })
+  const user = await db.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -34,7 +35,7 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateStatusSchema.parse(body)
 
-    const user = await db.user.update({
+    const user = await db.users.update({
       where: { id },
       data: { status: validatedData.status },
       select: {
@@ -46,8 +47,9 @@ export async function PUT(
     })
 
     // 记录审计日志
-    await db.auditLog.create({
+    await db.audit_logs.create({
       data: {
+        id: randomUUID(),
         userId: admin.id,
         action: 'UPDATE',
         entityType: 'User',
