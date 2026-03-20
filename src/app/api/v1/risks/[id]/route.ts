@@ -9,10 +9,14 @@ import { calculateRiskLevel } from '@/types/risk'
 const updateRiskSchema = z.object({
   title: z.string().min(1, '风险标题不能为空').optional(),
   description: z.string().optional(),
-  category: z.enum(['TECHNICAL', 'RESOURCE', 'SCHEDULE', 'BUDGET', 'EXTERNAL', 'MANAGEMENT']).optional(),
+  category: z
+    .enum(['TECHNICAL', 'RESOURCE', 'SCHEDULE', 'BUDGET', 'EXTERNAL', 'MANAGEMENT'])
+    .optional(),
   probability: z.number().int().min(1).max(5).optional(),
   impact: z.number().int().min(1).max(5).optional(),
-  status: z.enum(['IDENTIFIED', 'ANALYZING', 'MITIGATING', 'MONITORING', 'RESOLVED', 'CLOSED']).optional(),
+  status: z
+    .enum(['IDENTIFIED', 'ANALYZING', 'MITIGATING', 'MONITORING', 'RESOLVED', 'CLOSED'])
+    .optional(),
   progress: z.number().int().min(0).max(100).optional(),
   mitigation: z.string().optional(),
   contingency: z.string().optional(),
@@ -21,10 +25,7 @@ const updateRiskSchema = z.object({
 })
 
 // GET /api/v1/risks/[id] - 获取风险详情
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -91,10 +92,7 @@ export async function GET(
 }
 
 // PUT /api/v1/risks/[id] - 更新风险
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -211,10 +209,7 @@ export async function PUT(
 }
 
 // DELETE /api/v1/risks/[id] - 删除风险
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -239,15 +234,17 @@ export async function DELETE(
       return ApiResponder.notFound('风险不存在')
     }
 
-    // 验证权限：项目所有者、管理员可删除
+    // 验证权限：项目所有者、项目成员、风险负责人、管理员可删除
     const isOwner = existing.projects.ownerId === user.id
+    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
+    const isRiskOwner = existing.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
     const isProjectAdmin = existing.projects.project_members.some(
       (m) => m.userId === user.id && m.role === 'PROJECT_ADMIN'
     )
 
-    if (!isOwner && !isAdmin && !isProjectAdmin) {
-      return ApiResponder.forbidden('只有项目所有者、项目管理员或系统管理员可以删除风险')
+    if (!isOwner && !isMember && !isRiskOwner && !isProjectAdmin && !isAdmin) {
+      return ApiResponder.forbidden('无权删除此风险')
     }
 
     // 删除风险（级联删除关联的任务）
