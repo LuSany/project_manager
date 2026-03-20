@@ -133,7 +133,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const existing = await prisma.reviews.findUnique({
       where: { id },
-      include: { projects: true },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!existing) {
@@ -141,10 +141,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const isOwner = existing.projects.ownerId === user.id
+    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isAdmin) {
-      return ApiResponder.forbidden('只有项目所有者或管理员可以删除评审')
+    if (!isOwner && !isMember && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员或管理员可以删除评审')
     }
 
     await prisma.reviews.delete({
