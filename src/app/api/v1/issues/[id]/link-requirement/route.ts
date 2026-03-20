@@ -1,38 +1,32 @@
-import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { z } from "zod";
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+import { z } from 'zod'
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value;
-  if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  const userId = request.cookies.get('user-id')?.value
+  if (!userId) return null
+  return db.users.findUnique({ where: { id: userId } })
 }
 
 // Issue 关联需求验证 Schema
 const linkRequirementSchema = z.object({
-  requirementId: z.string().min(1, "需求 ID 不能为空"),
-});
+  requirementId: z.string().min(1, '需求 ID 不能为空'),
+})
 
 // POST /api/v1/issues/[id]/link-requirement - 关联需求
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const { id } = await context.params;
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
 
   // 认证检查
-  const user = await getAuthUser(request);
+  const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
   }
 
   try {
-    const body = await request.json();
-    const validatedData = linkRequirementSchema.parse(body);
+    const body = await request.json()
+    const validatedData = linkRequirementSchema.parse(body)
 
     // 验证 Issue 是否存在
     const issue = await db.issues.findUnique({
@@ -45,33 +39,27 @@ export async function POST(
           },
         },
       },
-    });
+    })
 
     if (!issue) {
-      return NextResponse.json(
-        { success: false, error: "问题不存在" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: '问题不存在' }, { status: 404 })
     }
 
     // 验证需求是否存在
     const requirement = await db.requirements.findUnique({
       where: { id: validatedData.requirementId },
-    });
+    })
 
     if (!requirement) {
-      return NextResponse.json(
-        { success: false, error: "需求不存在" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: '需求不存在' }, { status: 404 })
     }
 
     // 验证 Issue 和需求是否属于同一个项目
     if (issue.projectId !== requirement.projectId) {
       return NextResponse.json(
-        { success: false, error: "问题和需求不属于同一个项目" },
+        { success: false, error: '问题和需求不属于同一个项目' },
         { status: 400 }
-      );
+      )
     }
 
     // 权限检查：只有项目成员可以关联需求
@@ -82,26 +70,20 @@ export async function POST(
           userId: user.id,
         },
       },
-    });
+    })
 
-    const isOwner = issue.projects.ownerId === user.id;
-    const isAdmin = membership?.role === 'PROJECT_ADMIN';
-    const isProjectOwner = membership?.role === 'PROJECT_OWNER';
-    const isMember = !!membership;
+    const isOwner = issue.projects.ownerId === user.id
+    const isAdmin = membership?.role === 'PROJECT_ADMIN'
+    const isProjectOwner = membership?.role === 'PROJECT_OWNER'
+    const isMember = !!membership
 
     if (!isOwner && !isAdmin && !isProjectOwner && !isMember) {
-      return NextResponse.json(
-        { success: false, error: "无权限执行此操作" },
-        { status: 403 }
-      );
+      return NextResponse.json({ success: false, error: '无权限执行此操作' }, { status: 403 })
     }
 
     // 检查是否已经关联了需求
     if (issue.requirementId) {
-      return NextResponse.json(
-        { success: false, error: "该问题已经关联了需求" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: '该问题已经关联了需求' }, { status: 400 })
     }
 
     // 更新 Issue，关联需求
@@ -125,42 +107,30 @@ export async function POST(
           },
         },
       },
-    });
+    })
 
     return NextResponse.json({
       success: true,
       data: updatedIssue,
-      message: "问题已成功关联到需求",
-    });
+      message: '问题已成功关联到需求',
+    })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0].message },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
     }
-    console.error("关联需求失败:", error);
-    return NextResponse.json(
-      { success: false, error: "关联需求失败" },
-      { status: 500 }
-    );
+    console.error('关联需求失败:', error)
+    return NextResponse.json({ success: false, error: '关联需求失败' }, { status: 500 })
   }
 }
 
 // DELETE /api/v1/issues/[id]/link-requirement - 取消关联需求
-export async function DELETE(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
-  const { id } = await context.params;
+export async function DELETE(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
 
   // 认证检查
-  const user = await getAuthUser(request);
+  const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
   }
 
   try {
@@ -175,21 +145,15 @@ export async function DELETE(
           },
         },
       },
-    });
+    })
 
     if (!issue) {
-      return NextResponse.json(
-        { success: false, error: "问题不存在" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: '问题不存在' }, { status: 404 })
     }
 
     // 检查是否已经关联了需求
     if (!issue.requirementId) {
-      return NextResponse.json(
-        { success: false, error: "该问题未关联任何需求" },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: '该问题未关联任何需求' }, { status: 400 })
     }
 
     // 权限检查
@@ -200,17 +164,15 @@ export async function DELETE(
           userId: user.id,
         },
       },
-    });
+    })
 
-    const isOwner = issue.projects.ownerId === user.id;
-    const isAdmin = membership?.role === 'PROJECT_ADMIN';
-    const isProjectOwner = membership?.role === 'PROJECT_OWNER';
+    const isOwner = issue.projects.ownerId === user.id
+    const isAdmin = membership?.role === 'PROJECT_ADMIN'
+    const isProjectOwner = membership?.role === 'PROJECT_OWNER'
+    const isMember = !!membership
 
-    if (!isOwner && !isAdmin && !isProjectOwner) {
-      return NextResponse.json(
-        { success: false, error: "无权限执行此操作" },
-        { status: 403 }
-      );
+    if (!isOwner && !isAdmin && !isProjectOwner && !isMember) {
+      return NextResponse.json({ success: false, error: '无权限执行此操作' }, { status: 403 })
     }
 
     // 取消关联
@@ -227,18 +189,15 @@ export async function DELETE(
           },
         },
       },
-    });
+    })
 
     return NextResponse.json({
       success: true,
       data: updatedIssue,
-      message: "已取消问题与需求的关联",
-    });
+      message: '已取消问题与需求的关联',
+    })
   } catch (error) {
-    console.error("取消关联需求失败:", error);
-    return NextResponse.json(
-      { success: false, error: "取消关联需求失败" },
-      { status: 500 }
-    );
+    console.error('取消关联需求失败:', error)
+    return NextResponse.json({ success: false, error: '取消关联需求失败' }, { status: 500 })
   }
 }
