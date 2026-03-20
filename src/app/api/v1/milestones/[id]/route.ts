@@ -14,10 +14,7 @@ const updateMilestoneSchema = z.object({
 })
 
 // GET /api/v1/milestones/[id] - 获取里程碑详情
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -73,10 +70,7 @@ export async function GET(
 }
 
 // PUT /api/v1/milestones/[id] - 更新里程碑
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
@@ -105,10 +99,11 @@ export async function PUT(
 
     // 验证权限：项目所有者或管理员可更新
     const isOwner = existing.projects.ownerId === user.id
+    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isAdmin) {
-      return ApiResponder.forbidden('只有项目所有者或系统管理员可以更新里程碑')
+    if (!isOwner && !isMember && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员或管理员可以更新里程碑')
     }
 
     // 更新里程碑
@@ -149,10 +144,7 @@ export async function PUT(
 }
 
 // DELETE /api/v1/milestones/[id] - 删除里程碑
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const user = await getAuthenticatedUser(req)
     if (!user) {
