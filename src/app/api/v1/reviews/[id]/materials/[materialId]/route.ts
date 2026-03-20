@@ -33,11 +33,12 @@ export async function DELETE(
     }
 
     const isOwner = review.projects.ownerId === user.id
+    const isMember = review.projects.project_members.some((m) => m.userId === user.id)
     const isAuthor = review.authorId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isAuthor && !isAdmin) {
-      return ApiResponder.forbidden('无权删除评审材料')
+    if (!isOwner && !isMember && !isAuthor && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员、作者或管理员可以删除评审材料')
     }
 
     // 检查材料是否属于该评审
