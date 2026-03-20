@@ -11,16 +11,24 @@ const createReviewSchema = z.object({
   typeId: z.string().min(1, '评审类型ID不能为空'),
   scheduledAt: z.string().datetime().optional(),
   // 新增：参与者和材料
-  participants: z.array(z.object({
-    userId: z.string(),
-    role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']),
-  })).optional(),
-  materials: z.array(z.object({
-    fileId: z.string(),
-    fileName: z.string(),
-    fileType: z.string(),
-    fileSize: z.number(),
-  })).optional(),
+  participants: z
+    .array(
+      z.object({
+        userId: z.string(),
+        role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']),
+      })
+    )
+    .optional(),
+  materials: z
+    .array(
+      z.object({
+        fileId: z.string(),
+        fileName: z.string(),
+        fileType: z.string(),
+        fileSize: z.number(),
+      })
+    )
+    .optional(),
 })
 
 export async function GET(req: NextRequest) {
@@ -178,6 +186,7 @@ export async function POST(req: NextRequest) {
                 fileName: m.fileName,
                 fileType: m.fileType,
                 fileSize: m.fileSize,
+                uploaderId: user.id,
               })),
             }
           : undefined,

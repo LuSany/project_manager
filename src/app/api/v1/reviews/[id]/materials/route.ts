@@ -80,8 +80,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     const material = await prisma.review_materials.create({
       data: {
         id: crypto.randomUUID(),
-        reviews: { connect: { id: reviewId } },
-        users: { connect: { id: user.id } },
+        reviewId: reviewId,
         uploaderId: user.id,
         fileId: validatedData.fileId,
         fileName: validatedData.fileName,
