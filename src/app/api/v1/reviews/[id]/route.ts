@@ -28,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           include: { project_members: true },
         },
         ReviewTypeConfig: true,
-        users: { select: { id: true, name: true, avatar: true, email: true } },  // 包含作者信息
+        users: { select: { id: true, name: true, avatar: true, email: true } }, // 包含作者信息
         review_materials: true,
         review_participants: {
           include: {
@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const existing = await prisma.reviews.findUnique({
       where: { id },
-      include: { projects: true },
+      include: { projects: { include: { project_members: true } } },
     })
 
     if (!existing) {
@@ -79,10 +79,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const isOwner = existing.projects.ownerId === user.id
+    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isAdmin) {
-      return ApiResponder.forbidden('只有项目所有者或管理员可以更新评审')
+    if (!isOwner && !isMember && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员或管理员可以更新评审')
     }
 
     const review = await prisma.reviews.update({
