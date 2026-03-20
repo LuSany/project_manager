@@ -157,7 +157,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const existing = await prisma.milestones.findUnique({
       where: { id },
       include: {
-        projects: true,
+        projects: {
+          include: {
+            project_members: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
       },
     })
 
@@ -165,12 +173,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return ApiResponder.notFound('里程碑不存在')
     }
 
-    // 验证权限：项目所有者或系统管理员可删除
+    // 验证权限：项目所有者、成员或系统管理员可删除
     const isOwner = existing.projects.ownerId === user.id
+    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isAdmin) {
-      return ApiResponder.forbidden('只有项目所有者或系统管理员可以删除里程碑')
+    if (!isOwner && !isMember && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员或管理员可以删除里程碑')
     }
 
     // 删除里程碑
