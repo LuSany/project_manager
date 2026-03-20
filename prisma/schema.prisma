@@ -490,11 +490,14 @@ model review_materials {
   fileName        String
   fileType        String
   fileSize        Int
+  uploaderId      String
   uploadedAt      DateTime          @default(now())
   review_comments review_comments[]
   reviews         reviews           @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  users           users             @relation(fields: [uploaderId], references: [id])
 
   @@index([reviewId])
+  @@index([uploaderId])
 }
 
 model review_participants {
@@ -816,6 +819,7 @@ model users {
   review_group_members                        review_group_members[]
   review_participants                         review_participants[]
   review_votes                                review_votes[]
+  review_materials                            review_materials[]
   reviews                                     reviews[]
   risks                                       risks[]
   task_assignees                              task_assignees[]

@@ -50,6 +50,12 @@ export async function DELETE(
       return ApiResponder.notFound('材料不存在')
     }
 
+    const isUploader = material.uploaderId === user.id
+
+    if (!isOwner && !isMember && !isAuthor && !isUploader && !isAdmin) {
+      return ApiResponder.forbidden('只有项目所有者、成员、作者、上传人或管理员可以删除评审材料')
+    }
+
     await prisma.review_materials.delete({
       where: { id: materialId },
     })
