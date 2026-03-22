@@ -23,7 +23,7 @@ interface Project {
   startDate?: string
   endDate?: string
   createdAt: string
-  owner: {
+  users: {
     id: string
     name: string
     email: string
@@ -68,13 +68,13 @@ export default function ProjectsAdminPage() {
     try {
       const response = await api.delete('/admin/projects/' + id)
       if ((response as { success?: boolean }).success) {
-        setProjects(prev => prev.filter(p => p.id !== id))
+        setProjects((prev) => prev.filter((p) => p.id !== id))
         // 更新统计
-        const updated = projects.filter(p => p.id !== id)
+        const updated = projects.filter((p) => p.id !== id)
         setStats({
           total: updated.length,
-          active: updated.filter(p => p.status === 'ACTIVE').length,
-          completed: updated.filter(p => p.status === 'COMPLETED').length,
+          active: updated.filter((p) => p.status === 'ACTIVE').length,
+          completed: updated.filter((p) => p.status === 'COMPLETED').length,
         })
       }
     } catch (error) {
@@ -109,7 +109,7 @@ export default function ProjectsAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -117,15 +117,15 @@ export default function ProjectsAdminPage() {
   return (
     <div className="space-y-6">
       {/* 统计卡片 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-blue-100 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
                 <Calendar className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">总项目数</p>
+                <p className="text-muted-foreground text-sm">总项目数</p>
                 <p className="text-2xl font-bold">{stats.total}</p>
               </div>
             </div>
@@ -134,11 +134,11 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-green-100 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
                 <CheckSquare className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">进行中</p>
+                <p className="text-muted-foreground text-sm">进行中</p>
                 <p className="text-2xl font-bold">{stats.active}</p>
               </div>
             </div>
@@ -147,11 +147,11 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="h-12 w-12 rounded-lg bg-gray-100 flex items-center justify-center">
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
                 <AlertCircle className="h-6 w-6 text-gray-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">已完成</p>
+                <p className="text-muted-foreground text-sm">已完成</p>
                 <p className="text-2xl font-bold">{stats.completed}</p>
               </div>
             </div>
@@ -166,7 +166,7 @@ export default function ProjectsAdminPage() {
           <CardDescription>系统内所有项目的概览</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="border rounded-lg">
+          <div className="rounded-lg border">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -186,14 +186,14 @@ export default function ProjectsAdminPage() {
                       <div>
                         <p className="font-medium">{project.name}</p>
                         {project.description && (
-                          <p className="text-sm text-muted-foreground truncate max-w-xs">
+                          <p className="text-muted-foreground max-w-xs truncate text-sm">
                             {project.description}
                           </p>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
-                      <p className="text-sm">{project.owner?.name || '-'}</p>
+                      <p className="text-sm">{project.users?.name || '-'}</p>
                     </TableCell>
                     <TableCell>
                       <Badge className={statusColors[project.status]}>
@@ -202,19 +202,17 @@ export default function ProjectsAdminPage() {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4 text-muted-foreground" />
+                        <Users className="text-muted-foreground h-4 w-4" />
                         <span>{project._count?.members || 0}</span>
                       </div>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">
-                        <CheckSquare className="h-4 w-4 text-muted-foreground" />
+                        <CheckSquare className="text-muted-foreground h-4 w-4" />
                         <span>{project._count?.tasks || 0}</span>
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {new Date(project.createdAt).toLocaleDateString('zh-CN')}
-                    </TableCell>
+                    <TableCell>{new Date(project.createdAt).toLocaleDateString('zh-CN')}</TableCell>
                     <TableCell>
                       <Button
                         variant="destructive"

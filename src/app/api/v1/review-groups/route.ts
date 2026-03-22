@@ -8,10 +8,14 @@ import { ApiResponder } from '@/lib/api/response'
 const createReviewGroupSchema = z.object({
   name: z.string().min(1, '评审组名称不能为空'),
   description: z.string().optional(),
-  members: z.array(z.object({
-    userId: z.string(),
-    role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']).default('REVIEWER'),
-  })).optional(),
+  members: z
+    .array(
+      z.object({
+        userId: z.string(),
+        role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']).default('REVIEWER'),
+      })
+    )
+    .optional(),
 })
 
 // GET /api/v1/review-groups - 获取评审组列表
@@ -51,7 +55,17 @@ export async function GET(req: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    return ApiResponder.success(groups)
+    // 转换数据格式，将 review_group_members 映射为 members
+    const formattedGroups = groups.map((group) => ({
+      ...group,
+      members: group.review_group_members.map((m) => ({
+        userId: m.userId,
+        role: m.role,
+        user: m.users,
+      })),
+    }))
+
+    return ApiResponder.success(formattedGroups)
   } catch (error) {
     console.error('获取评审组列表失败:', error)
     return ApiResponder.serverError('获取评审组列表失败')

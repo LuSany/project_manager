@@ -25,7 +25,7 @@ interface Project {
   status: string
   startDate?: string
   endDate?: string
-  owner: {
+  users: {
     id: string
     name: string
     email: string
@@ -40,11 +40,7 @@ const statusOptions = [
   { value: 'CANCELLED', label: '已取消' },
 ]
 
-export default function ProjectSettingsPage({
-  params,
-}: {
-  params: Promise<{ id: string }>
-}) {
+export default function ProjectSettingsPage({ params }: { params: Promise<{ id: string }> }) {
   const [project, setProject] = useState<Project | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -110,7 +106,7 @@ export default function ProjectSettingsPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -183,7 +179,7 @@ export default function ProjectSettingsPage({
               </Select>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="startDate">开始日期</Label>
                 <Input
@@ -208,12 +204,12 @@ export default function ProjectSettingsPage({
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? (
                   <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     保存中...
                   </>
                 ) : (
                   <>
-                    <Save className="h-4 w-4 mr-2" />
+                    <Save className="mr-2 h-4 w-4" />
                     保存更改
                   </>
                 )}
@@ -231,11 +227,11 @@ export default function ProjectSettingsPage({
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-muted-foreground">项目所有者</p>
-              <p className="font-medium">{project?.owner?.name}</p>
+              <p className="font-medium">{project?.users?.name}</p>
             </div>
             <div>
               <p className="text-muted-foreground">所有者邮箱</p>
-              <p className="font-medium">{project?.owner?.email}</p>
+              <p className="font-medium">{project?.users?.email}</p>
             </div>
           </div>
         </CardContent>

@@ -63,7 +63,7 @@ interface Review {
     name: string
     displayName: string
   }
-  project: {
+  projects: {
     id: string
     name: string
   }
@@ -462,7 +462,7 @@ export default function ReviewDetailPage({
       {/* 编辑对话框 */}
       <ReviewEditDialog
         reviewId={reviewId}
-        projectId={review.project.id}
+        projectId={review.projects.id}
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSuccess={fetchReview}

@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // 检查OnlyOffice服务是否可用
     const mockMode = process.env.ONLYOFFICE_MOCK_MODE === 'true'
-    if (!isOnlyOfficeAvailable()) {
+    if (!isOnlyOfficeAvailable() && !mockMode) {
       return error('SERVICE_UNAVAILABLE', 'OnlyOffice服务未配置或不可用', undefined, 503)
     }
 
@@ -94,7 +94,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       apiKey: process.env.ONLYOFFICE_API_KEY || '',
       documentKey,
       fileUrl,
-      fileName: file.fileName,
+      fileName: file.originalName || file.fileName,
       fileType,
       mode: mode as 'edit' | 'view',
       users: {
@@ -103,18 +103,16 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     }
 
-    // Mock模式返回模拟数据
     if (mockMode) {
       const mockResponse = generateMockOnlyOfficeResponse(config)
       return success({
         ...mockResponse,
         mockMode: true,
-        fileName: file.fileName,
+        fileName: file.originalName || file.fileName,
         fileType: file.mimeType,
       })
     }
 
-    // 生成OnlyOffice编辑器URL和带JWT Token的配置
     const editorUrl = generateOnlyOfficeUrl(config)
     const { config: docConfig, token } = await buildDocumentConfigWithToken(config)
 
@@ -127,7 +125,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       url: editorUrl,
       config: docConfig,
       token,
-      fileName: file.fileName,
+      fileName: file.originalName || file.fileName,
       fileType: file.mimeType,
       documentKey,
     })

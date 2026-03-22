@@ -74,6 +74,7 @@ export async function middleware(request: NextRequest) {
       '/api/v1/auth/register',
       '/api/v1/auth/forgot-password',
       '/api/v1/auth/reset-password',
+      '/api/v1/files/onlyoffice-callback',
     ]
 
     // 精确匹配公开路由，不拦截登录请求

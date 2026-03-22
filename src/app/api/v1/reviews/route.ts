@@ -108,8 +108,13 @@ export async function GET(req: NextRequest) {
       prisma.reviews.count({ where }),
     ])
 
+    const formattedReviews = reviews.map((review) => ({
+      ...review,
+      type: review.ReviewTypeConfig,
+    }))
+
     return ApiResponder.success({
-      data: reviews,
+      data: formattedReviews,
       meta: {
         page,
         pageSize,

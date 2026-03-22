@@ -51,7 +51,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return ApiResponder.forbidden('无权访问此评审')
     }
 
-    return ApiResponder.success(review)
+    return ApiResponder.success({
+      ...review,
+      type: review.ReviewTypeConfig,
+      author: review.users,
+      materials: review.review_materials,
+      participants: review.review_participants.map((p) => ({
+        ...p,
+        user: p.users,
+      })),
+      items: review.review_items,
+    })
   } catch (error) {
     console.error('获取评审详情失败:', error)
     return ApiResponder.serverError('获取评审详情失败')

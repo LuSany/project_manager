@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     return new Response(stream as any, {
       headers: {
         'Content-Type': file.mimeType,
-        'Content-Disposition': `inline; filename="${encodeURIComponent(file.fileName)}"`,
+        'Content-Disposition': `inline; filename="${encodeURIComponent(file.originalName || file.fileName)}"`,
         'Cache-Control': 'private, max-age=3600',
       },
     })

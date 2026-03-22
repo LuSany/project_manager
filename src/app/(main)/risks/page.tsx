@@ -26,11 +26,11 @@ interface Risk {
   status: string
   progress: number
   projectId: string
-  project: {
+  projects: {
     id: string
     name: string
   }
-  owner: {
+  users: {
     id: string
     name: string
   }
@@ -113,22 +113,25 @@ export default function RisksPage() {
   // 按风险等级排序
   const sortedRisks = [...filteredRisks].sort((a, b) => {
     const levelOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 }
-    return levelOrder[a.riskLevel as keyof typeof levelOrder] - levelOrder[b.riskLevel as keyof typeof levelOrder]
+    return (
+      levelOrder[a.riskLevel as keyof typeof levelOrder] -
+      levelOrder[b.riskLevel as keyof typeof levelOrder]
+    )
   })
 
   if (loading) {
     return (
-      <div className="container mx-auto py-6 flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="container mx-auto flex min-h-[400px] items-center justify-center py-6">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
+    <div className="container mx-auto space-y-6 py-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <ShieldAlert className="h-6 w-6 text-primary" />
+          <ShieldAlert className="text-primary h-6 w-6" />
           <h1 className="text-2xl font-bold">风险看板</h1>
         </div>
         <Select value={riskLevelFilter} onValueChange={setRiskLevelFilter}>
@@ -146,48 +149,48 @@ export default function RisksPage() {
       </div>
 
       {/* 统计卡片 */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 gap-4 md:grid-cols-5">
         <Card>
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">总风险</span>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              <span className="text-muted-foreground text-sm">总风险</span>
+              <TrendingUp className="text-muted-foreground h-4 w-4" />
             </div>
-            <p className="text-2xl font-bold mt-1">{stats.total}</p>
+            <p className="mt-1 text-2xl font-bold">{stats.total}</p>
           </CardContent>
         </Card>
         <Card className="border-red-200">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">关键</span>
+              <span className="text-muted-foreground text-sm">关键</span>
               <AlertTriangle className="h-4 w-4 text-red-500" />
             </div>
-            <p className="text-2xl font-bold mt-1 text-red-600">{stats.critical}</p>
+            <p className="mt-1 text-2xl font-bold text-red-600">{stats.critical}</p>
           </CardContent>
         </Card>
         <Card className="border-orange-200">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">高</span>
+              <span className="text-muted-foreground text-sm">高</span>
               <AlertTriangle className="h-4 w-4 text-orange-500" />
             </div>
-            <p className="text-2xl font-bold mt-1 text-orange-600">{stats.high}</p>
+            <p className="mt-1 text-2xl font-bold text-orange-600">{stats.high}</p>
           </CardContent>
         </Card>
         <Card className="border-yellow-200">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">中</span>
+              <span className="text-muted-foreground text-sm">中</span>
             </div>
-            <p className="text-2xl font-bold mt-1 text-yellow-600">{stats.medium}</p>
+            <p className="mt-1 text-2xl font-bold text-yellow-600">{stats.medium}</p>
           </CardContent>
         </Card>
         <Card className="border-green-200">
           <CardContent className="pt-4">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">低</span>
+              <span className="text-muted-foreground text-sm">低</span>
             </div>
-            <p className="text-2xl font-bold mt-1 text-green-600">{stats.low}</p>
+            <p className="mt-1 text-2xl font-bold text-green-600">{stats.low}</p>
           </CardContent>
         </Card>
       </div>
@@ -196,18 +199,18 @@ export default function RisksPage() {
       <div className="space-y-4">
         {sortedRisks.length === 0 ? (
           <Card>
-            <CardContent className="py-12 text-center text-muted-foreground">
+            <CardContent className="text-muted-foreground py-12 text-center">
               暂无风险数据
             </CardContent>
           </Card>
         ) : (
           sortedRisks.map((risk) => (
             <Link key={risk.id} href={`/projects/${risk.projectId}/risks`}>
-              <Card className="hover:bg-accent/50 transition-colors cursor-pointer">
+              <Card className="hover:bg-accent/50 cursor-pointer transition-colors">
                 <CardContent className="py-4">
                   <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
+                    <div className="min-w-0 flex-1">
+                      <div className="mb-1 flex items-center gap-2">
                         <Badge className={riskLevelColors[risk.riskLevel]}>
                           {riskLevelLabels[risk.riskLevel]}
                         </Badge>
@@ -218,21 +221,21 @@ export default function RisksPage() {
                           {statusLabels[risk.status] || risk.status}
                         </Badge>
                       </div>
-                      <h3 className="font-medium truncate">{risk.title}</h3>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                        <span>项目: {risk.project?.name}</span>
-                        <span>负责人: {risk.owner?.name}</span>
+                      <h3 className="truncate font-medium">{risk.title}</h3>
+                      <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
+                        <span>项目: {risk.projects?.name}</span>
+                        <span>负责人: {risk.users?.name}</span>
                         {risk.dueDate && (
                           <span>截止: {new Date(risk.dueDate).toLocaleDateString('zh-CN')}</span>
                         )}
                       </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-sm text-muted-foreground">概率 × 影响</div>
+                    <div className="shrink-0 text-right">
+                      <div className="text-muted-foreground text-sm">概率 × 影响</div>
                       <div className="font-medium">
                         {risk.probability} × {risk.impact} = {risk.probability * risk.impact}
                       </div>
-                      <div className="text-sm text-muted-foreground mt-1">
+                      <div className="text-muted-foreground mt-1 text-sm">
                         进度: {risk.progress}%
                       </div>
                     </div>

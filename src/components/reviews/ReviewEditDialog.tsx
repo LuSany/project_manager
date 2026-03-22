@@ -165,6 +165,11 @@ export function ReviewEditDialog({
         })
         const uploadData = await uploadRes.json()
 
+        if (!uploadRes.ok || !uploadData.success) {
+          alert(uploadData.error?.message || '上传失败')
+          continue
+        }
+
         if (uploadData.success && uploadData.data) {
           // 添加材料到评审
           const addRes = await fetch(`/api/v1/reviews/${reviewId}/materials`, {
@@ -213,10 +218,9 @@ export function ReviewEditDialog({
     if (!confirm('确定要移除这个参与者吗？')) return
 
     try {
-      const response = await fetch(
-        `/api/v1/reviews/${reviewId}/participants?userId=${userId}`,
-        { method: 'DELETE' }
-      )
+      const response = await fetch(`/api/v1/reviews/${reviewId}/participants?userId=${userId}`, {
+        method: 'DELETE',
+      })
       const data = await response.json()
       if (data.success) {
         setParticipants((prev) => prev.filter((p) => p.user.id !== userId))
@@ -291,7 +295,7 @@ export function ReviewEditDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>编辑评审</DialogTitle>
           <DialogDescription>修改评审信息、参与者和材料</DialogDescription>
@@ -299,7 +303,7 @@ export function ReviewEditDialog({
 
         {loading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         ) : (
           <div className="space-y-6">
@@ -309,11 +313,7 @@ export function ReviewEditDialog({
               <div className="grid gap-4">
                 <div>
                   <Label htmlFor="title">标题</Label>
-                  <Input
-                    id="title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                  />
+                  <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} />
                 </div>
                 <div>
                   <Label htmlFor="description">描述</Label>
@@ -345,9 +345,11 @@ export function ReviewEditDialog({
               <h3 className="font-medium">参与者</h3>
 
               {/* 添加参与者 */}
-              <div className="flex gap-2 items-end">
+              <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <Label htmlFor="user-select" className="text-xs text-muted-foreground">选择用户</Label>
+                  <Label htmlFor="user-select" className="text-muted-foreground text-xs">
+                    选择用户
+                  </Label>
                   <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                     <SelectTrigger id="user-select">
                       <SelectValue placeholder="选择项目成员" />
@@ -364,7 +366,9 @@ export function ReviewEditDialog({
                   </Select>
                 </div>
                 <div className="w-32">
-                  <Label htmlFor="role-select" className="text-xs text-muted-foreground">角色</Label>
+                  <Label htmlFor="role-select" className="text-muted-foreground text-xs">
+                    角色
+                  </Label>
                   <Select value={selectedRole} onValueChange={setSelectedRole}>
                     <SelectTrigger id="role-select">
                       <SelectValue />
@@ -390,23 +394,23 @@ export function ReviewEditDialog({
               </div>
 
               {participants.length === 0 ? (
-                <p className="text-sm text-muted-foreground">暂无参与者</p>
+                <p className="text-muted-foreground text-sm">暂无参与者</p>
               ) : (
                 <div className="space-y-2">
                   {participants.map((participant) => (
                     <div
                       key={participant.user.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="bg-primary/10 h-8 w-8 rounded-full flex items-center justify-center">
+                        <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-full">
                           <span className="text-sm font-medium">
                             {participant.user.name.charAt(0)}
                           </span>
                         </div>
                         <div>
                           <div className="text-sm font-medium">{participant.user.name}</div>
-                          <div className="text-xs text-muted-foreground">
+                          <div className="text-muted-foreground text-xs">
                             {participant.user.email}
                           </div>
                         </div>
@@ -417,7 +421,7 @@ export function ReviewEditDialog({
                         size="sm"
                         onClick={() => handleRemoveParticipant(participant.user.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="text-destructive h-4 w-4" />
                       </Button>
                     </div>
                   ))}
@@ -430,7 +434,7 @@ export function ReviewEditDialog({
               <h3 className="font-medium">评审材料</h3>
 
               {/* 上传区域 */}
-              <div className="border-2 border-dashed rounded-lg p-6 text-center">
+              <div className="rounded-lg border-2 border-dashed p-6 text-center">
                 <input
                   type="file"
                   multiple
@@ -441,12 +445,12 @@ export function ReviewEditDialog({
                 />
                 {uploading ? (
                   <div className="flex flex-col items-center gap-2">
-                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">上传中...</p>
+                    <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
+                    <p className="text-muted-foreground text-sm">上传中...</p>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-2">
-                    <Upload className="h-6 w-6 text-muted-foreground" />
+                    <Upload className="text-muted-foreground h-6 w-6" />
                     <Button
                       variant="link"
                       onClick={() => document.getElementById('file-upload')?.click()}
@@ -463,11 +467,11 @@ export function ReviewEditDialog({
                   {materials.map((material) => (
                     <div
                       key={material.id}
-                      className="flex items-center justify-between p-3 border rounded-lg"
+                      className="flex items-center justify-between rounded-lg border p-3"
                     >
                       <div>
                         <div className="text-sm font-medium">{material.fileName}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           {formatFileSize(material.fileSize)}
                         </div>
                       </div>
@@ -476,7 +480,7 @@ export function ReviewEditDialog({
                         size="sm"
                         onClick={() => handleRemoveMaterial(material.id)}
                       >
-                        <Trash2 className="h-4 w-4 text-destructive" />
+                        <Trash2 className="text-destructive h-4 w-4" />
                       </Button>
                     </div>
                   ))}
