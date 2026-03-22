@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    user: {
+    users: {
       findUnique: vi.fn(),
     },
   },
@@ -37,7 +37,7 @@ describe('Auth Module', () => {
 
     it('should return null when user not found', async () => {
       const { prisma } = await import('@/lib/prisma')
-      ;(prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+      ;(prisma.users.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
 
       const request = {
         cookies: {
@@ -48,13 +48,13 @@ describe('Auth Module', () => {
       const result = await getAuthenticatedUser(request)
 
       expect(result).toBeNull()
-      expect(prisma.user.findUnique).toHaveBeenCalledWith({ where: { id: 'user-123' } })
+      expect(prisma.users.findUnique).toHaveBeenCalledWith({ where: { id: 'user-123' } })
     })
 
     it('should return user when found', async () => {
       const { prisma } = await import('@/lib/prisma')
       const mockUser = { id: 'user-123', email: 'test@example.com' }
-      ;(prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser as any)
+      ;(prisma.users.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser as any)
 
       const request = {
         cookies: {
@@ -83,7 +83,7 @@ describe('Auth Module', () => {
 
     it('should return error when user not found', async () => {
       const { prisma } = await import('@/lib/prisma')
-      ;(prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
+      ;(prisma.users.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(null)
 
       const request = {
         cookies: {
@@ -99,7 +99,7 @@ describe('Auth Module', () => {
     it('should return user when authenticated', async () => {
       const { prisma } = await import('@/lib/prisma')
       const mockUser = { id: 'user-123', email: 'test@example.com' }
-      ;(prisma.user.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser as any)
+      ;(prisma.users.findUnique as ReturnType<typeof vi.fn>).mockResolvedValue(mockUser as any)
 
       const request = {
         cookies: {
