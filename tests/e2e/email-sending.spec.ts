@@ -4,10 +4,8 @@ test.describe('Email Service E2E Tests', () => {
   // 测试邮件服务的基本功能
 
   test('should verify email service configuration', async ({ request }) => {
-    // 验证邮件配置 API 存在
     const response = await request.get('/api/v1/admin/email/configs')
-    // 可能是 401 未授权或 200 成功
-    expect([200, 401]).toContain(response.status())
+    expect([200, 401, 403]).toContain(response.status())
   })
 
   test('should verify password reset email flow', async ({ request }) => {

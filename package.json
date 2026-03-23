@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
+    "dev:full": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d && npm run dev",
+    "dev:services": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d",
+    "dev:stop": "docker-compose -f docker-compose.onlyoffice.yml down && docker-compose down",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
