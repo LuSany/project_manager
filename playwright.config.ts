@@ -43,6 +43,10 @@ export default defineConfig({
         /review-attachment\.spec\.ts$/,
         /debug-preview\.spec\.ts$/,
         /critical-flows\/.*\.spec\.ts$/,
+        // UI 组件测试
+        /command-palette\.spec\.ts$/,
+        /breadcrumb-navigation\.spec\.ts$/,
+        /sidebar-interactions\.spec\.ts$/,
       ],
       dependencies: ['setup'],
     },
@@ -66,6 +70,10 @@ export default defineConfig({
         /p0-p1-features\.spec\.ts$/,
         /review-attachment\.spec\.ts$/,
         /debug-preview\.spec\.ts$/,
+        // UI 组件测试
+        /command-palette\.spec\.ts$/,
+        /breadcrumb-navigation\.spec\.ts$/,
+        /sidebar-interactions\.spec\.ts$/,
         // 关键流程测试（排除管理员流程）
         /critical-flows\/01-.*\.spec\.ts$/,
         /critical-flows\/02-.*\.spec\.ts$/,
