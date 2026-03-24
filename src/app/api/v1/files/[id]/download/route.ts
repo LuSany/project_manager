@@ -2,8 +2,17 @@ import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { error } from '@/lib/api/response'
 import { createReadStream } from 'fs'
-import { generateDocumentKey } from '@/lib/preview/onlyoffice'
+import { generateDocumentKey, detectRealFileType } from '@/lib/preview/onlyoffice'
 import { validateFilePath, validateFileExists } from '@/lib/file-security'
+
+const CORRECT_MIME_TYPES: Record<string, string> = {
+  doc: 'application/msword',
+  docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
 
 /**
  * GET /api/v1/files/:id/download
@@ -50,12 +59,43 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return error('FILE_NOT_FOUND_ERROR', '文件不存在', undefined, 404)
     }
 
+    // 检测真实文件类型，确保返回正确的 Content-Type
+    const detectedFileType = await detectRealFileType(filePath, file.mimeType)
+    const correctMimeType = CORRECT_MIME_TYPES[detectedFileType] || file.mimeType
+
+    // 修正文件名扩展名，确保与检测类型一致
+    const expectedExts: Record<string, string> = {
+      doc: 'doc',
+      docx: 'docx',
+      xls: 'xls',
+      xlsx: 'xlsx',
+      ppt: 'ppt',
+      pptx: 'pptx',
+    }
+    const expectedExt = expectedExts[detectedFileType]
+    const originalExt = (file.originalName || file.fileName).split('.').pop()?.toLowerCase()
+    let correctedFileName = file.originalName || file.fileName
+    if (expectedExt && originalExt && originalExt !== expectedExt) {
+      correctedFileName = correctedFileName.replace(/\.[^.]+$/, `.${expectedExt}`)
+      console.log('[Download] 扩展名修正:', file.originalName, '->', correctedFileName)
+    }
+
+    // 调试日志
+    console.log('[Download] 文件信息:', {
+      fileId: file.id,
+      filePath,
+      dbMimeType: file.mimeType,
+      detectedFileType,
+      correctMimeType,
+      correctedFileName,
+    })
+
     const stream = createReadStream(filePath)
 
     return new Response(stream as any, {
       headers: {
-        'Content-Type': file.mimeType,
-        'Content-Disposition': `inline; filename="${encodeURIComponent(file.originalName || file.fileName)}"`,
+        'Content-Type': correctMimeType,
+        'Content-Disposition': `inline; filename="${encodeURIComponent(correctedFileName)}"`,
         'Cache-Control': 'private, max-age=3600',
       },
     })
