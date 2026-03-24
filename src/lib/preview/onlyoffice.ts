@@ -202,6 +202,8 @@ export function buildDocumentConfig(config: OnlyOfficeConfig): OnlyOfficeDocumen
         toolbarNoTabs: false,
         toolbarHideFileName: false,
         zoom: 100,
+        // 禁用宏功能，避免 jsaProject.bin 导致的文件打开错误
+        macros: false,
       },
     },
   }

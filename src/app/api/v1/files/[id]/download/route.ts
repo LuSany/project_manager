@@ -1,9 +1,13 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { error } from '@/lib/api/response'
-import { createReadStream } from 'fs'
+import { createReadStream, readFileSync } from 'fs'
 import { generateDocumentKey, detectRealFileType } from '@/lib/preview/onlyoffice'
 import { validateFilePath, validateFileExists } from '@/lib/file-security'
+import { PassThrough } from 'stream'
+import * as path from 'path'
+import * as os from 'os'
+import * as fs from 'fs/promises'
 
 const CORRECT_MIME_TYPES: Record<string, string> = {
   doc: 'application/msword',
@@ -12,6 +16,29 @@ const CORRECT_MIME_TYPES: Record<string, string> = {
   xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
   ppt: 'application/vnd.ms-powerpoint',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+}
+
+const PROBLEMATIC_ZIP_ENTRIES = ['xl/jsaProject.bin', 'word/jsaProject.bin', 'ppt/jsaProject.bin']
+
+async function sanitizeOfficeFile(filePath: string): Promise<Buffer> {
+  const AdmZip = (await import('adm-zip')).default
+  const zip = new AdmZip(filePath)
+  const entries = zip.getEntries()
+  let hasProblematicEntry = false
+
+  for (const entry of entries) {
+    if (PROBLEMATIC_ZIP_ENTRIES.includes(entry.entryName)) {
+      hasProblematicEntry = true
+      zip.deleteFile(entry.entryName)
+      console.log(`[Sanitize] 移除 ${entry.entryName}`)
+    }
+  }
+
+  if (hasProblematicEntry) {
+    return zip.toBuffer()
+  }
+
+  return readFileSync(filePath)
 }
 
 /**
@@ -89,6 +116,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       correctMimeType,
       correctedFileName,
     })
+
+    // 对于 ZIP 格式的 Office 文件，移除可能导致问题的 jsaProject.bin
+    const isZipBasedOffice = ['xlsx', 'pptx', 'docx'].includes(detectedFileType)
+    if (isZipBasedOffice && isValidKey) {
+      try {
+        const sanitizedBuffer = await sanitizeOfficeFile(filePath)
+        return new Response(new Uint8Array(sanitizedBuffer), {
+          headers: {
+            'Content-Type': correctMimeType,
+            'Content-Disposition': `inline; filename="${encodeURIComponent(correctedFileName)}"`,
+            'Cache-Control': 'private, max-age=3600',
+          },
+        })
+      } catch (sanitizeError) {
+        console.error('[Download] 文件处理失败，使用原始文件:', sanitizeError)
+        // 处理失败时回退到原始文件
+      }
+    }
 
     const stream = createReadStream(filePath)
 
