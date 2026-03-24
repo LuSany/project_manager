@@ -4,15 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-  Plus,
-  Calendar,
-  ClipboardList,
-  Bell,
-  Sun,
-  Moon,
-  CloudSun
-} from 'lucide-react'
+import { Plus, Calendar, ClipboardList, Bell, Sun, Moon, CloudSun } from 'lucide-react'
 import Link from 'next/link'
 
 interface UserInfo {
@@ -53,7 +45,7 @@ export function WelcomeSection() {
   const fetchUnreadCount = async () => {
     try {
       const response = await fetch('/api/v1/notifications?unread=true', {
-        credentials: 'include'
+        credentials: 'include',
       })
       if (!response.ok) {
         // 未授权或错误响应，不尝试解析 JSON
@@ -82,7 +74,7 @@ export function WelcomeSection() {
       year: 'numeric',
       month: 'long',
       day: 'numeric',
-      weekday: 'long'
+      weekday: 'long',
     }
     return currentTime.toLocaleDateString('zh-CN', options)
   }
@@ -91,13 +83,13 @@ export function WelcomeSection() {
   const GreetingIcon = greeting.icon
 
   return (
-    <Card className="border-none shadow-sm bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-800 dark:to-slate-900">
+    <Card className="via-background border-none bg-gradient-to-br from-[oklch(var(--brand-50))] to-[oklch(var(--brand-100)/0.5)] shadow-sm">
       <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           {/* 左侧：欢迎信息 */}
           <div className="flex items-center gap-4">
             <Avatar className="h-14 w-14 border-2 border-white shadow-sm">
-              <AvatarFallback className="bg-blue-600 text-white text-lg font-medium">
+              <AvatarFallback className="bg-blue-600 text-lg font-medium text-white">
                 {user?.name?.charAt(0) || 'U'}
               </AvatarFallback>
             </Avatar>
@@ -108,7 +100,7 @@ export function WelcomeSection() {
                   {greeting.text}，{user?.name || '用户'}
                 </h1>
               </div>
-              <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 {formatDate()} · 欢迎使用项目管理系统
               </p>
             </div>
@@ -117,7 +109,7 @@ export function WelcomeSection() {
           {/* 右侧：快捷操作 */}
           <div className="flex items-center gap-3">
             <Link href="/projects/new">
-              <Button className="gap-2 bg-blue-600 hover:bg-blue-700 shadow-sm">
+              <Button className="gap-2 bg-blue-600 shadow-sm hover:bg-blue-700">
                 <Plus className="h-4 w-4" />
                 新建项目
               </Button>
@@ -132,7 +124,7 @@ export function WelcomeSection() {
               <Button variant="ghost" size="icon" className="relative shadow-sm">
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-white text-xs flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
                     {unreadCount > 9 ? '9+' : unreadCount}
                   </span>
                 )}
