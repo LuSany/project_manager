@@ -284,6 +284,18 @@ export function getFileTypeFromMime(mimeType: string): string {
     'text/plain': 'txt',
     'text/csv': 'csv',
     'text/html': 'html',
+    'application/wps-office.doc': 'doc',
+    'application/wps-office.docx': 'docx',
+    'application/wps-office.xls': 'xls',
+    'application/wps-office.xlsx': 'xlsx',
+    'application/wps-office.ppt': 'ppt',
+    'application/wps-office.pptx': 'pptx',
+    'application/wps-office.wps': 'doc',
+    'application/wps-office.et': 'xls',
+    'application/wps-office.dps': 'ppt',
+    'application/vnd.wps-office.document': 'doc',
+    'application/vnd.wps-office.spreadsheet': 'xls',
+    'application/vnd.wps-office.presentation': 'ppt',
   }
   return mimeToType[mimeType] || ''
 }
@@ -291,12 +303,44 @@ export function getFileTypeFromMime(mimeType: string): string {
 /**
  * 从文件内容检测真实的 OnlyOffice 文件类型
  * 用于处理扩展名与实际内容不匹配的情况
+ *
+ * 注意：WPS Office 有时会将文件保存为错误格式：
+ * - 扩展名是 .docx 但实际内容是 OLE2 格式 (旧版 .doc)
+ * - 扩展名是 .xlsx 但实际内容是 OLE2 格式 (旧版 .xls)
+ * - 扩展名是 .pptx 但实际内容是 OLE2 格式 (旧版 .ppt)
  */
 export async function detectRealFileType(
   filePath: string,
   declaredMimeType: string
 ): Promise<string> {
   const { open } = await import('fs/promises')
+
+  // 从文件路径提取扩展名
+  const ext = filePath.split('.').pop()?.toLowerCase() || ''
+
+  // OLE2 格式对应的扩展名映射 (doc, wps, et, dps 等)
+  const ole2ExtTypes: Record<string, string> = {
+    doc: 'doc',
+    wps: 'doc',
+    xls: 'xls',
+    et: 'xls',
+    ppt: 'ppt',
+    dps: 'ppt',
+  }
+
+  // ZIP 格式对应的扩展名映射
+  const zipExtTypes: Record<string, string> = {
+    docx: 'docx',
+    xlsx: 'xlsx',
+    pptx: 'pptx',
+  }
+
+  // 新格式扩展名到旧格式的映射 (用于处理 WPS Office 创建的格式不一致文件)
+  const newToOldFormat: Record<string, string> = {
+    docx: 'doc',
+    xlsx: 'xls',
+    pptx: 'ppt',
+  }
 
   try {
     const handle = await open(filePath, 'r')
@@ -309,7 +353,19 @@ export async function detectRealFileType(
     const isOle2 = ole2Signature.every((byte, i) => buffer[i] === byte)
 
     if (isOle2) {
-      // 根据声明的 MIME 类型推断实际的 Office 文件类型
+      // 优先使用扩展名判断类型
+      if (ole2ExtTypes[ext]) {
+        return ole2ExtTypes[ext]
+      }
+      // 处理 WPS Office 创建的格式不一致文件：
+      // 扩展名是 .docx/.xlsx/.pptx 但实际内容是 OLE2 格式
+      if (newToOldFormat[ext]) {
+        console.log(
+          `[detectRealFileType] 检测到格式不一致: 扩展名 .${ext} 但实际内容是 OLE2 格式，将作为 .${newToOldFormat[ext]} 处理`
+        )
+        return newToOldFormat[ext]
+      }
+      // 回退到 MIME 类型推断
       if (declaredMimeType.includes('word') || declaredMimeType.includes('document')) {
         return 'doc'
       }
@@ -319,7 +375,6 @@ export async function detectRealFileType(
       if (declaredMimeType.includes('powerpoint') || declaredMimeType.includes('presentation')) {
         return 'ppt'
       }
-      // 默认返回 doc
       return 'doc'
     }
 
@@ -328,14 +383,22 @@ export async function detectRealFileType(
     const isZip = zipSignature.every((byte, i) => buffer[i] === byte)
 
     if (isZip) {
-      // 对于 ZIP 格式，信任声明的 MIME 类型
+      // 优先使用扩展名判断类型
+      if (zipExtTypes[ext]) {
+        return zipExtTypes[ext]
+      }
+      // 回退到 MIME 类型推断
       return getFileTypeFromMime(declaredMimeType) || 'docx'
     }
 
     // 其他情况，尝试从 MIME 类型推断
     return getFileTypeFromMime(declaredMimeType)
   } catch {
-    // 检测失败，从 MIME 类型推断
+    // 检测失败，尝试从扩展名推断
+    if (ole2ExtTypes[ext]) return ole2ExtTypes[ext]
+    if (zipExtTypes[ext]) return zipExtTypes[ext]
+    // 处理格式不一致的情况
+    if (newToOldFormat[ext]) return newToOldFormat[ext]
     return getFileTypeFromMime(declaredMimeType)
   }
 }
@@ -376,6 +439,10 @@ export function getFileType(fileName: string): string {
     fodp: 'fodp',
     ppsx: 'ppsx',
     pps: 'pps',
+    // WPS格式 (WPS Office格式映射为标准Office格式)
+    wps: 'doc', // WPS文字文档 → 映射为doc
+    et: 'xls', // WPS表格 → 映射为xls
+    dps: 'ppt', // WPS演示 → 映射为ppt
   }
 
   return supportedTypes[ext] || ''
