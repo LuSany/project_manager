@@ -94,4 +94,43 @@ const SkeletonMetric = () => (
   </div>
 )
 
-export { Skeleton, SkeletonCard, SkeletonList, SkeletonTable, SkeletonMetric }
+const SkeletonRiskOverview = () => (
+  <div className="space-y-4">
+    <div className="grid grid-cols-4 gap-2">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="rounded-lg p-2 text-center">
+          <Skeleton className="mx-auto h-6 w-8" />
+          <Skeleton className="mx-auto mt-1 h-3 w-6" />
+        </div>
+      ))}
+    </div>
+    <div className="bg-muted/50 rounded-lg p-3">
+      <Skeleton className="mb-2 h-3 w-16" />
+      <div className="grid grid-cols-5 gap-1">
+        {Array.from({ length: 25 }).map((_, i) => (
+          <Skeleton key={i} className="h-3 rounded-sm" />
+        ))}
+      </div>
+      <div className="mt-1 flex justify-between">
+        <Skeleton className="h-3 w-12" />
+        <Skeleton className="h-3 w-12" />
+      </div>
+    </div>
+    <div className="space-y-2">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="flex items-center justify-between rounded-lg border p-3">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          </div>
+          <Skeleton className="h-3 w-16" />
+        </div>
+      ))}
+    </div>
+  </div>
+)
+
+export { Skeleton, SkeletonCard, SkeletonList, SkeletonTable, SkeletonMetric, SkeletonRiskOverview }

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { SkeletonRiskOverview } from '@/components/ui/skeleton'
 import { AlertTriangle, TrendingUp, TrendingDown, ArrowRight } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
@@ -128,24 +129,7 @@ export function RiskOverview() {
       </CardHeader>
       <CardContent className="pt-0">
         {loading ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-4 gap-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div
-                  key={i}
-                  className="h-12 animate-pulse rounded bg-slate-100 dark:bg-slate-800"
-                />
-              ))}
-            </div>
-            <div className="space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-14 animate-pulse rounded bg-slate-100 dark:bg-slate-800"
-                />
-              ))}
-            </div>
-          </div>
+          <SkeletonRiskOverview />
         ) : risks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
             <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 dark:bg-emerald-900/30">
