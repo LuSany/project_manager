@@ -5,14 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
-import {
-  ClipboardList,
-  Plus,
-  MoreHorizontal,
-  Clock,
-  AlertCircle,
-  CheckCircle2
-} from 'lucide-react'
+import { SkeletonList } from '@/components/ui/skeleton'
+import { ClipboardList, Plus, MoreHorizontal, Clock, AlertCircle, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
@@ -36,7 +30,7 @@ export function TaskBoard() {
     const fetchTasks = async () => {
       try {
         const response = await fetch('/api/v1/dashboard/my-tasks', {
-          credentials: 'include'
+          credentials: 'include',
         })
         const data = await response.json()
         if (data.success) {
@@ -101,10 +95,10 @@ export function TaskBoard() {
       const response = await fetch(`/api/v1/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: 'DONE' })
+        body: JSON.stringify({ status: 'DONE' }),
       })
       if (response.ok) {
-        setTasks(tasks.filter(t => t.id !== taskId))
+        setTasks(tasks.filter((t) => t.id !== taskId))
       }
     } catch (e) {
       console.error('完成任务失败:', e)
@@ -112,7 +106,7 @@ export function TaskBoard() {
   }
 
   return (
-    <Card className="shadow-sm h-full">
+    <Card className="h-full shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-3">
         <CardTitle className="flex items-center gap-2 text-base font-medium">
           <ClipboardList className="h-5 w-5 text-blue-500" />
@@ -132,14 +126,10 @@ export function TaskBoard() {
       </CardHeader>
       <CardContent className="pt-0">
         {loading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map(i => (
-              <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-lg animate-pulse" />
-            ))}
-          </div>
+          <SkeletonList count={4} />
         ) : tasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">
-            <CheckCircle2 className="h-12 w-12 text-slate-300 dark:text-slate-600 mb-3" />
+            <CheckCircle2 className="mb-3 h-12 w-12 text-slate-300 dark:text-slate-600" />
             <p className="text-slate-500 dark:text-slate-400">暂无待办任务</p>
             <Link href="/tasks/new">
               <Button variant="link" size="sm" className="mt-2">
@@ -149,30 +139,28 @@ export function TaskBoard() {
           </div>
         ) : (
           <div className="space-y-2">
-            {tasks.slice(0, 5).map(task => {
+            {tasks.slice(0, 5).map((task) => {
               const dueInfo = formatDueDate(task.dueDate)
               return (
                 <div
                   key={task.id}
-                  className="group flex items-center gap-3 p-3 rounded-lg border border-slate-100 dark:border-slate-800 hover:border-slate-200 dark:hover:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                  className="group flex items-center gap-3 rounded-lg border border-slate-100 p-3 transition-colors hover:border-slate-200 hover:bg-slate-50 dark:border-slate-800 dark:hover:border-slate-700 dark:hover:bg-slate-800/50"
                 >
                   <Checkbox
-                    className="data-[state=checked]:bg-blue-500 data-[state=checked]:border-blue-500"
+                    className="data-[state=checked]:border-blue-500 data-[state=checked]:bg-blue-500"
                     onCheckedChange={() => handleCompleteTask(task.id)}
                   />
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-slate-800 dark:text-slate-200 truncate">
+                      <span className="truncate font-medium text-slate-800 dark:text-slate-200">
                         {task.title}
                       </span>
-                      <Badge className={cn('text-xs px-1.5 py-0', getPriorityColor(task.priority))}>
+                      <Badge className={cn('px-1.5 py-0 text-xs', getPriorityColor(task.priority))}>
                         {getPriorityLabel(task.priority)}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
-                      {task.project && (
-                        <span className="truncate">{task.project.name}</span>
-                      )}
+                    <div className="mt-1 flex items-center gap-2 text-xs text-slate-500">
+                      {task.project && <span className="truncate">{task.project.name}</span>}
                       {dueInfo && (
                         <span className={cn('flex items-center gap-1', dueInfo.color)}>
                           <Clock className="h-3 w-3" />
@@ -184,7 +172,7 @@ export function TaskBoard() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="opacity-0 group-hover:opacity-100 h-8 w-8"
+                    className="h-8 w-8 opacity-0 group-hover:opacity-100"
                   >
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
@@ -195,7 +183,7 @@ export function TaskBoard() {
             {tasks.length > 5 && (
               <Link
                 href="/tasks"
-                className="block text-center text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 py-2"
+                className="block py-2 text-center text-sm text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
               >
                 查看全部 {tasks.length} 个任务
               </Link>
