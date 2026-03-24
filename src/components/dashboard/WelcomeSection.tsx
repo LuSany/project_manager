@@ -83,7 +83,7 @@ export function WelcomeSection() {
   const GreetingIcon = greeting.icon
 
   return (
-    <Card className="via-background border-none bg-gradient-to-br from-[oklch(var(--brand-50))] to-[oklch(var(--brand-100)/0.5)] shadow-sm">
+    <Card className="via-background border-none bg-gradient-to-br from-[var(--brand-50)] to-[color-mix(in_oklch,var(--brand-100),transparent_50%)] shadow-sm">
       <CardContent className="p-6">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           {/* 左侧：欢迎信息 */}
