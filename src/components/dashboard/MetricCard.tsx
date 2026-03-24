@@ -3,6 +3,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { SkeletonMetric } from '@/components/ui/skeleton'
+import { motion } from 'framer-motion'
+import { staggerContainer, staggerItem } from '@/lib/animations'
 import {
   FolderOpen,
   CheckCircle2,
@@ -230,10 +232,19 @@ export function StatsGrid({ loading }: StatsGridProps) {
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <motion.div
+      className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      variants={staggerContainer}
+      initial="initial"
+      animate="animate"
+    >
       {loading
         ? [1, 2, 3, 4].map((i) => <SkeletonMetric key={i} />)
-        : metrics.map((metric) => <MetricCard key={metric.title} {...metric} />)}
-    </div>
+        : metrics.map((metric) => (
+            <motion.div key={metric.title} variants={staggerItem}>
+              <MetricCard {...metric} />
+            </motion.div>
+          ))}
+    </motion.div>
   )
 }
