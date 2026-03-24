@@ -7,9 +7,16 @@ dotenv.config({ path: '.env.test' })
 
 export default defineConfig({
   test: {
-    include: ['tests/**/*.test.ts', 'tests/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/*.spec.ts'],
+    include: [
+      'tests/**/*.test.ts',
+      'tests/**/*.spec.ts',
+      'tests/**/*.test.tsx',
+      'src/**/*.test.ts',
+      'src/**/*.spec.ts',
+    ],
     exclude: ['tests/e2e/**/*', 'tests/**/*.e2e.ts', 'tests/integration/**/*'],
     setupFiles: ['tests/setup.ts'],
+    environment: 'jsdom',
     testTimeout: 30000,
     hookTimeout: 30000,
     pool: 'threads',
