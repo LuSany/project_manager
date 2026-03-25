@@ -1,17 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Header } from "./Header";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "@/hooks/useAuth";
+import { useUIStore } from "@/stores/uiStore";
 
 export interface AppLayoutProps {
   children: React.ReactNode;
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 从 store 获取折叠状态
+  const sidebarCollapsed = useUIStore((state) => state.sidebarCollapsed);
   const { user, loading } = useAuth();
   const router = useRouter();
 
@@ -41,11 +43,8 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* 侧边栏 */}
-      <Sidebar
-        collapsed={sidebarCollapsed}
-        onCollapsedChange={setSidebarCollapsed}
-      />
+      {/* 侧边栏 - 从 store 读取状态 */}
+      <Sidebar />
 
       {/* 主内容区域 */}
       <div
