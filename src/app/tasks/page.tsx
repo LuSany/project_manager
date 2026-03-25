@@ -67,126 +67,151 @@ export default function GlobalTasksPage() {
   }, [page, filterStatus, filterPriority])
 
   return (
-    <div className="container mx-auto py-6">
-      {/* 页面标题 */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="mb-2 text-3xl font-bold">任务管理</h1>
-          <p className="text-muted-foreground">查看所有分配给您的任务</p>
+    <div className="container mx-auto space-y-6 py-6">
+      {/* 页面头部 */}
+      <div className="via-background rounded-lg border-none bg-gradient-to-br from-[var(--brand-50)] to-[color-mix(in_oklch,var(--brand-100),transparent_50%)] p-6 shadow-sm">
+        <div className="mb-6 flex items-center justify-between">
+          <div>
+            <h1 className="mb-2 text-3xl font-bold text-slate-800 dark:text-slate-100">任务管理</h1>
+            <p className="text-slate-500 dark:text-slate-400">查看所有分配给您的任务</p>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              variant={viewMode === 'list' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+            >
+              <List className="mr-2 h-4 w-4" />
+              列表
+            </Button>
+            <Button
+              variant={viewMode === 'kanban' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setViewMode('kanban')}
+            >
+              <Columns className="mr-2 h-4 w-4" />
+              看板
+            </Button>
+            <Button onClick={() => router.push('/tasks/new')}>
+              <Plus className="mr-2 h-4 w-4" />
+              新建任务
+            </Button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === 'list' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('list')}
-          >
-            <List className="mr-2 h-4 w-4" />
-            列表
-          </Button>
-          <Button
-            variant={viewMode === 'kanban' ? 'default' : 'outline'}
-            size="sm"
-            onClick={() => setViewMode('kanban')}
-          >
-            <Columns className="mr-2 h-4 w-4" />
-            看板
-          </Button>
-          <Button onClick={() => router.push('/tasks/new')}>
-            <Plus className="mr-2 h-4 w-4" />
-            新建任务
-          </Button>
+        {/* 筛选器 */}
+        <div className="flex items-center gap-4">
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="状态" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部状态</SelectItem>
+              <SelectItem value="TODO">待办</SelectItem>
+              <SelectItem value="IN_PROGRESS">进行中</SelectItem>
+              <SelectItem value="REVIEW">待审核</SelectItem>
+              <SelectItem value="TESTING">测试中</SelectItem>
+              <SelectItem value="DONE">已完成</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Select value={filterPriority} onValueChange={setFilterPriority}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="优先级" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部优先级</SelectItem>
+              <SelectItem value="LOW">低</SelectItem>
+              <SelectItem value="MEDIUM">中</SelectItem>
+              <SelectItem value="HIGH">高</SelectItem>
+              <SelectItem value="URGENT">紧急</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </div>
-
-      {/* 筛选器 */}
-      <div className="mb-6 flex items-center gap-4">
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="状态" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部状态</SelectItem>
-            <SelectItem value="TODO">待办</SelectItem>
-            <SelectItem value="IN_PROGRESS">进行中</SelectItem>
-            <SelectItem value="REVIEW">待审核</SelectItem>
-            <SelectItem value="TESTING">测试中</SelectItem>
-            <SelectItem value="DONE">已完成</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={filterPriority} onValueChange={setFilterPriority}>
-          <SelectTrigger className="w-[150px]">
-            <SelectValue placeholder="优先级" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">全部优先级</SelectItem>
-            <SelectItem value="LOW">低</SelectItem>
-            <SelectItem value="MEDIUM">中</SelectItem>
-            <SelectItem value="HIGH">高</SelectItem>
-            <SelectItem value="URGENT">紧急</SelectItem>
-          </SelectContent>
-        </Select>
       </div>
 
       {/* 任务列表/看板 */}
       {loading ? (
-        <div className="text-muted-foreground py-8 text-center">加载中...</div>
+        <div className="py-8 text-center text-slate-500 dark:text-slate-400">加载中...</div>
       ) : viewMode === 'kanban' ? (
-        <div className="rounded-lg border p-8 text-center">
-          <p className="text-muted-foreground mb-4">看板视图仅在项目页面可用</p>
+        <div className="rounded-lg border border-slate-200 p-8 text-center dark:border-slate-700">
+          <p className="mb-4 text-slate-500 dark:text-slate-400">看板视图仅在项目页面可用</p>
           <Button variant="outline" onClick={() => router.push('/projects')}>
             查看项目列表
           </Button>
         </div>
       ) : (
-        <div className="rounded-lg border">
+        <div className="overflow-hidden rounded-xl border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-800">
           <table className="w-full">
-            <thead className="bg-muted">
+            <thead className="bg-slate-50 dark:bg-slate-900">
               <tr>
-                <th className="p-3 text-left font-medium">任务标题</th>
-                <th className="p-3 text-left font-medium">状态</th>
-                <th className="p-3 text-left font-medium">优先级</th>
-                <th className="p-3 text-left font-medium">进度</th>
-                <th className="p-3 text-left font-medium">截止日期</th>
-                <th className="p-3 text-left font-medium">项目</th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  任务标题
+                </th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  状态
+                </th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  优先级
+                </th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  进度
+                </th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  截止日期
+                </th>
+                <th className="p-4 text-left font-medium text-slate-600 dark:text-slate-300">
+                  项目
+                </th>
               </tr>
             </thead>
             <tbody>
               {tasks.map((task) => (
-                <tr key={task.id} className="hover:bg-muted/50 border-t">
-                  <td className="p-3">
+                <tr
+                  key={task.id}
+                  className="border-t border-slate-100 bg-white transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-slate-800 dark:hover:bg-slate-700/50"
+                >
+                  <td className="p-4">
                     <div>
-                      <div className="font-medium">{task.title}</div>
+                      <div className="font-medium text-slate-800 dark:text-slate-100">
+                        {task.title}
+                      </div>
                       {task.description && (
-                        <div className="text-muted-foreground line-clamp-1 text-xs">
+                        <div className="line-clamp-1 text-xs text-slate-500 dark:text-slate-400">
                           {task.description}
                         </div>
                       )}
                     </div>
                   </td>
-                  <td className="p-3">
-                    <span className="text-sm">{task.status}</span>
+                  <td className="p-4">
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                      {task.status}
+                    </span>
                   </td>
-                  <td className="p-3">
-                    <span className="text-sm">{task.priority}</span>
+                  <td className="p-4">
+                    <span className="text-sm text-slate-600 dark:text-slate-300">
+                      {task.priority}
+                    </span>
                   </td>
-                  <td className="p-3">
-                    <div className="bg-muted h-2 w-full rounded-full">
+                  <td className="p-4">
+                    <div className="h-2 w-full rounded-full bg-slate-100 dark:bg-slate-700">
                       <div
-                        className="bg-primary h-2 rounded-full"
+                        className="h-2 rounded-full bg-blue-600"
                         style={{ width: `${task.progress}%` }}
                       />
                     </div>
-                    <span className="text-muted-foreground text-xs">{task.progress}%</span>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">
+                      {task.progress}%
+                    </span>
                   </td>
-                  <td className="p-3 text-sm">
+                  <td className="p-4 text-sm text-slate-600 dark:text-slate-300">
                     {task.dueDate ? new Date(task.dueDate).toLocaleDateString('zh-CN') : '-'}
                   </td>
-                  <td className="p-3 text-sm">
+                  <td className="p-4 text-sm">
                     <a
                       href={`/projects/${task.project?.id}`}
-                      className="text-blue-600 hover:underline"
+                      className="text-blue-600 hover:text-blue-700 hover:underline dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       {task.project?.name || '-'}
                     </a>
@@ -209,7 +234,7 @@ export default function GlobalTasksPage() {
           >
             上一页
           </Button>
-          <span className="text-muted-foreground text-sm">
+          <span className="text-sm text-slate-500 dark:text-slate-400">
             第 {page} 页 / 共 {totalPages} 页
           </span>
           <Button

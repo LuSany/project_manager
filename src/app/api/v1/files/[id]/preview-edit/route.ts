@@ -89,12 +89,40 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // 检测真实的文件类型（基于文件内容，而非扩展名）
     const fileType = await detectRealFileType(file.filePath, file.mimeType)
 
+    // 调试日志
+    console.log('[Preview-Edit] 文件信息:', {
+      fileId: file.id,
+      originalName: file.originalName,
+      fileName: file.fileName,
+      filePath: file.filePath,
+      dbMimeType: file.mimeType,
+      detectedFileType: fileType,
+    })
+
+    // 修正文件名扩展名，确保与检测类型一致（避免OnlyOffice报"内容与扩展名不匹配"错误）
+    const expectedExts: Record<string, string> = {
+      doc: 'doc',
+      docx: 'docx',
+      xls: 'xls',
+      xlsx: 'xlsx',
+      ppt: 'ppt',
+      pptx: 'pptx',
+    }
+    const expectedExt = expectedExts[fileType]
+    const originalExt = (file.originalName || file.fileName).split('.').pop()?.toLowerCase()
+    let correctedFileName = file.originalName || file.fileName
+    if (expectedExt && originalExt && originalExt !== expectedExt) {
+      const oldName = correctedFileName
+      correctedFileName = correctedFileName.replace(/\.[^.]+$/, `.${expectedExt}`)
+      console.log('[Preview-Edit] 扩展名修正:', oldName, '->', correctedFileName)
+    }
+
     const config = {
       apiUrl: process.env.ONLYOFFICE_API_URL || process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || '',
       apiKey: process.env.ONLYOFFICE_API_KEY || '',
       documentKey,
       fileUrl,
-      fileName: file.originalName || file.fileName,
+      fileName: correctedFileName,
       fileType,
       mode: mode as 'edit' | 'view',
       users: {

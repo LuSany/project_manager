@@ -27,31 +27,35 @@ export interface PreviewServiceConfig {
 // 服务优先级配置
 const SERVICE_PRIORITY: Record<string, PreviewServiceType[]> = {
   // Office 文档优先 OnlyOffice
-  'docx': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
-  'doc': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
-  'xlsx': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
-  'xls': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
-  'pptx': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
-  'ppt': ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  docx: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  doc: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  xlsx: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  xls: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  pptx: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
+  ppt: ['ONLYOFFICE', 'KKFILEVIEW', 'NATIVE'],
   // PDF 使用 KKFileView
-  'pdf': ['KKFILEVIEW', 'NATIVE'],
+  pdf: ['KKFILEVIEW', 'NATIVE'],
   // 其他格式
-  'odt': ['KKFILEVIEW', 'NATIVE'],
-  'ods': ['KKFILEVIEW', 'NATIVE'],
-  'odp': ['KKFILEVIEW', 'NATIVE'],
-  'txt': ['NATIVE'],
-  'csv': ['NATIVE'],
+  odt: ['KKFILEVIEW', 'NATIVE'],
+  ods: ['KKFILEVIEW', 'NATIVE'],
+  odp: ['KKFILEVIEW', 'NATIVE'],
+  txt: ['NATIVE'],
+  csv: ['NATIVE'],
   // 图片使用原生
-  'jpg': ['NATIVE'],
-  'jpeg': ['NATIVE'],
-  'png': ['NATIVE'],
-  'gif': ['NATIVE'],
-  'webp': ['NATIVE'],
-  'svg': ['NATIVE'],
+  jpg: ['NATIVE'],
+  jpeg: ['NATIVE'],
+  png: ['NATIVE'],
+  gif: ['NATIVE'],
+  webp: ['NATIVE'],
+  svg: ['NATIVE'],
   // 视频使用原生
-  'mp4': ['NATIVE'],
-  'webm': ['NATIVE'],
-  'ogg': ['NATIVE'],
+  mp4: ['NATIVE'],
+  webm: ['NATIVE'],
+  ogg: ['NATIVE'],
+  // WPS格式 (KKFileView原生支持)
+  wps: ['KKFILEVIEW', 'NATIVE'],
+  et: ['KKFILEVIEW', 'NATIVE'],
+  dps: ['KKFILEVIEW', 'NATIVE'],
 }
 
 // 健康状态缓存
@@ -73,8 +77,10 @@ export function getFileCategory(mimeType: string, extension: string): string {
   if (mimeType.startsWith('video/')) return 'video'
   if (mimeType.startsWith('audio/')) return 'audio'
   if (mimeType === 'application/pdf') return 'pdf'
-  if (mimeType.includes('spreadsheet') || ['xlsx', 'xls', 'csv'].includes(extension)) return 'spreadsheet'
-  if (mimeType.includes('presentation') || ['pptx', 'ppt'].includes(extension)) return 'presentation'
+  if (mimeType.includes('spreadsheet') || ['xlsx', 'xls', 'csv'].includes(extension))
+    return 'spreadsheet'
+  if (mimeType.includes('presentation') || ['pptx', 'ppt'].includes(extension))
+    return 'presentation'
   if (mimeType.includes('document') || ['docx', 'doc', 'odt'].includes(extension)) return 'document'
   return 'other'
 }

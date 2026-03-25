@@ -47,6 +47,7 @@ export default defineConfig({
         /command-palette\.spec\.ts$/,
         /breadcrumb-navigation\.spec\.ts$/,
         /sidebar-interactions\.spec\.ts$/,
+        /style-fix-verification\.spec\.ts$/,
       ],
       dependencies: ['setup'],
     },
@@ -74,6 +75,7 @@ export default defineConfig({
         /command-palette\.spec\.ts$/,
         /breadcrumb-navigation\.spec\.ts$/,
         /sidebar-interactions\.spec\.ts$/,
+        /style-fix-verification\.spec\.ts$/,
         // 关键流程测试（排除管理员流程）
         /critical-flows\/01-.*\.spec\.ts$/,
         /critical-flows\/02-.*\.spec\.ts$/,
