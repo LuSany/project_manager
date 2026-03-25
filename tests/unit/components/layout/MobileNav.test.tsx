@@ -20,7 +20,14 @@ vi.mock('next/link', () => ({
 // Mock useAuth hook
 vi.mock('@/hooks/useAuth', () => ({
   useAuth: () => ({
-    user: { id: '1', name: 'Test User', email: 'test@example.com', role: 'USER' },
+    user: {
+      id: '1',
+      name: 'Test User',
+      email: 'test@example.com',
+      role: 'EMPLOYEE',
+      createdAt: '2024-01-01',
+      updatedAt: '2024-01-01',
+    },
     loading: false,
     login: vi.fn(),
     logout: vi.fn(),
