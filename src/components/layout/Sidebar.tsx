@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import {
   Folder,
   Calendar,
@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
+import { useUIStore } from '@/stores/uiStore'
 
 interface NavItem {
   title: string
@@ -71,22 +72,22 @@ const navItems: NavItem[] = [
 
 export interface SidebarProps {
   className?: string
-  collapsed?: boolean
-  onCollapsedChange?: (collapsed: boolean) => void
 }
 
-export function Sidebar({
-  className,
-  collapsed: controlledCollapsed,
-  onCollapsedChange,
-}: SidebarProps) {
-  const [internalCollapsed, setInternalCollapsed] = useState(false)
+export function Sidebar({ className }: SidebarProps) {
+  // 从 store 获取状态
+  const sidebarCollapsed = useUIStore((state) => state.sidebarCollapsed)
+  const toggleSidebar = useUIStore((state) => state.toggleSidebar)
+  const _hydrated = useUIStore((state) => state._hydrated)
+
+  // 用于 SSR hydration 检测
+  const [mounted, setMounted] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
-  const collapsed = controlledCollapsed !== undefined ? controlledCollapsed : internalCollapsed
   const pathname = usePathname()
 
   // 获取当前用户角色
   useEffect(() => {
+    setMounted(true)
     const fetchUserRole = async () => {
       try {
         const response = await fetch('/api/v1/users/me', {
@@ -116,12 +117,37 @@ export function Sidebar({
     return pathname.startsWith(path)
   }
 
+  // SSR hydration 未完成时渲染骨架
+  if (!mounted || !_hydrated) {
+    return (
+      <aside
+        className={cn(
+          'bg-card border-border flex h-screen flex-col border-r',
+          'w-64', // 默认展开宽度
+          className
+        )}
+      >
+        <div className="h-16 animate-pulse bg-muted/50" />
+        <div className="flex-1 p-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="mb-2 h-10 animate-pulse rounded bg-muted/50" />
+          ))}
+        </div>
+      </aside>
+    )
+  }
+
+  // 折叠按钮点击处理
+  const handleToggle = () => {
+    toggleSidebar()
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
           'bg-card border-border flex h-screen flex-col border-r transition-all duration-300 ease-in-out',
-          collapsed ? 'w-16' : 'w-64',
+          sidebarCollapsed ? 'w-16' : 'w-64',
           className
         )}
       >
@@ -131,15 +157,12 @@ export function Sidebar({
             <div className="bg-primary/10 flex h-8 w-8 items-center justify-center rounded-lg">
               <span className="text-xl font-bold">PM</span>
             </div>
-            {!collapsed && <span className="text-foreground font-semibold">项目管理</span>}
+            {!sidebarCollapsed && <span className="text-foreground font-semibold">项目管理</span>}
           </Link>
           <button
-            onClick={() => {
-              const newCollapsed = !collapsed
-              setInternalCollapsed(newCollapsed)
-              onCollapsedChange?.(newCollapsed)
-            }}
+            onClick={handleToggle}
             className="hover:bg-accent rounded-md p-2"
+            aria-label={sidebarCollapsed ? '展开侧边栏' : '折叠侧边栏'}
           >
             <Menu className="h-5 w-5" />
           </button>
@@ -162,15 +185,15 @@ export function Sidebar({
                     )}
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
-                    <span className={collapsed ? 'hidden' : 'block'}>{item.title}</span>
-                    {item.badge && !collapsed && (
+                    <span className={sidebarCollapsed ? 'hidden' : 'block'}>{item.title}</span>
+                    {item.badge && !sidebarCollapsed && (
                       <span className="bg-destructive ml-auto rounded-full px-2 py-0.5 text-xs text-white">
                         {item.badge}
                       </span>
                     )}
                   </Link>
                 </TooltipTrigger>
-                {collapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
+                {sidebarCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}
               </Tooltip>
             ))}
         </nav>
@@ -189,10 +212,10 @@ export function Sidebar({
                 )}
               >
                 <Settings className="h-5 w-5 flex-shrink-0" />
-                <span className={collapsed ? 'hidden' : 'block'}>设置</span>
+                <span className={sidebarCollapsed ? 'hidden' : 'block'}>设置</span>
               </Link>
             </TooltipTrigger>
-            {collapsed && <TooltipContent side="right">设置</TooltipContent>}
+            {sidebarCollapsed && <TooltipContent side="right">设置</TooltipContent>}
           </Tooltip>
         </div>
       </aside>
