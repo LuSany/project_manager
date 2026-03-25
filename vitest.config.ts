@@ -13,6 +13,7 @@ export default defineConfig({
       'tests/**/*.test.tsx',
       'src/**/*.test.ts',
       'src/**/*.spec.ts',
+      'src/**/*.test.tsx',
     ],
     exclude: ['tests/e2e/**/*', 'tests/**/*.e2e.ts', 'tests/integration/**/*'],
     setupFiles: ['tests/setup.ts'],
