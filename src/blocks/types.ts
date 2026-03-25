@@ -184,6 +184,10 @@ export type FilterCondition =
   | 'isNotEmpty'
   | 'before'
   | 'after'
+  | 'greaterThan'
+  | 'lessThan'
+  | 'greaterThanOrEqual'
+  | 'lessThanOrEqual'
 
 /**
  * 筛选器
