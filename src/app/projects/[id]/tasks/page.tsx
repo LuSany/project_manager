@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { TaskKanban } from "@/components/tasks/TaskKanban";
+import { TaskList } from "@/components/tasks/list/TaskList";
+import { TaskListFilters } from "@/components/tasks/list/TaskListFilters";
+import { useTaskViewStore } from "@/stores/taskViewStore";
 import { ArrowLeft } from "lucide-react";
 
 interface Task {
@@ -17,6 +20,18 @@ interface Task {
   startDate: string | null;
   dueDate: string | null;
   createdAt: string;
+  assignees?: Array<{
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    };
+  }>;
+  tags?: Array<{
+    id: string;
+    name: string;
+    color: string;
+  }>;
 }
 
 export default function TasksPage({ params }: { params: Promise<{ id: string }> }) {
@@ -31,9 +46,11 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [filterStatus, setFilterStatus] = useState<string>("");
-  const [filterPriority, setFilterPriority] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"list" | "kanban">("list");
+
+  // 从 taskViewStore 获取视图状态
+  const viewMode = useTaskViewStore((state) => state.viewMode);
+  const setViewMode = useTaskViewStore((state) => state.setViewMode);
+  const filters = useTaskViewStore((state) => state.filters);
 
   const fetchTasks = async () => {
     if (!projectId) return;
@@ -41,10 +58,13 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     try {
       const searchParams = new URLSearchParams({
         page: page.toString(),
-        pageSize: "10",
+        pageSize: "25",
         projectId,
-        ...(filterStatus && { status: filterStatus }),
-        ...(filterPriority && { priority: filterPriority }),
+      });
+
+      // 添加筛选条件
+      filters.forEach((filter) => {
+        searchParams.set(filter.field, filter.value);
       });
 
       const response = await fetch('/api/v1/tasks?' + searchParams, {
@@ -89,42 +109,36 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
+  // 处理任务更新（内联编辑）
+  const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
+    try {
+      const response = await fetch('/api/v1/tasks/' + taskId, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updates),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // 更新本地状态
+        setTasks((prev) =>
+          prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+        );
+      }
+    } catch (error) {
+      console.error("更新任务失败:", error);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
-  }, [page, filterStatus, filterPriority, projectId]);
-
-  const statusLabels: Record<string, string> = {
-    TODO: "待办",
-    IN_PROGRESS: "进行中",
-    REVIEW: "待审核",
-    TESTING: "测试中",
-    DONE: "已完成",
-  };
-
-  const priorityLabels: Record<string, string> = {
-    LOW: "低",
-    MEDIUM: "中",
-    HIGH: "高",
-    URGENT: "紧急",
-  };
-
-  const statusColors: Record<string, string> = {
-    TODO: "bg-gray-100 text-gray-800",
-    IN_PROGRESS: "bg-blue-100 text-blue-800",
-    REVIEW: "bg-yellow-100 text-yellow-800",
-    TESTING: "bg-purple-100 text-purple-800",
-    DONE: "bg-green-100 text-green-800",
-  };
-
-  const priorityColors: Record<string, string> = {
-    LOW: "bg-gray-100 text-gray-800",
-    MEDIUM: "bg-blue-100 text-blue-800",
-    HIGH: "bg-orange-100 text-orange-800",
-    URGENT: "bg-red-100 text-red-800",
-  };
+  }, [page, filters, projectId]);
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full flex-col">
       {/* 返回导航 */}
       <div className="flex items-center gap-2">
         <Link href={`/projects/${projectId}`}>
@@ -136,7 +150,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       </div>
 
       {/* 标题和操作 */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between py-4">
         <h1 className="text-2xl font-bold">任务列表</h1>
         <div className="flex items-center gap-2">
           <div className="flex bg-muted rounded-md p-1">
@@ -167,127 +181,50 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         </div>
       </div>
 
-      {/* 筛选器 */}
-      <div className="flex items-center gap-4">
-        <select
-          value={filterStatus}
-          onChange={(e) => {
-            setFilterStatus(e.target.value);
-            setPage(1);
-          }}
-          className="border border-border rounded-md px-3 py-2 bg-background"
-        >
-          <option value="">全部状态</option>
-          <option value="TODO">待办</option>
-          <option value="IN_PROGRESS">进行中</option>
-          <option value="REVIEW">待审核</option>
-          <option value="TESTING">测试中</option>
-          <option value="DONE">已完成</option>
-        </select>
-
-        <select
-          value={filterPriority}
-          onChange={(e) => {
-            setFilterPriority(e.target.value);
-            setPage(1);
-          }}
-          className="border border-border rounded-md px-3 py-2 bg-background"
-        >
-          <option value="">全部优先级</option>
-          <option value="LOW">低</option>
-          <option value="MEDIUM">中</option>
-          <option value="HIGH">高</option>
-          <option value="URGENT">紧急</option>
-        </select>
-      </div>
-
       {/* 内容区 */}
-      {viewMode === "kanban" ? (
-        <TaskKanban projectId={projectId} />
-      ) : (
-        <>
-          {loading ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="flex-1 overflow-hidden">
+        {viewMode === "kanban" ? (
+          <TaskKanban projectId={projectId} />
+        ) : (
+          <div className="flex h-full flex-col">
+            {/* 筛选栏 */}
+            <TaskListFilters />
+
+            {/* 任务列表 */}
+            <div className="flex-1 overflow-auto">
+              <TaskList
+                projectId={projectId}
+                tasks={tasks}
+                isLoading={loading}
+                onTaskUpdate={handleTaskUpdate}
+              />
             </div>
-          ) : tasks.length === 0 ? (
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <p className="text-lg font-medium mb-2 text-muted-foreground">暂无任务</p>
-                <p className="text-sm text-muted-foreground">开始创建您的第一个任务</p>
+
+            {/* 分页 */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-2 py-4 border-t">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                  className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  上一页
+                </button>
+                <span className="text-muted-foreground">
+                  第 {page} / {totalPages} 页
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                  className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  下一页
+                </button>
               </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {tasks.map((task) => (
-                <div key={task.id} className="bg-card border rounded-lg p-6 hover:shadow-md transition-all">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-semibold">{task.title}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColors[task.status]}`}>
-                          {statusLabels[task.status]}
-                        </span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${priorityColors[task.priority]}`}>
-                          {priorityLabels[task.priority]}
-                        </span>
-                      </div>
-                      {task.description && (
-                        <p className="text-muted-foreground text-sm mb-2">{task.description}</p>
-                      )}
-                      <div className="text-sm text-muted-foreground">
-                        进度: {task.progress}%
-                        {task.dueDate && (
-                          <span className="ml-4">
-                            截止: {new Date(task.dueDate).toLocaleDateString("zh-CN")}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => router.push(`/projects/${projectId}/tasks/${task.id}`)}
-                      className="text-primary hover:underline"
-                    >
-                      查看详情 →
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task.id)}
-                      className="text-destructive hover:underline text-sm"
-                    >
-                      删除
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 mt-6">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                上一页
-              </button>
-              <span className="text-muted-foreground">
-                第 {page} / {totalPages} 页
-              </span>
-              <button
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                下一页
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
