@@ -69,4 +69,6 @@ coverage/
 .omc/plans/
 .omc/project-memory.json
 .sisyphus/
-.sisyphus/*
+
+# GSD
+.planning/

@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useMemo } from 'react'
+import React, { useMemo } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
@@ -169,8 +169,8 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDeta
           {groupedRows ? (
             // 分组渲染
             groupedRows.map((groupRow) => (
-              <>
-                <TableRow key={`group-${groupRow.id}`}>
+              <React.Fragment key={`group-${groupRow.id}`}>
+                <TableRow>
                   <TableCell colSpan={columns.length} className="p-0">
                     <GroupHeader
                       groupBy={groupBy!}
@@ -193,7 +193,7 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDeta
                     ))}
                   </TableRow>
                 ))}
-              </>
+              </React.Fragment>
             ))
           ) : (
             // 非分组渲染
