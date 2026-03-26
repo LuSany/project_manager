@@ -24,14 +24,14 @@ export interface Assignee {
 interface PriorityInlineEditProps {
   priority: TaskPriority
   taskId: string
-  onUpdate: (taskId: string, data: { priority: TaskPriority }) => void
+  onUpdate: (taskId: string, data: { priority?: TaskPriority; [key: string]: unknown }) => void
 }
 
 interface AssigneeInlineEditProps {
   assignees: Assignee[] | undefined
   projectId: string
   taskId: string
-  onUpdate: (taskId: string, data: { assigneeIds: string[] }) => void
+  onUpdate: (taskId: string, data: { assigneeIds?: string[]; [key: string]: unknown }) => void
 }
 
 // ============================================================================
