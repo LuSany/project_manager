@@ -1,13 +1,15 @@
 "use client";
 
-import { Bell, Search, User, LogOut, Settings, ChevronDown } from "lucide-react";
+import { Bell, Search, User, LogOut, Settings, ChevronDown, Sun, Moon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useTheme } from "@/hooks/useTheme";
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 export function Header() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const router = useRouter();
   const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -100,6 +102,25 @@ export function Header() {
                 <div className="px-2 py-1.5 text-sm font-medium border-b mb-1">
                   {user?.email}
                 </div>
+                <button
+                  onClick={() => {
+                    toggleTheme()
+                    setShowUserMenu(false)
+                  }}
+                  className="flex items-center gap-2 w-full rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
+                >
+                  {theme === 'light' ? (
+                    <>
+                      <Moon className="h-4 w-4" />
+                      切换到深色模式
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="h-4 w-4" />
+                      切换到浅色模式
+                    </>
+                  )}
+                </button>
                 <Link
                   href="/settings/profile"
                   className="flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm hover:bg-accent"
