@@ -42,6 +42,8 @@ interface TaskListProps {
   isLoading: boolean
   /** 更新任务的回调 */
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void
+  /** 打开任务详情的回调 */
+  onOpenDetail?: (taskId: string) => void
 }
 
 // ============================================================================
@@ -80,7 +82,7 @@ function GroupHeader({ groupBy, value, count }: GroupHeaderProps) {
 // 主组件
 // ============================================================================
 
-export function TaskList({ projectId, tasks, isLoading, onTaskUpdate }: TaskListProps) {
+export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDetail }: TaskListProps) {
   // 从 store 获取视图状态
   const groupBy = useTaskViewStore((state) => state.groupBy)
   const sorting = useTaskViewStore((state) => state.sorting)
@@ -180,8 +182,9 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate }: TaskList
                 {groupRow.subRows.map((row) => (
                   <TableRow
                     key={row.id}
-                    className="h-12 hover:bg-accent/50"
+                    className="h-12 hover:bg-accent/50 cursor-pointer"
                     data-state={row.getIsSelected() && 'selected'}
+                    onClick={() => onOpenDetail?.(row.original.id)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id}>
@@ -197,8 +200,9 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate }: TaskList
             rows.map((row) => (
               <TableRow
                 key={row.id}
-                className="h-12 hover:bg-accent/50"
+                className="h-12 hover:bg-accent/50 cursor-pointer"
                 data-state={row.getIsSelected() && 'selected'}
+                onClick={() => onOpenDetail?.(row.original.id)}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>

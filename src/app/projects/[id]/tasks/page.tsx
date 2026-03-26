@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -7,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { TaskKanban } from "@/components/tasks/TaskKanban";
 import { TaskList } from "@/components/tasks/list/TaskList";
 import { TaskListFilters } from "@/components/tasks/list/TaskListFilters";
+import { TaskDetailDrawer } from "@/components/tasks/detail/TaskDetailDrawer";
 import { useTaskViewStore } from "@/stores/taskViewStore";
 import { ArrowLeft } from "lucide-react";
 
@@ -46,6 +48,10 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // 详情抽屉状态
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
 
   // 从 taskViewStore 获取视图状态
   const viewMode = useTaskViewStore((state) => state.viewMode);
@@ -133,6 +139,20 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
+  // 处理打开任务详情
+  const handleOpenDetail = (taskId: string) => {
+    setSelectedTaskId(taskId);
+    setDrawerOpen(true);
+  };
+
+  // 处理抽屉关闭
+  const handleDrawerOpenChange = (open: boolean) => {
+    setDrawerOpen(open);
+    if (!open) {
+      setSelectedTaskId(null);
+    }
+  };
+
   useEffect(() => {
     fetchTasks();
   }, [page, filters, projectId]);
@@ -184,7 +204,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">
         {viewMode === "kanban" ? (
-          <TaskKanban projectId={projectId} />
+          <TaskKanban projectId={projectId} onOpenDetail={handleOpenDetail} />
         ) : (
           <div className="flex h-full flex-col">
             {/* 筛选栏 */}
@@ -197,6 +217,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
                 tasks={tasks}
                 isLoading={loading}
                 onTaskUpdate={handleTaskUpdate}
+                onOpenDetail={handleOpenDetail}
               />
             </div>
 
@@ -225,6 +246,13 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           </div>
         )}
       </div>
+
+      {/* 任务详情抽屉 */}
+      <TaskDetailDrawer
+        taskId={selectedTaskId}
+        open={drawerOpen}
+        onOpenChange={handleDrawerOpenChange}
+      />
     </div>
   );
 }
