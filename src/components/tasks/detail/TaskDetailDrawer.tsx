@@ -8,6 +8,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetDescription,
 } from '@/components/ui/sheet'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { SubTaskList } from '@/components/tasks/SubTaskList'
@@ -94,6 +95,9 @@ export function TaskDetailDrawer({
           <SheetTitle className="truncate">
             {task?.title || '任务详情'}
           </SheetTitle>
+          <SheetDescription className="sr-only">
+            查看和编辑任务详情
+          </SheetDescription>
         </SheetHeader>
 
         {isLoading ? (

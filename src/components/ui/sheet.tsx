@@ -47,6 +47,14 @@ const sheetVariants = cva(
   }
 )
 
+// 样式映射，确保 fixed 定位正确
+const sideStyles: Record<string, React.CSSProperties> = {
+  top: { top: 0, left: 0, right: 0 },
+  bottom: { bottom: 0, left: 0, right: 0 },
+  left: { top: 0, bottom: 0, left: 0 },
+  right: { top: 0, bottom: 0, right: 0 },
+}
+
 interface SheetContentProps
   extends React.ComponentPropsWithoutRef<typeof SheetPrimitive.Content>,
     VariantProps<typeof sheetVariants> {}
@@ -55,10 +63,11 @@ const SheetContent = React.forwardRef<
   React.ElementRef<typeof SheetPrimitive.Content>,
   SheetContentProps
 >(({ side = 'right', className, children, ...props }, ref) => (
-  <SheetPortal>
+  <SheetPortal container={typeof document !== 'undefined' ? document.body : undefined}>
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
+      style={sideStyles[side]}
       className={cn(sheetVariants({ side }), className)}
       {...props}
     >

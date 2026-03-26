@@ -25,6 +25,7 @@ import {
   ClipboardList,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { TaskDetailDrawer } from '@/components/tasks/detail/TaskDetailDrawer'
 
 interface Task {
   id: string
@@ -143,7 +144,7 @@ function StatCard({
 }
 
 // 任务卡片组件（用于替代表格行）
-function TaskCard({ task }: { task: Task }) {
+function TaskCard({ task, onClick }: { task: Task; onClick: () => void }) {
   const statusStyle = statusConfig[task.status] || statusConfig.TODO
   const priorityStyle = priorityConfig[task.priority] || priorityConfig.LOW
 
@@ -163,7 +164,10 @@ function TaskCard({ task }: { task: Task }) {
   const dueInfo = formatDueDate(task.dueDate)
 
   return (
-    <Card className="group rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-800">
+    <Card
+      className="group rounded-xl border border-slate-200 bg-white transition-all duration-200 hover:border-blue-200 hover:shadow-md dark:border-slate-700 dark:bg-slate-800 dark:hover:border-blue-800 cursor-pointer"
+      onClick={onClick}
+    >
       <CardContent className="p-4">
         <div className="flex items-start gap-3">
           {/* 复选框区域 */}
@@ -251,6 +255,22 @@ export default function GlobalTasksPage() {
   const [filterStatus, setFilterStatus] = useState<string>('')
   const [filterPriority, setFilterPriority] = useState<string>('')
   const [viewMode, setViewMode] = useState<'list' | 'kanban'>('list')
+
+  // 详情抽屉状态
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+
+  const handleOpenDetail = (taskId: string) => {
+    setSelectedTaskId(taskId)
+    setDrawerOpen(true)
+  }
+
+  const handleDrawerOpenChange = (open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setSelectedTaskId(null)
+    }
+  }
 
   const fetchTasks = async () => {
     setLoading(true)
@@ -448,7 +468,7 @@ export default function GlobalTasksPage() {
         <>
           <div className="space-y-3">
             {tasks.map((task) => (
-              <TaskCard key={task.id} task={task} />
+              <TaskCard key={task.id} task={task} onClick={() => handleOpenDetail(task.id)} />
             ))}
           </div>
 
@@ -478,6 +498,13 @@ export default function GlobalTasksPage() {
           )}
         </>
       )}
+
+      {/* 任务详情抽屉 */}
+      <TaskDetailDrawer
+        taskId={selectedTaskId}
+        open={drawerOpen}
+        onOpenChange={handleDrawerOpenChange}
+      />
     </div>
   )
 }
