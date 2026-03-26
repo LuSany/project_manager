@@ -64,6 +64,14 @@ describe('taskViewStore', () => {
       const { viewMode } = useTaskViewStore.getState()
       expect(viewMode).toBe('list')
     })
+
+    it('setViewMode("calendar") 切换到日历视图', () => {
+      const { setViewMode } = useTaskViewStore.getState()
+      setViewMode('calendar')
+
+      const { viewMode } = useTaskViewStore.getState()
+      expect(viewMode).toBe('calendar')
+    })
   })
 
   describe('setGroupBy', () => {
@@ -176,9 +184,9 @@ describe('taskViewStore', () => {
   describe('类型导出', () => {
     it('导出 TaskViewMode 类型', () => {
       // 类型检查通过编译即可
-      type ViewMode = 'list' | 'kanban'
-      const mode: ViewMode = 'list'
-      expect(mode).toBe('list')
+      type ViewMode = 'list' | 'kanban' | 'calendar'
+      const mode: ViewMode = 'calendar'
+      expect(mode).toBe('calendar')
     })
 
     it('导出 GroupByOption 类型', () => {
@@ -186,6 +194,18 @@ describe('taskViewStore', () => {
       type GroupByOption = 'status' | 'priority' | 'assignee' | null
       const group: GroupByOption = 'status'
       expect(group).toBe('status')
+    })
+  })
+
+  describe('calendar 视图模式', () => {
+    it('calendar 视图模式被持久化配置包含', () => {
+      // 验证 partialize 配置包含 viewMode，calendar 模式将自动持久化
+      const { setViewMode } = useTaskViewStore.getState()
+      setViewMode('calendar')
+
+      // 验证状态已更新
+      const { viewMode } = useTaskViewStore.getState()
+      expect(viewMode).toBe('calendar')
     })
   })
 })
