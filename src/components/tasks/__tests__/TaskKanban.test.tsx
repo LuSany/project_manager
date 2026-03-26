@@ -1,7 +1,8 @@
-import { describe, it, expect, vi } from 'vitest'
+import React from 'react'
+import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
 import { DndContext } from '@dnd-kit/core'
-import { SortableTaskCard } from '../TaskKanban'
+import { SortableTaskCard } from '../kanban/SortableTaskCard'
 
 interface MockTask {
   id: string
