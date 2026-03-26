@@ -12,7 +12,7 @@ import type { SortingState } from '@tanstack/react-table'
 // ============================================================================
 
 /** 视图模式类型 */
-export type TaskViewMode = 'list' | 'kanban'
+export type TaskViewMode = 'list' | 'kanban' | 'calendar'
 
 /** 分组维度类型 */
 export type GroupByOption = 'status' | 'priority' | 'assignee' | null
