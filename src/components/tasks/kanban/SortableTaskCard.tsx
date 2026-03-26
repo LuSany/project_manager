@@ -95,7 +95,7 @@ export function SortableTaskCard({
           assignees={task.assignees}
           projectId={projectId || task.id}
           taskId={task.id}
-          onUpdate={handleUpdate}
+          onUpdate={(taskId, data) => onUpdate?.(taskId, data as Partial<Task>)}
         />
 
         {/* 进度条 */}
