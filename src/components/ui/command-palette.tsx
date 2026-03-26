@@ -3,18 +3,27 @@
 import * as React from 'react'
 import { Command } from 'cmdk'
 import { cn } from '@/lib/utils'
-import { useCommandPalette, type CommandItem } from '@/hooks/useCommandPalette'
-import { Search, ArrowRight, FileText, Settings, Plus } from 'lucide-react'
+import { useCommandPalette } from '@/hooks/useCommandPalette'
+import type { CommandItem } from '@/types/command'
+import { Search, ArrowRight, FileText, Settings, Plus, Star, Clock, Sparkles } from 'lucide-react'
 
+// 分组图标映射
 const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   navigation: ArrowRight,
   create: Plus,
   settings: Settings,
+  favorite: Star,
+  recent: Clock,
+  action: Plus,
+  ai: Sparkles,
   default: FileText,
 }
 
+// 分组显示顺序
+const GROUP_ORDER = ['收藏项目', '最近访问', '快捷操作', 'AI 助手', '导航', '创建', '设置', '其他']
+
 function CommandItemRow({ item, onSelect }: { item: CommandItem; onSelect: () => void }) {
-  const Icon = item.icon || iconMap[item.group?.toLowerCase() || 'default'] || FileText
+  const Icon = item.icon || iconMap[item.type || item.group?.toLowerCase() || 'default'] || FileText
 
   return (
     <Command.Item
@@ -53,7 +62,12 @@ export function CommandPalette() {
       if (!groups[group]) groups[group] = []
       groups[group].push(cmd)
     })
-    return groups
+    // 按 GROUP_ORDER 排序
+    return Object.fromEntries(
+      GROUP_ORDER
+        .filter((g) => groups[g])
+        .map((g) => [g, groups[g]])
+    )
   }, [commands])
 
   if (!open) return null
