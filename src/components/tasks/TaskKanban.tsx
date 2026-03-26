@@ -6,6 +6,7 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
+  DragOverEvent,
   PointerSensor,
   closestCenter,
   useSensor,
@@ -27,7 +28,7 @@ interface ApiResponse<T> {
   error?: string
 }
 
-type TaskStatus =
+export type TaskStatus =
   | 'TODO'
   | 'IN_PROGRESS'
   | 'REVIEW'
@@ -37,7 +38,7 @@ type TaskStatus =
   | 'DELAYED'
   | 'BLOCKED'
 
-type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
 interface TaskKanbanProps {
   projectId: string
@@ -52,18 +53,18 @@ interface KanbanColumn {
 }
 
 // ============================================================================
-// 看板列配置
+// 看板列配置 - 按工作流顺序排列
 // ============================================================================
 
 const KANBAN_COLUMNS: KanbanColumn[] = [
   { id: 'TODO', title: '待办', status: 'TODO' },
   { id: 'IN_PROGRESS', title: '进行中', status: 'IN_PROGRESS' },
+  { id: 'DONE', title: '已完成', status: 'DONE' },
+  { id: 'BLOCKED', title: '阻塞', status: 'BLOCKED' },
   { id: 'REVIEW', title: '待评审', status: 'REVIEW' },
   { id: 'TESTING', title: '测试中', status: 'TESTING' },
-  { id: 'DONE', title: '已完成', status: 'DONE' },
-  { id: 'CANCELLED', title: '已取消', status: 'CANCELLED' },
   { id: 'DELAYED', title: '延期', status: 'DELAYED' },
-  { id: 'BLOCKED', title: '阻塞', status: 'BLOCKED' },
+  { id: 'CANCELLED', title: '已取消', status: 'CANCELLED' },
 ]
 
 const STATUS_LABELS: Record<TaskStatus, string> = {
@@ -92,7 +93,6 @@ const PRIORITY_COLORS: Record<TaskPriority, string> = {
 }
 
 // 导出类型和常量供其他组件使用
-export type { Task, TaskStatus, TaskPriority }
 export { STATUS_LABELS, PRIORITY_LABELS, PRIORITY_COLORS, KANBAN_COLUMNS }
 
 // ============================================================================
@@ -154,7 +154,7 @@ async function updateTask(taskId: string, updates: Partial<Task>): Promise<Task>
 interface KanbanColumnComponentProps {
   column: KanbanColumn
   tasks: Task[]
-  onDragStart: (event: DragStartEvent) => void
+  projectId: string
   onUpdate?: (taskId: string, data: Partial<Task>) => void
   onOpenDetail?: (taskId: string) => void
   isOver?: boolean
@@ -163,7 +163,7 @@ interface KanbanColumnComponentProps {
 function KanbanColumnComponent({
   column,
   tasks,
-  onDragStart,
+  projectId,
   onUpdate,
   onOpenDetail,
   isOver,
@@ -176,13 +176,13 @@ function KanbanColumnComponent({
         <span className="text-sm text-muted-foreground ml-2">{tasks.length}</span>
       </div>
 
-      {/* 任务列表 */}
+      {/* 任务列表 - 可放置区域 */}
       <div
         className={cn(
           'min-h-[400px] flex-1 rounded-lg border-2 border-dashed p-3',
-          'bg-muted/20 transition-colors',
+          'bg-muted/20 transition-all duration-200',
           'hover:bg-muted/30',
-          isOver && 'border-primary bg-primary/5'
+          isOver && 'border-primary bg-primary/5 scale-[1.02]'
         )}
       >
         {tasks.length === 0 ? (
@@ -195,6 +195,7 @@ function KanbanColumnComponent({
               <div key={task.id} data-task-id={task.id} className="touch-none">
                 <SortableTaskCard
                   task={task}
+                  projectId={projectId}
                   isDragging={false}
                   onUpdate={onUpdate}
                   onOpenDetail={onOpenDetail}
@@ -217,7 +218,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [overColumn, setOverColumn] = useState<TaskStatus | null>(null)
 
-  // 传感器配置
+  // 传感器配置 - 8px 激活距离防止误触
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -244,7 +245,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
     BLOCKED: tasks.filter((t) => t.status === 'BLOCKED'),
   }
 
-  // 更新任务状态
+  // 更新任务状态 mutation - 使用乐观更新
   const updateStatusMutation = useMutation({
     mutationFn: ({ taskId, status }: { taskId: string; status: TaskStatus }) =>
       updateTaskStatus(taskId, status),
@@ -252,12 +253,15 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
       // 取消正在进行的查询
       await queryClient.cancelQueries({ queryKey: ['tasks', projectId, 'kanban'] })
 
+      // 保存当前状态用于回滚
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks', projectId, 'kanban'])
+
       // 乐观更新：先在本地更新状态
       queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
         old.map((task) => (task.id === taskId ? { ...task, status } : task))
       )
 
-      return { taskId }
+      return { previousTasks, taskId }
     },
     onSuccess: (data, variables) => {
       // 用服务器返回的数据更新
@@ -265,26 +269,31 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
         old.map((task) => (task.id === variables.taskId ? data : task))
       )
     },
-    onError: (error, variables) => {
+    onError: (error, variables, context) => {
       // 发生错误时回滚
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId, 'kanban'] })
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks', projectId, 'kanban'], context.previousTasks)
+      }
       console.error('更新任务状态失败:', error)
     },
   })
 
-  // 更新任务属性
+  // 更新任务属性 mutation - 使用乐观更新
   const updateTaskMutation = useMutation({
     mutationFn: ({ taskId, updates }: { taskId: string; updates: Partial<Task> }) =>
       updateTask(taskId, updates),
     onMutate: async ({ taskId, updates }) => {
       await queryClient.cancelQueries({ queryKey: ['tasks', projectId, 'kanban'] })
 
+      // 保存当前状态用于回滚
+      const previousTasks = queryClient.getQueryData<Task[]>(['tasks', projectId, 'kanban'])
+
       // 乐观更新
       queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
         old.map((task) => (task.id === taskId ? { ...task, ...updates } : task))
       )
 
-      return { taskId }
+      return { previousTasks, taskId }
     },
     onSuccess: (data, variables) => {
       queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
@@ -293,8 +302,11 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
       // 调用外部回调
       onUpdate?.(variables.taskId, variables.updates)
     },
-    onError: (error, variables) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks', projectId, 'kanban'] })
+    onError: (error, variables, context) => {
+      // 回滚
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['tasks', projectId, 'kanban'], context.previousTasks)
+      }
       console.error('更新任务失败:', error)
     },
   })
@@ -314,6 +326,21 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
     }
   }
 
+  // 处理拖拽经过列
+  const handleDragOver = (event: DragOverEvent) => {
+    const { over } = event
+    if (over) {
+      const targetId = over.id as string
+      // 检查是否是列
+      const columnStatus = KANBAN_COLUMNS.find((col) => col.id === targetId)
+      if (columnStatus) {
+        setOverColumn(columnStatus.status)
+      }
+    } else {
+      setOverColumn(null)
+    }
+  }
+
   // 处理拖拽结束
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event
@@ -323,11 +350,26 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
     if (!over) return
 
     const taskId = active.id as string
-    const targetStatus = over.id as TaskStatus
+    const targetId = over.id as string
 
-    // 如果拖拽到不同的状态列，更新任务状态
+    // 查找目标状态（可能是列 ID 或任务 ID）
+    let targetStatus: TaskStatus | null = null
+
+    // 检查是否拖拽到列
+    const columnStatus = KANBAN_COLUMNS.find((col) => col.id === targetId)
+    if (columnStatus) {
+      targetStatus = columnStatus.status
+    } else {
+      // 检查是否拖拽到另一个任务上（获取该任务的状态）
+      const targetTask = tasks.find((t) => t.id === targetId)
+      if (targetTask) {
+        targetStatus = targetTask.status as TaskStatus
+      }
+    }
+
+    // 如果找到了目标状态，更新任务状态
     const task = tasks.find((t) => t.id === taskId)
-    if (task && task.status !== targetStatus) {
+    if (task && targetStatus && task.status !== targetStatus) {
       updateStatusMutation.mutate({ taskId, status: targetStatus })
     }
   }
@@ -347,6 +389,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
       >
         {/* 看板容器 - 水平滚动 */}
@@ -357,7 +400,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
                 <KanbanColumnComponent
                   column={column}
                   tasks={tasksByStatus[column.status]}
-                  onDragStart={handleDragStart}
+                  projectId={projectId}
                   onUpdate={handleUpdate}
                   onOpenDetail={onOpenDetail}
                   isOver={overColumn === column.status}
@@ -373,6 +416,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
             <div className="scale-105 rotate-3">
               <SortableTaskCard
                 task={activeTask}
+                projectId={projectId}
                 isDragging={true}
                 onUpdate={handleUpdate}
                 onOpenDetail={onOpenDetail}

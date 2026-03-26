@@ -25,6 +25,7 @@ export interface Task {
 
 export interface SortableTaskCardProps {
   task: Task
+  projectId?: string
   isDragging: boolean
   onUpdate?: (taskId: string, data: Partial<Task>) => void
   onOpenDetail?: (taskId: string) => void
@@ -36,6 +37,7 @@ export interface SortableTaskCardProps {
 
 export function SortableTaskCard({
   task,
+  projectId,
   isDragging,
   onUpdate,
   onOpenDetail,
@@ -91,7 +93,7 @@ export function SortableTaskCard({
       <div className="flex items-center justify-between gap-3">
         <AssigneeInlineEdit
           assignees={task.assignees}
-          projectId={task.id} // TODO: 需要 projectId prop
+          projectId={projectId || task.id}
           taskId={task.id}
           onUpdate={handleUpdate}
         />
