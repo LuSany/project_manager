@@ -90,15 +90,17 @@ export function TaskDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[480px] overflow-y-auto">
+        <SheetHeader>
+          <SheetTitle className="truncate">
+            {task?.title || '任务详情'}
+          </SheetTitle>
+        </SheetHeader>
+
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : task ? (
-          <>
-            <SheetHeader>
-              <SheetTitle className="truncate">{task.title}</SheetTitle>
-            </SheetHeader>
 
             <Tabs
               defaultValue="detail"
@@ -141,7 +143,6 @@ export function TaskDetailDrawer({
                 <TagsTab taskId={task.id} />
               </TabsContent>
             </Tabs>
-          </>
         ) : null}
       </SheetContent>
     </Sheet>
