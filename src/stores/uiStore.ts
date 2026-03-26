@@ -16,6 +16,8 @@ interface UIState {
   activeModal: string | null
   /** hydration 状态标记 (用于 SSR hydration 检测) */
   _hydrated: boolean
+  /** 当前主题 */
+  theme: 'light' | 'dark'
 }
 
 /**
@@ -32,11 +34,15 @@ type UIActions = {
   closeModal: () => void
   /** 设置 hydration 状态 */
   setHydrated: (state: boolean) => void
+  /** 设置主题 */
+  setTheme: (theme: 'light' | 'dark') => void
+  /** 切换主题 */
+  toggleTheme: () => void
 }
 
 /**
  * UI Store
- * 使用 persist 中间件持久化 sidebarCollapsed 状态到 localStorage
+ * 使用 persist 中间件持久化 sidebarCollapsed 和 theme 状态到 localStorage
  */
 export const useUIStore = create<UIState & UIActions>()(
   persist(
@@ -44,6 +50,7 @@ export const useUIStore = create<UIState & UIActions>()(
       sidebarCollapsed: false,
       activeModal: null,
       _hydrated: false,
+      theme: 'light',
 
       toggleSidebar: () =>
         set((state) => ({
@@ -59,11 +66,19 @@ export const useUIStore = create<UIState & UIActions>()(
       closeModal: () => set({ activeModal: null }),
 
       setHydrated: (state) => set({ _hydrated: state }),
+
+      setTheme: (theme) => set({ theme }),
+
+      toggleTheme: () =>
+        set((state) => ({
+          theme: state.theme === 'light' ? 'dark' : 'light',
+        })),
     }),
     {
       name: 'ui-storage', // localStorage 键名
       partialize: (state) => ({
-        sidebarCollapsed: state.sidebarCollapsed, // 仅持久化 sidebarCollapsed
+        sidebarCollapsed: state.sidebarCollapsed, // 持久化 sidebarCollapsed
+        theme: state.theme, // 持久化 theme
       }),
       onRehydrateStorage: () => (state) => {
         state?.setHydrated(true)

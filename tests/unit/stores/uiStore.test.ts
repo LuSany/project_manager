@@ -1,6 +1,6 @@
 /**
  * UI Store 测试
- * 测试 persist 中间件、toggleSidebar、setSidebarCollapsed、hydration 行为
+ * 测试 persist 中间件、toggleSidebar、setSidebarCollapsed、hydration 行为、主题状态
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
@@ -95,7 +95,7 @@ describe('useUIStore', () => {
       expect(parsed.state).toHaveProperty('sidebarCollapsed', true)
     })
 
-    it('should only persist sidebarCollapsed, not activeModal', async () => {
+    it('should only persist sidebarCollapsed and theme, not activeModal', async () => {
       const { useUIStore } = await import('@/stores/uiStore')
 
       // 先设置 sidebarCollapsed 以确保有存储
@@ -125,6 +125,56 @@ describe('useUIStore', () => {
 
       useUIStore.getState().closeModal()
       expect(useUIStore.getState().activeModal).toBeNull()
+    })
+  })
+
+  describe('theme state', () => {
+    it('should have initial theme state as "light"', async () => {
+      const { useUIStore } = await import('@/stores/uiStore')
+
+      // 初始主题应为 'light'
+      expect(useUIStore.getState().theme).toBe('light')
+    })
+
+    it('should update theme with setTheme action', async () => {
+      const { useUIStore } = await import('@/stores/uiStore')
+
+      // 设置为 dark
+      useUIStore.getState().setTheme('dark')
+      expect(useUIStore.getState().theme).toBe('dark')
+
+      // 设置为 light
+      useUIStore.getState().setTheme('light')
+      expect(useUIStore.getState().theme).toBe('light')
+    })
+
+    it('should toggle theme between light and dark with toggleTheme', async () => {
+      const { useUIStore } = await import('@/stores/uiStore')
+
+      // 初始为 light
+      expect(useUIStore.getState().theme).toBe('light')
+
+      // 切换为 dark
+      useUIStore.getState().toggleTheme()
+      expect(useUIStore.getState().theme).toBe('dark')
+
+      // 切换为 light
+      useUIStore.getState().toggleTheme()
+      expect(useUIStore.getState().theme).toBe('light')
+    })
+
+    it('should persist theme to localStorage', async () => {
+      const { useUIStore } = await import('@/stores/uiStore')
+
+      // 设置主题为 dark
+      useUIStore.getState().setTheme('dark')
+
+      // 检查 localStorage 中包含 theme
+      const stored = localStorage.getItem('ui-storage')
+      expect(stored).not.toBeNull()
+
+      const parsed = JSON.parse(stored!)
+      expect(parsed.state).toHaveProperty('theme', 'dark')
     })
   })
 })

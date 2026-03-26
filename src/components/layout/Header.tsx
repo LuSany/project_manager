@@ -1,10 +1,11 @@
 'use client'
 
 import React, { useState, useRef, useEffect } from 'react'
-import { Bell, Search, User, LogOut, Settings, ChevronDown } from 'lucide-react'
+import { Bell, Search, User, LogOut, Settings, ChevronDown, Sun, Moon } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
 import { useBreadcrumbs } from '@/hooks/useBreadcrumbs'
 import { useMediaQuery } from '@/hooks/useMediaQuery'
+import { useTheme } from '@/hooks/useTheme'
 import { Breadcrumb } from '@/components/ui/breadcrumb'
 import { MobileNav } from './MobileNav'
 import Link from 'next/link'
@@ -13,6 +14,7 @@ import { useRouter } from 'next/navigation'
 export function Header() {
   const { user, logout } = useAuth()
   const breadcrumbs = useBreadcrumbs()
+  const { theme, toggleTheme } = useTheme()
   const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -131,6 +133,26 @@ export function Header() {
                 {isDesktop && (
                   <div className="mb-1 border-b px-2 py-1.5 text-sm font-medium">{user?.email}</div>
                 )}
+                {/* 主题切换 */}
+                <button
+                  onClick={() => {
+                    toggleTheme()
+                    setShowUserMenu(false)
+                  }}
+                  className="hover:bg-accent flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
+                >
+                  {theme === 'light' ? (
+                    <>
+                      <Moon className="h-4 w-4" />
+                      切换到深色模式
+                    </>
+                  ) : (
+                    <>
+                      <Sun className="h-4 w-4" />
+                      切换到浅色模式
+                    </>
+                  )}
+                </button>
                 <Link
                   href="/settings/profile"
                   className="hover:bg-accent flex items-center gap-2 rounded-sm px-2 py-1.5 text-sm"
