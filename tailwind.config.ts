@@ -6,6 +6,14 @@ const config: Config = {
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
     './src/app/**/*.{js,ts,jsx,tsx,mdx}',
   ],
+  // 动态类名需要 safelist 防止被 purge
+  safelist: [
+    'bg-red-500',
+    'bg-red-700',
+    'bg-yellow-500',
+    'bg-blue-500',
+    'bg-gray-400',
+  ],
   theme: {
     extend: {
       colors: {
