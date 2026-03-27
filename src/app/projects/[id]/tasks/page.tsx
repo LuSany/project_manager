@@ -115,7 +115,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       if (data.success) {
         // 更新本地状态
         setTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+          prev.map((t) => (t.id === taskId ? { ...t, ...data.data } : t))
         );
       }
     } catch (error) {
@@ -218,7 +218,13 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">
         {viewMode === "kanban" ? (
-          <TaskKanban projectId={projectId} onOpenDetail={handleOpenDetail} />
+          <TaskKanban
+            projectId={projectId}
+            tasks={tasks}
+            isLoading={loading}
+            onUpdate={handleTaskUpdate}
+            onOpenDetail={handleOpenDetail}
+          />
         ) : viewMode === "calendar" ? (
           <TaskCalendar
             projectId={projectId}
