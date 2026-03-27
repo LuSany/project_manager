@@ -46,6 +46,52 @@ export function QuickCreatePopover({
     }
   }
 
+  // 当 open 为 true 但没有 children 时，直接显示内容（用于双击日期创建）
+  if (open && !children) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="w-80 rounded-lg border bg-background p-4 shadow-lg">
+          <form onSubmit={handleSubmit}>
+            {/* 日期显示 */}
+            <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>{format(date, 'yyyy年M月d日', { locale: zhCN })}</span>
+            </div>
+
+            {/* 标题输入 */}
+            <Input
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="输入任务标题..."
+              autoFocus
+              className="mb-3"
+            />
+
+            {/* 提交按钮 */}
+            <div className="flex justify-end gap-2">
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onOpenChange(false)}
+              >
+                取消
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={!title.trim() || isSubmitting}
+              >
+                创建任务
+              </Button>
+            </div>
+          </form>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <Popover open={open} onOpenChange={onOpenChange}>
       <PopoverTrigger asChild>
