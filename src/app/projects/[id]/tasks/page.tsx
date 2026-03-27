@@ -4,6 +4,7 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { TaskKanban } from "@/components/tasks/TaskKanban";
 import { TaskList } from "@/components/tasks/list/TaskList";
@@ -148,7 +149,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
-          dueDate: dueDate.toISOString(),
+          dueDate: format(dueDate, 'yyyy-MM-dd'),
           projectId,
           status: 'TODO',
           priority: 'MEDIUM',
@@ -246,7 +247,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
             tasks={tasks}
             isLoading={loading}
             onOpenDetail={handleOpenDetail}
-            onUpdateDueDate={(taskId, dueDate) => handleTaskUpdate(taskId, { dueDate: dueDate.toISOString() })}
+            onUpdateDueDate={(taskId, dueDate) => handleTaskUpdate(taskId, { dueDate: format(dueDate, 'yyyy-MM-dd') })}
             onCreateTask={handleQuickCreate}
           />
         ) : (
