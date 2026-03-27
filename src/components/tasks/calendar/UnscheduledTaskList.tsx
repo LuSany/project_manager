@@ -20,7 +20,7 @@ interface UnscheduledTaskListProps {
 }
 
 export function UnscheduledTaskList({ tasks, onOpenDetail }: UnscheduledTaskListProps) {
-  const [isCollapsed, setIsCollapsed] = useState(true)
+  const [isCollapsed, setIsCollapsed] = useState(false) // 默认展开
 
   // 筛选无截止日期的任务
   const unscheduledTasks = tasks.filter(task => !task.dueDate)

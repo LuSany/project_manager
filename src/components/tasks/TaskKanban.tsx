@@ -11,6 +11,7 @@ import {
   closestCenter,
   useSensor,
   useSensors,
+  useDroppable,
 } from '@dnd-kit/core'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
@@ -168,6 +169,14 @@ function KanbanColumnComponent({
   onOpenDetail,
   isOver,
 }: KanbanColumnComponentProps) {
+  // 使列成为可放置区域
+  const { setNodeRef, isOver: isOverDroppable } = useDroppable({
+    id: column.id,
+    data: { type: 'column', status: column.status },
+  })
+
+  const isCurrentlyOver = isOver || isOverDroppable
+
   return (
     <div className="flex max-w-[350px] min-w-[280px] flex-col">
       {/* 列头 */}
@@ -178,11 +187,12 @@ function KanbanColumnComponent({
 
       {/* 任务列表 - 可放置区域 */}
       <div
+        ref={setNodeRef}
         className={cn(
           'min-h-[400px] flex-1 rounded-lg border-2 border-dashed p-3',
           'bg-muted/20 transition-all duration-200',
           'hover:bg-muted/30',
-          isOver && 'border-primary bg-primary/5 scale-[1.02]'
+          isCurrentlyOver && 'border-primary bg-primary/5 scale-[1.02]'
         )}
       >
         {tasks.length === 0 ? (

@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useDraggable } from '@dnd-kit/core'
 import { Card } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import { Calendar, GripVertical } from 'lucide-react'
@@ -26,7 +27,7 @@ export interface Task {
 export interface SortableTaskCardProps {
   task: Task
   projectId?: string
-  isDragging: boolean
+  isDragging?: boolean
   onUpdate?: (taskId: string, data: Partial<Task>) => void
   onOpenDetail?: (taskId: string) => void
 }
@@ -38,10 +39,16 @@ export interface SortableTaskCardProps {
 export function SortableTaskCard({
   task,
   projectId,
-  isDragging,
+  isDragging: isDraggingProp = false,
   onUpdate,
   onOpenDetail,
 }: SortableTaskCardProps) {
+  // 使用 useDraggable 使卡片可拖拽
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: task.id,
+    data: { type: 'task', task },
+  })
+
   const handleUpdate = (taskId: string, data: Partial<Task>) => {
     onUpdate?.(taskId, data)
   }
@@ -50,12 +57,17 @@ export function SortableTaskCard({
     onOpenDetail?.(task.id)
   }
 
+  const isCurrentlyDragging = isDragging || isDraggingProp
+
   return (
     <Card
+      ref={setNodeRef}
+      {...listeners}
+      {...attributes}
       className={cn(
         'cursor-grab p-4 transition-all active:cursor-grabbing',
         'hover:border-primary/50 hover:shadow-md',
-        isDragging && 'scale-95 rotate-2 opacity-50 shadow-xl'
+        isCurrentlyDragging && 'scale-95 rotate-2 opacity-50 shadow-xl'
       )}
     >
       {/* 拖拽手柄 + 标题 */}
