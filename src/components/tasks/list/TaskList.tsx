@@ -83,11 +83,22 @@ function GroupHeader({ groupBy, value, count }: GroupHeaderProps) {
 // ============================================================================
 
 export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDetail }: TaskListProps) {
-  // 从 store 获取视图状态
+  // 从 store 获取视图状态 - 使用 JSON.stringify 稳定引用
   const groupBy = useTaskViewStore((state) => state.groupBy)
   const sorting = useTaskViewStore((state) => state.sorting)
   const setSorting = useTaskViewStore((state) => state.setSorting)
   const filters = useTaskViewStore((state) => state.filters)
+
+  // 稳定排序和筛选状态引用
+  const sortingKey = JSON.stringify(sorting)
+  const filtersKey = JSON.stringify(filters)
+
+  // 使用 useMemo 缓存 parsed 状态
+  const stableSorting = useMemo(() => JSON.parse(sortingKey), [sortingKey])
+  const stableColumnFilters = useMemo(
+    () => filters.map((f) => ({ id: f.field, value: f.value })),
+    [filtersKey]
+  )
 
   // 构建列定义
   const columns = useMemo(() => taskListColumns, [])
@@ -101,11 +112,8 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDeta
     getFilteredRowModel: getFilteredRowModel(),
     getGroupedRowModel: getGroupedRowModel(),
     state: {
-      sorting,
-      columnFilters: filters.map((f) => ({
-        id: f.field,
-        value: f.value,
-      })),
+      sorting: stableSorting,
+      columnFilters: stableColumnFilters,
       grouping: groupBy ? [groupBy] : [],
     },
     onSortingChange: setSorting,
