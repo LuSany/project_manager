@@ -28,22 +28,38 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json()
     const validatedData = updateStatusSchema.parse(body)
 
-    // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
-      where: {
-        id,
+    // 验证任务是否存在
+    const task = await db.tasks.findUnique({
+      where: { id },
+      include: {
         projects: {
-          project_members: {
-            some: {
-              userId: user.id,
-            },
+          select: {
+            ownerId: true,
           },
         },
       },
     })
 
     if (!task) {
-      return NextResponse.json({ success: false, error: '任务不存在或无权访问' }, { status: 404 })
+      return NextResponse.json({ success: false, error: '任务不存在' }, { status: 404 })
+    }
+
+    // 检查权限：项目所有者、管理员或项目成员可以更新状态
+    const isProjectOwner = task.projects.ownerId === user.id
+    const isAdmin = user.role === 'ADMIN'
+
+    // 查询项目成员关系
+    const projectMember = await db.project_members.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: task.projectId,
+          userId: user.id,
+        },
+      },
+    })
+
+    if (!isProjectOwner && !projectMember && !isAdmin) {
+      return NextResponse.json({ success: false, error: '无权更新此任务状态' }, { status: 403 })
     }
 
     // 构建更新数据

@@ -104,7 +104,18 @@ export function TaskCalendar({
   // 拖拽开始
   const handleDragStart = (event: DragStartEvent) => {
     const { active } = event
-    const task = tasks.find((t) => t.id === active.id)
+    // 从拖拽数据中获取任务，或从任务列表中查找
+    let task = active.data.current?.task as Task | undefined
+
+    if (!task) {
+      // 处理来自 UnscheduledTaskList 的任务（ID 格式为 "unscheduled-${task.id}"）
+      const activeId = active.id as string
+      const taskId = activeId.startsWith('unscheduled-')
+        ? activeId.replace('unscheduled-', '')
+        : activeId
+      task = tasks.find((t) => t.id === taskId)
+    }
+
     if (task) {
       setActiveTask(task)
     }
@@ -117,7 +128,21 @@ export function TaskCalendar({
 
     if (!over) return
 
-    const taskId = active.id as string
+    // 从拖拽数据中获取任务，或从任务列表中查找
+    let task = active.data.current?.task as Task | undefined
+    const activeId = active.id as string
+
+    if (!task) {
+      // 处理来自 UnscheduledTaskList 的任务（ID 格式为 "unscheduled-${task.id}"）
+      const taskId = activeId.startsWith('unscheduled-')
+        ? activeId.replace('unscheduled-', '')
+        : activeId
+      task = tasks.find((t) => t.id === taskId)
+    }
+
+    const taskId = task?.id || (activeId.startsWith('unscheduled-')
+      ? activeId.replace('unscheduled-', '')
+      : activeId)
     const targetDateStr = over.id as string
 
     // 检查目标是否是日期单元格

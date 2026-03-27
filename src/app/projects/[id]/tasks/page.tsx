@@ -120,7 +120,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
     try {
       const response = await fetch('/api/v1/tasks/' + taskId, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
