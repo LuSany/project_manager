@@ -94,28 +94,10 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("确定要删除这个任务吗？")) {
-      return;
-    }
-
-    try {
-      const response = await fetch('/api/v1/tasks/' + id, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        setTasks((prev) => prev.filter((t) => t.id !== id));
-      }
-    } catch (error) {
-      console.error("删除任务失败:", error);
-    }
-  };
+  useEffect(() => {
+    fetchTasks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, projectId, filters]);
 
   // 处理任务更新（内联编辑）
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
@@ -178,10 +160,6 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       setSelectedTaskId(null);
     }
   };
-
-  useEffect(() => {
-    fetchTasks();
-  }, [page, filters, projectId]);
 
   return (
     <div className="flex h-full flex-col">
