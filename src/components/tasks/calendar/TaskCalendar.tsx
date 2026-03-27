@@ -18,7 +18,7 @@ import {
   DragOverlay,
   DragStartEvent,
   PointerSensor,
-  closestCenter,
+  pointerWithin,
   useSensor,
   useSensors,
 } from '@dnd-kit/core'
@@ -189,7 +189,7 @@ export function TaskCalendar({
       {/* 日历主体 */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCenter}
+        collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
