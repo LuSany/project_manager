@@ -1,6 +1,6 @@
 /**
  * Task View Store
- * 任务视图状态管理 - 基于 Zustand + persist 中间件
+ * 任务视图状态管理 - 基于 Zustand
  */
 
 import { create } from 'zustand'
@@ -32,7 +32,7 @@ export interface FilterCondition {
 // ============================================================================
 
 interface TaskViewState {
-  /** 视图模式：列表 / 看板 */
+  /** 视图模式：列表 / 看板 / 日历 */
   viewMode: TaskViewMode
   /** 分组维度 */
   groupBy: GroupByOption
@@ -40,8 +40,6 @@ interface TaskViewState {
   filters: FilterCondition[]
   /** 排序规则 */
   sorting: SortingState
-  /** hydration 状态标记 */
-  _hydrated: boolean
 }
 
 // ============================================================================
@@ -61,19 +59,12 @@ interface TaskViewActions {
   clearFilters: () => void
   /** 设置排序规则 */
   setSorting: (sorting: SortingState) => void
-  /** 设置 hydration 状态 */
-  setHydrated: (state: boolean) => void
 }
 
 // ============================================================================
-// Store 实现
+// Store 实现 - 使用 persist 中间件持久化视图状态
 // ============================================================================
 
-/**
- * Task View Store
- * 使用 persist 中间件持久化 viewMode 和 groupBy 到 localStorage
- * filters 不持久化（每次进入页面重置）
- */
 export const useTaskViewStore = create<TaskViewState & TaskViewActions>()(
   persist(
     (set) => ({
@@ -85,7 +76,6 @@ export const useTaskViewStore = create<TaskViewState & TaskViewActions>()(
         { id: 'priority', desc: true },
         { id: 'dueDate', desc: false },
       ],
-      _hydrated: false,
 
       // Actions
       setViewMode: (mode) => set({ viewMode: mode }),
@@ -94,15 +84,12 @@ export const useTaskViewStore = create<TaskViewState & TaskViewActions>()(
 
       addFilter: (filter) =>
         set((state) => {
-          // 检查是否已存在相同字段的筛选条件
           const existingIndex = state.filters.findIndex((f) => f.field === filter.field)
           if (existingIndex >= 0) {
-            // 覆盖现有筛选条件
             const newFilters = [...state.filters]
             newFilters[existingIndex] = filter
             return { filters: newFilters }
           }
-          // 添加新的筛选条件
           return { filters: [...state.filters, filter] }
         }),
 
@@ -114,19 +101,9 @@ export const useTaskViewStore = create<TaskViewState & TaskViewActions>()(
       clearFilters: () => set({ filters: [] }),
 
       setSorting: (sorting) => set({ sorting }),
-
-      setHydrated: (state) => set({ _hydrated: state }),
     }),
     {
-      name: 'task-view-storage', // localStorage 键名
-      partialize: (state) => ({
-        viewMode: state.viewMode, // 持久化 viewMode
-        groupBy: state.groupBy, // 持久化 groupBy
-        // 不持久化 filters（每次进入页面重置）
-      }),
-      onRehydrateStorage: () => (state) => {
-        state?.setHydrated(true)
-      },
+      name: 'task-view-storage',
     }
   )
 )
