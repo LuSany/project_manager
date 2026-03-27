@@ -219,6 +219,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       <div className="flex-1 overflow-hidden">
         {viewMode === "kanban" ? (
           <TaskKanban
+            key="kanban-view"
             projectId={projectId}
             tasks={tasks}
             isLoading={loading}
@@ -227,6 +228,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           />
         ) : viewMode === "calendar" ? (
           <TaskCalendar
+            key="calendar-view"
             projectId={projectId}
             tasks={tasks}
             isLoading={loading}
@@ -235,7 +237,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
             onCreateTask={handleQuickCreate}
           />
         ) : (
-          <div className="flex h-full flex-col">
+          <div key="list-view" className="flex h-full flex-col">
             {/* 筛选栏 */}
             <TaskListFilters />
 
