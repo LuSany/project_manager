@@ -87,8 +87,9 @@ describe('CalendarTaskCard', () => {
         </DndContext>
       )
 
-      const indicator = container.querySelector('.bg-red-500')
-      expect(indicator).toBeInTheDocument()
+      // 检查内联样式 backgroundColor
+      const indicator = container.querySelector('[style*="background-color"]')
+      expect(indicator).toHaveStyle({ backgroundColor: '#ef4444' })
     })
 
     it('should show yellow for MEDIUM priority', () => {
@@ -98,8 +99,8 @@ describe('CalendarTaskCard', () => {
         </DndContext>
       )
 
-      const indicator = container.querySelector('.bg-yellow-500')
-      expect(indicator).toBeInTheDocument()
+      const indicator = container.querySelector('[style*="background-color"]')
+      expect(indicator).toHaveStyle({ backgroundColor: '#eab308' })
     })
 
     it('should show blue for LOW priority', () => {
@@ -109,8 +110,8 @@ describe('CalendarTaskCard', () => {
         </DndContext>
       )
 
-      const indicator = container.querySelector('.bg-blue-500')
-      expect(indicator).toBeInTheDocument()
+      const indicator = container.querySelector('[style*="background-color"]')
+      expect(indicator).toHaveStyle({ backgroundColor: '#3b82f6' })
     })
   })
 

@@ -6,12 +6,12 @@ import { useDraggable } from '@dnd-kit/core'
 import { cn } from '@/lib/utils'
 import type { Task } from '@/components/tasks/kanban/SortableTaskCard'
 
-// 优先级颜色
+// 优先级颜色 - 使用内联样式避免 Tailwind purge
 const PRIORITY_COLORS: Record<string, string> = {
-  HIGH: 'border-l-red-500',
-  MEDIUM: 'border-l-yellow-500',
-  LOW: 'border-l-blue-500',
-  CRITICAL: 'border-l-red-700',
+  HIGH: '#ef4444',    // red-500
+  MEDIUM: '#eab308',  // yellow-500
+  LOW: '#3b82f6',     // blue-500
+  CRITICAL: '#b91c1c', // red-700
 }
 
 interface UnscheduledTaskListProps {
@@ -20,7 +20,7 @@ interface UnscheduledTaskListProps {
 }
 
 export function UnscheduledTaskList({ tasks, onOpenDetail }: UnscheduledTaskListProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false) // 默认展开
+  const [isCollapsed, setIsCollapsed] = useState(true) // 默认折叠
 
   // 筛选无截止日期的任务
   const unscheduledTasks = tasks.filter(task => !task.dueDate)
@@ -80,6 +80,8 @@ function UnscheduledTaskItem({
     data: { type: 'unscheduled-task', task },
   })
 
+  const priorityColor = PRIORITY_COLORS[task.priority] || '#9ca3af' // gray-400
+
   return (
     <div
       ref={setNodeRef}
@@ -88,11 +90,11 @@ function UnscheduledTaskItem({
       className={cn(
         'flex items-center gap-2 p-2 rounded border-l-2 bg-card cursor-grab',
         'hover:bg-accent/50 transition-colors',
-        PRIORITY_COLORS[task.priority] || 'border-l-gray-400',
       )}
+      style={{ borderLeftColor: priorityColor }}
       onClick={() => onOpenDetail?.(task.id)}
     >
-      <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
       <span className="text-sm truncate flex-1">{task.title}</span>
     </div>
   )

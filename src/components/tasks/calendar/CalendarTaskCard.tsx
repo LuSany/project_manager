@@ -15,14 +15,14 @@ interface CalendarTaskCardProps {
 }
 
 // ============================================================================
-// 优先级颜色映射 (D-03, UI-SPEC)
+// 优先级颜色映射 (D-03, UI-SPEC) - 使用内联样式避免 Tailwind purge
 // ============================================================================
 
 const PRIORITY_COLORS: Record<string, string> = {
-  HIGH: 'bg-red-500',
-  MEDIUM: 'bg-yellow-500',
-  LOW: 'bg-blue-500',
-  CRITICAL: 'bg-red-700',
+  HIGH: '#ef4444',    // red-500
+  MEDIUM: '#eab308',  // yellow-500
+  LOW: '#3b82f6',     // blue-500
+  CRITICAL: '#b91c1c', // red-700
 }
 
 // ============================================================================
@@ -40,6 +40,8 @@ export function CalendarTaskCard({ task, onOpenDetail }: CalendarTaskCardProps) 
     onOpenDetail?.(task.id)
   }
 
+  const priorityColor = PRIORITY_COLORS[task.priority] || '#9ca3af' // gray-400
+
   return (
     <div
       ref={setNodeRef}
@@ -55,10 +57,8 @@ export function CalendarTaskCard({ task, onOpenDetail }: CalendarTaskCardProps) 
     >
       {/* 优先级颜色条 */}
       <div
-        className={cn(
-          'w-1 h-4 rounded-full flex-shrink-0',
-          PRIORITY_COLORS[task.priority] || 'bg-gray-400'
-        )}
+        className="w-1 h-4 rounded-full flex-shrink-0"
+        style={{ backgroundColor: priorityColor }}
       />
       {/* 任务标题 */}
       <span className="truncate flex-1">{task.title}</span>
