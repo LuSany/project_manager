@@ -1,19 +1,16 @@
 /**
  * TaskList
- * 任务列表视图主组件 - 基于 TanStack Table
+ * 任务列表视图主组件 - 稳定版
  */
 
 'use client'
 
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import {
   useReactTable,
   getCoreRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
-  getGroupedRowModel,
   flexRender,
-  SortingState,
 } from '@tanstack/react-table'
 import { Loader2 } from 'lucide-react'
 
@@ -34,87 +31,37 @@ import { cn } from '@/lib/utils'
 // ============================================================================
 
 interface TaskListProps {
-  /** 项目 ID */
   projectId: string
-  /** 任务列表 */
   tasks: Task[]
-  /** 是否加载中 */
   isLoading: boolean
-  /** 更新任务的回调 */
   onTaskUpdate?: (taskId: string, updates: Partial<Task>) => void
-  /** 打开任务详情的回调 */
   onOpenDetail?: (taskId: string) => void
-}
-
-// ============================================================================
-// 分组标题渲染
-// ============================================================================
-
-interface GroupHeaderProps {
-  groupBy: string
-  value: string
-  count: number
-}
-
-function GroupHeader({ groupBy, value, count }: GroupHeaderProps) {
-  const getGroupLabel = () => {
-    switch (groupBy) {
-      case 'status':
-        return `状态: ${value}`
-      case 'priority':
-        return `优先级: ${value}`
-      case 'assignee':
-        return `负责人: ${value}`
-      default:
-        return value
-    }
-  }
-
-  return (
-    <div className="bg-muted/50 flex h-10 items-center px-4 text-sm font-medium">
-      <span>{getGroupLabel()}</span>
-      <span className="text-muted-foreground ml-2">({count})</span>
-    </div>
-  )
 }
 
 // ============================================================================
 // 主组件
 // ============================================================================
 
-export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDetail }: TaskListProps) {
-  // 从 store 获取视图状态 - 使用 JSON.stringify 稳定引用
-  const groupBy = useTaskViewStore((state) => state.groupBy)
-  const sorting = useTaskViewStore((state) => state.sorting)
-  const setSorting = useTaskViewStore((state) => state.setSorting)
-  const filters = useTaskViewStore((state) => state.filters)
+export function TaskList({ tasks, isLoading, onOpenDetail }: TaskListProps) {
+  // 使用 selectors 获取稳定值
+  const sorting = useTaskViewStore(useCallback((state) => state.sorting, []))
+  const setSorting = useTaskViewStore(useCallback((state) => state.setSorting, []))
 
-  // 稳定排序和筛选状态引用
-  const sortingKey = JSON.stringify(sorting)
-  const filtersKey = JSON.stringify(filters)
-
-  // 使用 useMemo 缓存 parsed 状态
-  const stableSorting = useMemo(() => JSON.parse(sortingKey), [sortingKey])
-  const stableColumnFilters = useMemo(
-    () => filters.map((f) => ({ id: f.field, value: f.value })),
-    [filtersKey]
-  )
-
-  // 构建列定义
+  // 稳定的列定义
   const columns = useMemo(() => taskListColumns, [])
 
-  // 构建 TanStack Table
+  // 使用 JSON.stringify 创建稳定 key
+  const sortingKey = JSON.stringify(sorting)
+  const stableSorting = useMemo(() => JSON.parse(sortingKey), [sortingKey])
+
+  // 构建 TanStack Table - 简化配置
   const table = useReactTable({
     data: tasks,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getGroupedRowModel: getGroupedRowModel(),
     state: {
       sorting: stableSorting,
-      columnFilters: stableColumnFilters,
-      grouping: groupBy ? [groupBy] : [],
     },
     onSortingChange: setSorting,
   })
@@ -140,9 +87,7 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDeta
     )
   }
 
-  // 获取分组后的行
   const rows = table.getRowModel().rows
-  const groupedRows = groupBy ? table.getGroupedRowModel().rows : null
 
   return (
     <div className="w-full rounded-md border">
@@ -174,57 +119,23 @@ export function TaskList({ projectId, tasks, isLoading, onTaskUpdate, onOpenDeta
           ))}
         </TableHeader>
         <TableBody>
-          {groupedRows ? (
-            // 分组渲染
-            groupedRows.map((groupRow) => (
-              <React.Fragment key={`group-${groupRow.id}`}>
-                <TableRow>
-                  <TableCell colSpan={columns.length} className="p-0">
-                    <GroupHeader
-                      groupBy={groupBy!}
-                      value={groupRow.getValue(groupBy!)}
-                      count={groupRow.subRows.length}
-                    />
-                  </TableCell>
-                </TableRow>
-                {groupRow.subRows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="h-12 hover:bg-accent/50 cursor-pointer"
-                    data-state={row.getIsSelected() && 'selected'}
-                    onClick={() => onOpenDetail?.(row.original.id)}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-              </React.Fragment>
-            ))
-          ) : (
-            // 非分组渲染
-            rows.map((row) => (
-              <TableRow
-                key={row.id}
-                className="h-12 hover:bg-accent/50 cursor-pointer"
-                data-state={row.getIsSelected() && 'selected'}
-                onClick={() => onOpenDetail?.(row.original.id)}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
-          )}
+          {rows.map((row) => (
+            <TableRow
+              key={row.id}
+              className="h-12 hover:bg-accent/50 cursor-pointer"
+              onClick={() => onOpenDetail?.(row.original.id)}
+            >
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>
   )
 }
 
-// 导出类型
 export type { TaskListProps }
