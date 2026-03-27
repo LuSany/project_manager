@@ -93,10 +93,16 @@ export async function GET(request: NextRequest) {
       db.tasks.count({ where }),
     ])
 
+    // 转换数据格式以匹配前端期望的格式
+    const formattedTasks = tasks.map((task) => ({
+      ...task,
+      assignees: task.task_assignees.map((ta) => ({ user: ta.users })),
+    }))
+
     return NextResponse.json({
       success: true,
       data: {
-        items: tasks,
+        items: formattedTasks,
         total,
         page,
         pageSize,
