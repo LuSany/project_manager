@@ -5,7 +5,7 @@
 
 'use client'
 
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useTaskViewStore, type FilterCondition } from '@/stores/taskViewStore'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -138,6 +138,13 @@ export function TaskListFilters({ className }: TaskListFiltersProps) {
   const removeFilter = useTaskViewStore((state) => state.removeFilter)
   const clearFilters = useTaskViewStore((state) => state.clearFilters)
 
+  // 使用 useMemo 稳定筛选值计算
+  const { statusFilter, priorityFilter } = useMemo(() => {
+    const status = filters.find((f) => f.field === 'status')?.value
+    const priority = filters.find((f) => f.field === 'priority')?.value
+    return { statusFilter: status, priorityFilter: priority }
+  }, [filters])
+
   // 处理分组变更
   const handleGroupByChange = (value: string) => {
     setGroupBy(value === 'none' ? null : (value as 'status' | 'priority' | 'assignee'))
@@ -160,10 +167,6 @@ export function TaskListFilters({ className }: TaskListFiltersProps) {
       addFilter({ field: 'priority', operator: 'eq', value })
     }
   }
-
-  // 获取当前筛选值
-  const statusFilter = filters.find((f) => f.field === 'status')?.value
-  const priorityFilter = filters.find((f) => f.field === 'priority')?.value
 
   return (
     <div className={cn('flex h-12 items-center gap-4 border-b bg-background px-4', className)}>
