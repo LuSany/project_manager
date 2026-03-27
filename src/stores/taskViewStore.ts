@@ -4,7 +4,6 @@
  */
 
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { SortingState } from '@tanstack/react-table'
 
 // ============================================================================
@@ -62,48 +61,41 @@ interface TaskViewActions {
 }
 
 // ============================================================================
-// Store 实现 - 使用 persist 中间件持久化视图状态
+// Store 实现 - 无 persist 中间件（排查卡死问题）
 // ============================================================================
 
-export const useTaskViewStore = create<TaskViewState & TaskViewActions>()(
-  persist(
-    (set) => ({
-      // 默认状态
-      viewMode: 'list',
-      groupBy: null,
-      filters: [],
-      sorting: [
-        { id: 'priority', desc: true },
-        { id: 'dueDate', desc: false },
-      ],
+export const useTaskViewStore = create<TaskViewState & TaskViewActions>()((set) => ({
+  // 默认状态
+  viewMode: 'list',
+  groupBy: null,
+  filters: [],
+  sorting: [
+    { id: 'priority', desc: true },
+    { id: 'dueDate', desc: false },
+  ],
 
-      // Actions
-      setViewMode: (mode) => set({ viewMode: mode }),
+  // Actions
+  setViewMode: (mode) => set({ viewMode: mode }),
 
-      setGroupBy: (group) => set({ groupBy: group }),
+  setGroupBy: (group) => set({ groupBy: group }),
 
-      addFilter: (filter) =>
-        set((state) => {
-          const existingIndex = state.filters.findIndex((f) => f.field === filter.field)
-          if (existingIndex >= 0) {
-            const newFilters = [...state.filters]
-            newFilters[existingIndex] = filter
-            return { filters: newFilters }
-          }
-          return { filters: [...state.filters, filter] }
-        }),
-
-      removeFilter: (field) =>
-        set((state) => ({
-          filters: state.filters.filter((f) => f.field !== field),
-        })),
-
-      clearFilters: () => set({ filters: [] }),
-
-      setSorting: (sorting) => set({ sorting }),
+  addFilter: (filter) =>
+    set((state) => {
+      const existingIndex = state.filters.findIndex((f) => f.field === filter.field)
+      if (existingIndex >= 0) {
+        const newFilters = [...state.filters]
+        newFilters[existingIndex] = filter
+        return { filters: newFilters }
+      }
+      return { filters: [...state.filters, filter] }
     }),
-    {
-      name: 'task-view-storage',
-    }
-  )
-)
+
+  removeFilter: (field) =>
+    set((state) => ({
+      filters: state.filters.filter((f) => f.field !== field),
+    })),
+
+  clearFilters: () => set({ filters: [] }),
+
+  setSorting: (sorting) => set({ sorting }),
+}))

@@ -13,7 +13,6 @@ import {
   useSensors,
   useDroppable,
 } from '@dnd-kit/core'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { cn } from '@/lib/utils'
 import { Loader2 } from 'lucide-react'
 import { TaskStatusBadge } from '@/components/tasks/task-status-badge'
@@ -43,6 +42,8 @@ export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL'
 
 interface TaskKanbanProps {
   projectId: string
+  tasks?: Task[]
+  isLoading?: boolean
   onUpdate?: (taskId: string, data: Partial<Task>) => void
   onOpenDetail?: (taskId: string) => void
 }
@@ -95,58 +96,6 @@ const PRIORITY_COLORS: Record<TaskPriority, string> = {
 
 // 导出类型和常量供其他组件使用
 export { STATUS_LABELS, PRIORITY_LABELS, PRIORITY_COLORS, KANBAN_COLUMNS }
-
-// ============================================================================
-// API 函数
-// ============================================================================
-
-async function fetchProjectTasks(projectId: string): Promise<Task[]> {
-  const searchParams = new URLSearchParams({
-    projectId,
-    pageSize: '100',
-  })
-
-  const response = await fetch(`/api/v1/tasks?${searchParams}`)
-  const data: ApiResponse<{ items: Task[] }> = await response.json()
-
-  if (!data.success || !data.data) {
-    throw new Error(data.error || '获取任务列表失败')
-  }
-
-  return data.data.items
-}
-
-async function updateTaskStatus(taskId: string, status: TaskStatus): Promise<Task> {
-  const response = await fetch(`/api/v1/tasks/${taskId}/status`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ status }),
-  })
-
-  const data: ApiResponse<Task> = await response.json()
-
-  if (!data.success || !data.data) {
-    throw new Error(data.error || '更新任务状态失败')
-  }
-
-  return data.data
-}
-
-async function updateTask(taskId: string, updates: Partial<Task>): Promise<Task> {
-  const response = await fetch(`/api/v1/tasks/${taskId}`, {
-    method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(updates),
-  })
-
-  const data: ApiResponse<Task> = await response.json()
-
-  if (!data.success || !data.data) {
-    throw new Error(data.error || '更新任务失败')
-  }
-
-  return data.data
-}
 
 // ============================================================================
 // 看板列组件
@@ -223,8 +172,7 @@ function KanbanColumnComponent({
 // 任务看板主组件
 // ============================================================================
 
-export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProps) {
-  const queryClient = useQueryClient()
+export function TaskKanban({ projectId, tasks = [], isLoading = false, onUpdate, onOpenDetail }: TaskKanbanProps) {
   const [activeTask, setActiveTask] = useState<Task | null>(null)
   const [overColumn, setOverColumn] = useState<TaskStatus | null>(null)
 
@@ -237,93 +185,21 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
     })
   )
 
-  // 查询任务列表
-  const { data: tasks = [], isLoading } = useQuery({
-    queryKey: ['tasks', projectId, 'kanban'],
-    queryFn: () => fetchProjectTasks(projectId),
-  })
-
   // 按状态分组任务
   const tasksByStatus: Record<TaskStatus, Task[]> = {
-    TODO: tasks.filter((t) => t.status === 'TODO'),
-    IN_PROGRESS: tasks.filter((t) => t.status === 'IN_PROGRESS'),
-    REVIEW: tasks.filter((t) => t.status === 'REVIEW'),
-    TESTING: tasks.filter((t) => t.status === 'TESTING'),
-    DONE: tasks.filter((t) => t.status === 'DONE'),
-    CANCELLED: tasks.filter((t) => t.status === 'CANCELLED'),
-    DELAYED: tasks.filter((t) => t.status === 'DELAYED'),
-    BLOCKED: tasks.filter((t) => t.status === 'BLOCKED'),
+    TODO: tasks.filter((t: Task) => t.status === 'TODO'),
+    IN_PROGRESS: tasks.filter((t: Task) => t.status === 'IN_PROGRESS'),
+    REVIEW: tasks.filter((t: Task) => t.status === 'REVIEW'),
+    TESTING: tasks.filter((t: Task) => t.status === 'TESTING'),
+    DONE: tasks.filter((t: Task) => t.status === 'DONE'),
+    CANCELLED: tasks.filter((t: Task) => t.status === 'CANCELLED'),
+    DELAYED: tasks.filter((t: Task) => t.status === 'DELAYED'),
+    BLOCKED: tasks.filter((t: Task) => t.status === 'BLOCKED'),
   }
 
-  // 更新任务状态 mutation - 使用乐观更新
-  const updateStatusMutation = useMutation({
-    mutationFn: ({ taskId, status }: { taskId: string; status: TaskStatus }) =>
-      updateTaskStatus(taskId, status),
-    onMutate: async ({ taskId, status }) => {
-      // 取消正在进行的查询
-      await queryClient.cancelQueries({ queryKey: ['tasks', projectId, 'kanban'] })
-
-      // 保存当前状态用于回滚
-      const previousTasks = queryClient.getQueryData<Task[]>(['tasks', projectId, 'kanban'])
-
-      // 乐观更新：先在本地更新状态
-      queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
-        old.map((task) => (task.id === taskId ? { ...task, status } : task))
-      )
-
-      return { previousTasks, taskId }
-    },
-    onSuccess: (data, variables) => {
-      // 用服务器返回的数据更新
-      queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
-        old.map((task) => (task.id === variables.taskId ? data : task))
-      )
-    },
-    onError: (error, variables, context) => {
-      // 发生错误时回滚
-      if (context?.previousTasks) {
-        queryClient.setQueryData(['tasks', projectId, 'kanban'], context.previousTasks)
-      }
-      console.error('更新任务状态失败:', error)
-    },
-  })
-
-  // 更新任务属性 mutation - 使用乐观更新
-  const updateTaskMutation = useMutation({
-    mutationFn: ({ taskId, updates }: { taskId: string; updates: Partial<Task> }) =>
-      updateTask(taskId, updates),
-    onMutate: async ({ taskId, updates }) => {
-      await queryClient.cancelQueries({ queryKey: ['tasks', projectId, 'kanban'] })
-
-      // 保存当前状态用于回滚
-      const previousTasks = queryClient.getQueryData<Task[]>(['tasks', projectId, 'kanban'])
-
-      // 乐观更新
-      queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
-        old.map((task) => (task.id === taskId ? { ...task, ...updates } : task))
-      )
-
-      return { previousTasks, taskId }
-    },
-    onSuccess: (data, variables) => {
-      queryClient.setQueryData<Task[]>(['tasks', projectId, 'kanban'], (old = []) =>
-        old.map((task) => (task.id === variables.taskId ? data : task))
-      )
-      // 调用外部回调
-      onUpdate?.(variables.taskId, variables.updates)
-    },
-    onError: (error, variables, context) => {
-      // 回滚
-      if (context?.previousTasks) {
-        queryClient.setQueryData(['tasks', projectId, 'kanban'], context.previousTasks)
-      }
-      console.error('更新任务失败:', error)
-    },
-  })
-
-  // 处理任务更新
+  // 处理任务更新 - 直接调用外部回调
   const handleUpdate = (taskId: string, updates: Partial<Task>) => {
-    updateTaskMutation.mutate({ taskId, updates })
+    onUpdate?.(taskId, updates)
   }
 
   // 处理拖拽开始
@@ -380,7 +256,7 @@ export function TaskKanban({ projectId, onUpdate, onOpenDetail }: TaskKanbanProp
     // 如果找到了目标状态，更新任务状态
     const task = tasks.find((t) => t.id === taskId)
     if (task && targetStatus && task.status !== targetStatus) {
-      updateStatusMutation.mutate({ taskId, status: targetStatus })
+      onUpdate?.(taskId, { status: targetStatus })
     }
   }
 

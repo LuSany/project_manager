@@ -60,6 +60,9 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   const setViewMode = useTaskViewStore((state) => state.setViewMode);
   const filters = useTaskViewStore((state) => state.filters);
 
+  // 使用 JSON.stringify 稳定 filters 引用，避免无限循环
+  const filtersKey = JSON.stringify(filters);
+
   const fetchTasks = async () => {
     if (!projectId) return;
     setLoading(true);
@@ -97,7 +100,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   useEffect(() => {
     fetchTasks();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, projectId, filters]);
+  }, [page, projectId, filtersKey]);
 
   // 处理任务更新（内联编辑）
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
