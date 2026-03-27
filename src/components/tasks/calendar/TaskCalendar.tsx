@@ -8,7 +8,6 @@ import {
   startOfMonth,
   endOfMonth,
   eachDayOfInterval,
-  isSameDay,
   startOfWeek,
   endOfWeek,
 } from 'date-fns'
@@ -28,6 +27,8 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CalendarDayCell } from './CalendarDayCell'
 import { CalendarTaskCard } from './CalendarTaskCard'
+import { QuickCreatePopover } from './QuickCreatePopover'
+import { UnscheduledTaskList } from './UnscheduledTaskList'
 import type { Task } from '@/components/tasks/kanban/SortableTaskCard'
 
 // ============================================================================
@@ -40,7 +41,7 @@ interface TaskCalendarProps {
   isLoading?: boolean
   onOpenDetail?: (taskId: string) => void
   onUpdateDueDate?: (taskId: string, dueDate: Date) => void
-  onCreateTask?: (date: Date) => void
+  onCreateTask?: (title: string, dueDate: Date) => void
 }
 
 // ============================================================================
@@ -63,6 +64,7 @@ export function TaskCalendar({
 }: TaskCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
   const [activeTask, setActiveTask] = useState<Task | null>(null)
+  const [quickCreateDate, setQuickCreateDate] = useState<Date | null>(null)
 
   // 传感器配置 - 8px 激活距离防止误触
   const sensors = useSensors(
@@ -94,22 +96,6 @@ export function TaskCalendar({
 
     return eachDayOfInterval({ start: calendarStart, end: calendarEnd })
   }, [currentMonth])
-
-  // 按周分组日期
-  const weeks = useMemo(() => {
-    const result: Date[][] = []
-    let week: Date[] = []
-
-    calendarDays.forEach((day, index) => {
-      week.push(day)
-      if (index % 7 === 6) {
-        result.push(week)
-        week = []
-      }
-    })
-
-    return result
-  }, [calendarDays])
 
   // 月份导航
   const handlePrevMonth = () => setCurrentMonth(subMonths(currentMonth, 1))
@@ -145,6 +131,17 @@ export function TaskCalendar({
         onUpdateDueDate?.(taskId, targetDate)
       }
     }
+  }
+
+  // 处理日期双击创建任务 (D-06)
+  const handleDateDoubleClick = (date: Date) => {
+    setQuickCreateDate(date)
+  }
+
+  // 处理快速创建任务
+  const handleQuickCreate = (title: string, date: Date) => {
+    onCreateTask?.(title, date)
+    setQuickCreateDate(null)
   }
 
   return (
@@ -200,12 +197,15 @@ export function TaskCalendar({
                   currentMonth={currentMonth}
                   tasks={dayTasks}
                   onOpenDetail={onOpenDetail}
-                  onCreateTask={onCreateTask}
+                  onCreateTask={handleDateDoubleClick}
                 />
               )
             })}
           </div>
         </div>
+
+        {/* 无日期任务列表 (D-07) */}
+        <UnscheduledTaskList tasks={tasks} onOpenDetail={onOpenDetail} />
 
         {/* 拖拽覆盖层 */}
         <DragOverlay>
@@ -216,6 +216,16 @@ export function TaskCalendar({
           ) : null}
         </DragOverlay>
       </DndContext>
+
+      {/* 快速创建任务弹窗 (D-06) */}
+      {quickCreateDate && (
+        <QuickCreatePopover
+          date={quickCreateDate}
+          open={true}
+          onOpenChange={(open) => !open && setQuickCreateDate(null)}
+          onCreate={handleQuickCreate}
+        />
+      )}
     </div>
   )
 }

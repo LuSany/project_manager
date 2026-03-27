@@ -9,6 +9,7 @@ import { TaskKanban } from "@/components/tasks/TaskKanban";
 import { TaskList } from "@/components/tasks/list/TaskList";
 import { TaskListFilters } from "@/components/tasks/list/TaskListFilters";
 import { TaskDetailDrawer } from "@/components/tasks/detail/TaskDetailDrawer";
+import { TaskCalendar } from "@/components/tasks/calendar";
 import { useTaskViewStore } from "@/stores/taskViewStore";
 import { ArrowLeft } from "lucide-react";
 
@@ -139,6 +140,30 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     }
   };
 
+  // 快速创建任务（日历视图）
+  const handleQuickCreate = async (title: string, dueDate: Date) => {
+    try {
+      const response = await fetch('/api/v1/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          dueDate: dueDate.toISOString(),
+          projectId,
+          status: 'TODO',
+          priority: 'MEDIUM',
+        }),
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        fetchTasks(); // 刷新任务列表
+      }
+    } catch (error) {
+      console.error('创建任务失败:', error);
+    }
+  };
+
   // 处理打开任务详情
   const handleOpenDetail = (taskId: string) => {
     setSelectedTaskId(taskId);
@@ -194,6 +219,16 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
             >
               看板视图
             </button>
+            <button
+              onClick={() => setViewMode("calendar")}
+              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                viewMode === "calendar"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              日历视图
+            </button>
           </div>
           <Button onClick={() => router.push(`/projects/${projectId}/tasks/new`)}>
             新建任务
@@ -205,6 +240,15 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       <div className="flex-1 overflow-hidden">
         {viewMode === "kanban" ? (
           <TaskKanban projectId={projectId} onOpenDetail={handleOpenDetail} />
+        ) : viewMode === "calendar" ? (
+          <TaskCalendar
+            projectId={projectId}
+            tasks={tasks}
+            isLoading={loading}
+            onOpenDetail={handleOpenDetail}
+            onUpdateDueDate={(taskId, dueDate) => handleTaskUpdate(taskId, { dueDate: dueDate.toISOString() })}
+            onCreateTask={handleQuickCreate}
+          />
         ) : (
           <div className="flex h-full flex-col">
             {/* 筛选栏 */}
