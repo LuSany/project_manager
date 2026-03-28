@@ -1,11 +1,14 @@
-import { useState } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { differenceInDays } from 'date-fns'
 import type { GanttTask, GanttDependency, GanttScaleMode } from './types'
 import { calculateTimeRange, DEFAULT_GANTT_CONFIG } from './utils'
 import { useTaskViewStore } from '@/stores/taskViewStore'
 import { GanttLeftPanel } from './GanttLeftPanel'
 import { GanttTimeScaleHeader } from './GanttTimeScaleHeader'
 import { GanttTimeline } from './GanttTimeline'
+import { TaskDetailDrawer } from '@/components/tasks/detail/TaskDetailDrawer'
+import { Button } from '@/components/ui/button'
 
 interface Task {
   id: string
@@ -34,7 +37,13 @@ interface TaskGanttProps {
 
 export function TaskGantt({ projectId, tasks, isLoading, onOpenDetail }: TaskGanttProps) {
   const ganttScaleMode = useTaskViewStore((state) => state.ganttScaleMode)
+  const setGanttScaleMode = useTaskViewStore((state) => state.setGanttScaleMode)
   const [scrollLeft, setScrollLeft] = useState(0)
+
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const timelineRef = useRef<HTMLDivElement>(null)
+  const leftPanelRef = useRef<HTMLDivElement>(null)
 
   const { data: dependencies = [] } = useQuery({
     queryKey: ['gantt-dependencies', projectId],
@@ -78,9 +87,52 @@ export function TaskGantt({ projectId, tasks, isLoading, onOpenDetail }: TaskGan
 
   const timeRange = calculateTimeRange(ganttTasks, ganttScaleMode)
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    setScrollLeft(e.currentTarget.scrollLeft)
-  }
+  const scrollToToday = useCallback(() => {
+    if (!timelineRef.current) return
+
+    const today = new Date()
+    const daysFromStart = differenceInDays(today, timeRange.start)
+    const cellWidth = DEFAULT_GANTT_CONFIG.cellWidth[ganttScaleMode]
+    const x = daysFromStart * cellWidth
+
+    timelineRef.current.scrollTo({
+      left: Math.max(0, x - timelineRef.current.clientWidth / 2),
+      behavior: 'smooth',
+    })
+  }, [timeRange, ganttScaleMode])
+
+  const handleTimelineScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    const target = e.currentTarget
+    setScrollLeft(target.scrollLeft)
+    if (leftPanelRef.current) {
+      leftPanelRef.current.scrollTop = target.scrollTop
+    }
+  }, [])
+
+  const handleLeftPanelScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (timelineRef.current) {
+      timelineRef.current.scrollTop = e.currentTarget.scrollTop
+    }
+  }, [])
+
+  const handleOpenDetailDrawer = useCallback((taskId: string) => {
+    setSelectedTaskId(taskId)
+    setDrawerOpen(true)
+  }, [])
+
+  const handleDrawerOpenChange = useCallback((open: boolean) => {
+    setDrawerOpen(open)
+    if (!open) {
+      setSelectedTaskId(null)
+    }
+  }, [])
+
+  const scaleButtonClass = (mode: GanttScaleMode) =>
+    `rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+      ganttScaleMode === mode
+        ? 'bg-background text-foreground shadow-sm'
+        : 'text-muted-foreground hover:text-foreground'
+    }`
 
   if (isLoading) {
     return (
@@ -101,12 +153,39 @@ export function TaskGantt({ projectId, tasks, isLoading, onOpenDetail }: TaskGan
 
   return (
     <div className="flex h-full flex-col overflow-hidden">
+      {/* 工具栏：刻度切换 + 今天按钮 */}
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        {/* 左侧：时间刻度切换 */}
+        <div className="bg-muted flex rounded-md p-1">
+          <button onClick={() => setGanttScaleMode('day')} className={scaleButtonClass('day')}>
+            日
+          </button>
+          <button onClick={() => setGanttScaleMode('week')} className={scaleButtonClass('week')}>
+            周
+          </button>
+          <button onClick={() => setGanttScaleMode('month')} className={scaleButtonClass('month')}>
+            月
+          </button>
+        </div>
+
+        {/* 右侧：今天按钮 */}
+        <Button variant="outline" size="sm" onClick={scrollToToday}>
+          今天
+        </Button>
+      </div>
+
+      {/* 双栏布局 */}
       <div className="flex flex-1 overflow-hidden">
+        {/* 左侧面板 */}
         <GanttLeftPanel
+          ref={leftPanelRef}
           tasks={ganttTasks}
           rowHeight={DEFAULT_GANTT_CONFIG.rowHeight}
-          onOpenDetail={onOpenDetail}
+          onOpenDetail={handleOpenDetailDrawer}
+          onScroll={handleLeftPanelScroll}
         />
+
+        {/* 右侧时间线 */}
         <div className="flex flex-1 flex-col overflow-hidden">
           <GanttTimeScaleHeader
             timeRange={timeRange}
@@ -114,18 +193,25 @@ export function TaskGantt({ projectId, tasks, isLoading, onOpenDetail }: TaskGan
             config={DEFAULT_GANTT_CONFIG}
             scrollLeft={scrollLeft}
           />
-          <div className="flex-1 overflow-auto" onScroll={handleScroll}>
+          <div className="flex-1 overflow-auto" ref={timelineRef} onScroll={handleTimelineScroll}>
             <GanttTimeline
               tasks={ganttTasks}
               dependencies={ganttDependencies}
               timeRange={timeRange}
               scaleMode={ganttScaleMode}
               config={DEFAULT_GANTT_CONFIG}
-              onOpenDetail={onOpenDetail}
+              onOpenDetail={handleOpenDetailDrawer}
             />
           </div>
         </div>
       </div>
+
+      {/* 详情抽屉 */}
+      <TaskDetailDrawer
+        taskId={selectedTaskId}
+        open={drawerOpen}
+        onOpenChange={handleDrawerOpenChange}
+      />
     </div>
   )
 }
