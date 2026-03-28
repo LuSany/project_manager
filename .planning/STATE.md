@@ -3,8 +3,8 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to plan
-stopped_at: Phase 7 context gathered
-last_updated: "2026-03-28T17:28:59.999Z"
+stopped_at: Phase 8 context gathered
+last_updated: '2026-03-29T00:00:00.000Z'
 progress:
   total_phases: 10
   completed_phases: 4
@@ -19,11 +19,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-25)
 
 **Core value:** 打造现代化、智能化的项目管理体验
-**Current focus:** Phase 05 (甘特图视图)
+**Current focus:** Phase 08 (设备管理 MVP)
 
 ## Current Position
 
-Phase: 05
+Phase: 08
 Plan: Not started
 
 ## Performance Metrics
@@ -90,6 +90,11 @@ Plan: Not started
 - [Phase 04-calendar]: D-05: 拖拽直接更新截止日期，无需确认 — 简化用户操作，提高效率
 - [Phase 04-calendar]: Use format(date, 'yyyy-MM-dd') instead of toISOString() for local date handling
 - [Phase 04-calendar]: Tailwind safelist required for dynamic class names in priority colors
+- [Phase 08-mvp]: 设备类型采用固定字段设计（名称、型号、位置、描述、负责人）
+- [Phase 08-mvp]: 日历拖拽方式预定设备
+- [Phase 08-mvp]: 精确匹配冲突检测策略
+- [Phase 08-mvp]: 表格视图展示设备列表
+- [Phase 08-mvp]: 完整设备状态机（可用 → 已预约 → 使用中 → 维护中 → 已停用）
 
 ### Pending Todos
 
@@ -102,6 +107,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-28T17:28:59.993Z
-Stopped at: Phase 7 context gathered
-Resume file: .planning/phases/07-guan-li-hou-tai/07-CONTEXT.md
+Last session: 2026-03-29T00:00:00.000Z
+Stopped at: Phase 8 context gathered
+Resume file: .planning/phases/08-mvp/08-CONTEXT.md
