@@ -1,106 +1,108 @@
-"use client";
+'use client'
 
-import React from "react";
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { TaskKanban } from "@/components/tasks/TaskKanban";
-import { TaskList } from "@/components/tasks/list/TaskList";
-import { TaskListFilters } from "@/components/tasks/list/TaskListFilters";
-import { TaskDetailDrawer } from "@/components/tasks/detail/TaskDetailDrawer";
-import { TaskCalendar } from "@/components/tasks/calendar";
-import { useTaskViewStore } from "@/stores/taskViewStore";
-import { ArrowLeft } from "lucide-react";
+import React from 'react'
+import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { format } from 'date-fns'
+import { Button } from '@/components/ui/button'
+import { TaskList } from '@/components/tasks/list/TaskList'
+import { TaskListFilters } from '@/components/tasks/list/TaskListFilters'
+import { TaskDetailDrawer } from '@/components/tasks/detail/TaskDetailDrawer'
+
+import { TaskCalendar } from '@/components/tasks/calendar'
+import { TaskGantt } from '@/components/tasks/gantt'
+import { TaskKanban } from '@/components/tasks/TaskKanban'
+import { useTaskViewStore } from '@/stores/taskViewStore'
+import { ArrowLeft } from 'lucide-react'
 
 interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  progress: number;
-  priority: string;
-  startDate: string | null;
-  dueDate: string | null;
-  createdAt: string;
+  id: string
+  title: string
+  description: string | null
+  status: string
+  progress: number
+  priority: string
+  startDate: string | null
+  dueDate: string | null
+  createdAt: string
   assignees?: Array<{
     user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
+      id: string
+      name: string
+      email: string
+    }
+  }>
   tags?: Array<{
-    id: string;
-    name: string;
-    color: string;
-  }>;
+    id: string
+    name: string
+    color: string
+  }>
 }
 
 export default function TasksPage({ params }: { params: Promise<{ id: string }> }) {
-  const router = useRouter();
-  const [projectId, setProjectId] = useState<string>("");
+  const router = useRouter()
+  const [projectId, setProjectId] = useState<string>('')
 
   useEffect(() => {
-    params.then(p => setProjectId(p.id));
-  }, [params]);
+    params.then((p) => setProjectId(p.id))
+  }, [params])
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [tasks, setTasks] = useState<Task[]>([])
+  const [loading, setLoading] = useState(true)
+  const [page, setPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
 
   // 详情抽屉状态
-  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   // 从 taskViewStore 获取视图状态
-  const viewMode = useTaskViewStore((state) => state.viewMode);
-  const setViewMode = useTaskViewStore((state) => state.setViewMode);
-  const filters = useTaskViewStore((state) => state.filters);
+  const viewMode = useTaskViewStore((state) => state.viewMode)
+  const setViewMode = useTaskViewStore((state) => state.setViewMode)
+  const filters = useTaskViewStore((state) => state.filters)
 
   // 使用 JSON.stringify 稳定 filters 引用，避免无限循环
-  const filtersKey = JSON.stringify(filters);
+  const filtersKey = JSON.stringify(filters)
 
   const fetchTasks = useCallback(async () => {
-    if (!projectId) return;
-    setLoading(true);
+    if (!projectId) return
+    setLoading(true)
     try {
       const searchParams = new URLSearchParams({
         page: page.toString(),
-        pageSize: "25",
+        pageSize: viewMode === 'gantt' ? '200' : '25',
         projectId,
-      });
+      })
 
       // 添加筛选条件
       filters.forEach((filter) => {
-        searchParams.set(filter.field, filter.value);
-      });
+        searchParams.set(filter.field, filter.value)
+      })
 
       const response = await fetch('/api/v1/tasks?' + searchParams, {
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
-        setTasks(data.data.items);
-        setTotalPages(data.data.totalPages);
+        setTasks(data.data.items)
+        setTotalPages(data.data.totalPages)
       }
     } catch (error) {
-      console.error("获取任务列表失败:", error);
+      console.error('获取任务列表失败:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, projectId, filtersKey]);
+  }, [page, projectId, filtersKey])
 
   useEffect(() => {
-    fetchTasks();
-  }, [fetchTasks]);
+    fetchTasks()
+  }, [fetchTasks])
 
   // 处理任务更新（内联编辑）
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
@@ -111,23 +113,26 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(updates),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (data.success) {
         // 更新本地状态
-        setTasks((prev) =>
-          prev.map((t) => (t.id === taskId ? { ...t, ...data.data } : t))
-        );
+        setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, ...data.data } : t)))
       }
     } catch (error) {
-      console.error("更新任务失败:", error);
+      console.error('更新任务失败:', error)
     }
-  };
+  }
 
   // 快速创建任务（日历视图）
   const handleQuickCreate = async (title: string, dueDate: Date) => {
+    if (!projectId) {
+      alert('项目ID未加载，请刷新页面后重试')
+      return
+    }
+
     try {
       const response = await fetch('/api/v1/tasks', {
         method: 'POST',
@@ -139,30 +144,36 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
           status: 'TODO',
           priority: 'MEDIUM',
         }),
-      });
+      })
 
-      const data = await response.json();
-      if (data.success) {
-        fetchTasks(); // 刷新任务列表
+      const data = await response.json()
+
+      if (!response.ok || !data.success) {
+        alert(data.error || '创建任务失败，请重试')
+        return
       }
+
+      setPage(1)
+      fetchTasks()
     } catch (error) {
-      console.error('创建任务失败:', error);
+      console.error('创建任务失败:', error)
+      alert('创建任务失败，请检查网络连接后重试')
     }
-  };
+  }
 
   // 处理打开任务详情
   const handleOpenDetail = (taskId: string) => {
-    setSelectedTaskId(taskId);
-    setDrawerOpen(true);
-  };
+    setSelectedTaskId(taskId)
+    setDrawerOpen(true)
+  }
 
   // 处理抽屉关闭
   const handleDrawerOpenChange = (open: boolean) => {
-    setDrawerOpen(open);
+    setDrawerOpen(open)
     if (!open) {
-      setSelectedTaskId(null);
+      setSelectedTaskId(null)
     }
-  };
+  }
 
   return (
     <div className="flex h-full flex-col">
@@ -180,47 +191,55 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
       <div className="flex items-center justify-between py-4">
         <h1 className="text-2xl font-bold">任务列表</h1>
         <div className="flex items-center gap-2">
-          <div className="flex bg-muted rounded-md p-1">
+          <div className="bg-muted flex rounded-md p-1">
             <button
-              onClick={() => setViewMode("list")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === "list"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+              onClick={() => setViewMode('list')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'list'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               列表视图
             </button>
             <button
-              onClick={() => setViewMode("kanban")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === "kanban"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+              onClick={() => setViewMode('kanban')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'kanban'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               看板视图
             </button>
             <button
-              onClick={() => setViewMode("calendar")}
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                viewMode === "calendar"
-                  ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+              onClick={() => setViewMode('calendar')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'calendar'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               日历视图
             </button>
+            <button
+              onClick={() => setViewMode('gantt')}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                viewMode === 'gantt'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              甘特图
+            </button>
           </div>
-          <Button onClick={() => router.push(`/projects/${projectId}/tasks/new`)}>
-            新建任务
-          </Button>
+          <Button onClick={() => router.push(`/projects/${projectId}/tasks/new`)}>新建任务</Button>
         </div>
       </div>
 
       {/* 内容区 */}
       <div className="flex-1 overflow-hidden">
-        {viewMode === "kanban" ? (
+        {viewMode === 'kanban' ? (
           <TaskKanban
             key="kanban-view"
             projectId={projectId}
@@ -229,15 +248,25 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
             onUpdate={handleTaskUpdate}
             onOpenDetail={handleOpenDetail}
           />
-        ) : viewMode === "calendar" ? (
+        ) : viewMode === 'calendar' ? (
           <TaskCalendar
             key="calendar-view"
             projectId={projectId}
             tasks={tasks}
             isLoading={loading}
             onOpenDetail={handleOpenDetail}
-            onUpdateDueDate={(taskId, dueDate) => handleTaskUpdate(taskId, { dueDate: format(dueDate, 'yyyy-MM-dd') })}
+            onUpdateDueDate={(taskId, dueDate) =>
+              handleTaskUpdate(taskId, { dueDate: format(dueDate, 'yyyy-MM-dd') })
+            }
             onCreateTask={handleQuickCreate}
+          />
+        ) : viewMode === 'gantt' ? (
+          <TaskGantt
+            key="gantt-view"
+            projectId={projectId}
+            tasks={tasks}
+            isLoading={loading}
+            onOpenDetail={handleOpenDetail}
           />
         ) : (
           <div key="list-view" className="flex h-full flex-col">
@@ -257,11 +286,11 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
 
             {/* 分页 */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 py-4 border-t">
+              <div className="flex items-center justify-center gap-2 border-t py-4">
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}
-                  className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="border-border rounded-md border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   上一页
                 </button>
@@ -271,7 +300,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
                 <button
                   onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                   disabled={page === totalPages}
-                  className="px-4 py-2 border border-border rounded-md disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="border-border rounded-md border px-4 py-2 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   下一页
                 </button>
@@ -288,5 +317,5 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
         onOpenChange={handleDrawerOpenChange}
       />
     </div>
-  );
+  )
 }
