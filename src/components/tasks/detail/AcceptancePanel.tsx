@@ -17,11 +17,6 @@ export function AcceptancePanel({ taskId, acceptorId, currentUserId }: Acceptanc
   const queryClient = useQueryClient()
   const [notes, setNotes] = useState('')
 
-  // 仅验收人可见
-  if (acceptorId !== currentUserId) {
-    return null
-  }
-
   const acceptMutation = useMutation({
     mutationFn: (result: 'PASSED' | 'FAILED') =>
       fetch(`/api/v1/tasks/${taskId}/acceptance`, {
@@ -41,6 +36,11 @@ export function AcceptancePanel({ taskId, acceptorId, currentUserId }: Acceptanc
       return
     }
     acceptMutation.mutate(result)
+  }
+
+  // 仅验收人可见
+  if (acceptorId !== currentUserId) {
+    return null
   }
 
   return (
