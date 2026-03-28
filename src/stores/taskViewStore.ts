@@ -11,7 +11,7 @@ import type { SortingState } from '@tanstack/react-table'
 // ============================================================================
 
 /** 视图模式类型 */
-export type TaskViewMode = 'list' | 'kanban' | 'calendar'
+export type TaskViewMode = 'list' | 'kanban' | 'calendar' | 'gantt'
 
 /** 分组维度类型 */
 export type GroupByOption = 'status' | 'priority' | 'assignee' | null
@@ -31,7 +31,7 @@ export interface FilterCondition {
 // ============================================================================
 
 interface TaskViewState {
-  /** 视图模式：列表 / 看板 / 日历 */
+  /** 视图模式：列表 / 看板 / 日历 / 甘特图 */
   viewMode: TaskViewMode
   /** 分组维度 */
   groupBy: GroupByOption
@@ -39,6 +39,8 @@ interface TaskViewState {
   filters: FilterCondition[]
   /** 排序规则 */
   sorting: SortingState
+  /** 甘特图时间刻度模式 */
+  ganttScaleMode: 'day' | 'week' | 'month'
 }
 
 // ============================================================================
@@ -58,6 +60,8 @@ interface TaskViewActions {
   clearFilters: () => void
   /** 设置排序规则 */
   setSorting: (sorting: SortingState) => void
+  /** 设置甘特图时间刻度模式 */
+  setGanttScaleMode: (mode: 'day' | 'week' | 'month') => void
 }
 
 // ============================================================================
@@ -73,6 +77,7 @@ export const useTaskViewStore = create<TaskViewState & TaskViewActions>()((set) 
     { id: 'priority', desc: true },
     { id: 'dueDate', desc: false },
   ],
+  ganttScaleMode: 'day',
 
   // Actions
   setViewMode: (mode) => set({ viewMode: mode }),
@@ -98,4 +103,6 @@ export const useTaskViewStore = create<TaskViewState & TaskViewActions>()((set) 
   clearFilters: () => set({ filters: [] }),
 
   setSorting: (sorting) => set({ sorting }),
+
+  setGanttScaleMode: (mode) => set({ ganttScaleMode: mode }),
 }))
