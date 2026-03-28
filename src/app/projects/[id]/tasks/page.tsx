@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -63,7 +63,7 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
   // 使用 JSON.stringify 稳定 filters 引用，避免无限循环
   const filtersKey = JSON.stringify(filters);
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!projectId) return;
     setLoading(true);
     try {
@@ -95,12 +95,12 @@ export default function TasksPage({ params }: { params: Promise<{ id: string }> 
     } finally {
       setLoading(false);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [page, projectId, filtersKey]);
 
   useEffect(() => {
     fetchTasks();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, projectId, filtersKey]);
+  }, [fetchTasks]);
 
   // 处理任务更新（内联编辑）
   const handleTaskUpdate = async (taskId: string, updates: Partial<Task>) => {
