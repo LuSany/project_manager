@@ -30,6 +30,7 @@ interface Task {
   startDate: string | null
   dueDate: string | null
   createdAt: string
+  projectId: string
   assignees?: Array<{
     user: { id: string; name: string; email: string }
   }>
@@ -66,11 +67,7 @@ async function fetchTask(taskId: string): Promise<Task> {
 // TaskDetailDrawer 组件
 // ============================================================================
 
-export function TaskDetailDrawer({
-  taskId,
-  open,
-  onOpenChange,
-}: TaskDetailDrawerProps) {
+export function TaskDetailDrawer({ taskId, open, onOpenChange }: TaskDetailDrawerProps) {
   // 获取任务详情
   const { data: task, isLoading } = useQuery({
     queryKey: ['task', taskId],
@@ -92,61 +89,56 @@ export function TaskDetailDrawer({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-[480px] overflow-y-auto">
         <SheetHeader>
-          <SheetTitle className="truncate">
-            {task?.title || '任务详情'}
-          </SheetTitle>
-          <SheetDescription className="sr-only">
-            查看和编辑任务详情
-          </SheetDescription>
+          <SheetTitle className="truncate">{task?.title || '任务详情'}</SheetTitle>
+          <SheetDescription className="sr-only">查看和编辑任务详情</SheetDescription>
         </SheetHeader>
 
         {isLoading ? (
           <div className="flex h-64 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
           </div>
         ) : task ? (
+          <Tabs
+            defaultValue="detail"
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="mt-4"
+          >
+            <TabsList className="w-full">
+              <TabsTrigger value="detail" className="flex-1">
+                <FileText className="mr-1.5 h-4 w-4" />
+                详情
+              </TabsTrigger>
+              <TabsTrigger value="subtasks" className="flex-1">
+                <CheckSquare className="mr-1.5 h-4 w-4" />
+                子任务
+              </TabsTrigger>
+              <TabsTrigger value="comments" className="flex-1">
+                <MessageSquare className="mr-1.5 h-4 w-4" />
+                评论
+              </TabsTrigger>
+              <TabsTrigger value="tags" className="flex-1">
+                <Tag className="mr-1.5 h-4 w-4" />
+                标签
+              </TabsTrigger>
+            </TabsList>
 
-            <Tabs
-              defaultValue="detail"
-              value={activeTab}
-              onValueChange={setActiveTab}
-              className="mt-4"
-            >
-              <TabsList className="w-full">
-                <TabsTrigger value="detail" className="flex-1">
-                  <FileText className="mr-1.5 h-4 w-4" />
-                  详情
-                </TabsTrigger>
-                <TabsTrigger value="subtasks" className="flex-1">
-                  <CheckSquare className="mr-1.5 h-4 w-4" />
-                  子任务
-                </TabsTrigger>
-                <TabsTrigger value="comments" className="flex-1">
-                  <MessageSquare className="mr-1.5 h-4 w-4" />
-                  评论
-                </TabsTrigger>
-                <TabsTrigger value="tags" className="flex-1">
-                  <Tag className="mr-1.5 h-4 w-4" />
-                  标签
-                </TabsTrigger>
-              </TabsList>
+            <TabsContent value="detail">
+              <DetailTab taskId={task.id} />
+            </TabsContent>
 
-              <TabsContent value="detail">
-                <DetailTab taskId={task.id} />
-              </TabsContent>
+            <TabsContent value="subtasks">
+              <SubTaskList taskId={task.id} projectId={task.projectId} />
+            </TabsContent>
 
-              <TabsContent value="subtasks">
-                <SubTaskList taskId={task.id} />
-              </TabsContent>
+            <TabsContent value="comments">
+              <CommentsTab taskId={task.id} />
+            </TabsContent>
 
-              <TabsContent value="comments">
-                <CommentsTab taskId={task.id} />
-              </TabsContent>
-
-              <TabsContent value="tags">
-                <TagsTab taskId={task.id} />
-              </TabsContent>
-            </Tabs>
+            <TabsContent value="tags">
+              <TagsTab taskId={task.id} />
+            </TabsContent>
+          </Tabs>
         ) : null}
       </SheetContent>
     </Sheet>
