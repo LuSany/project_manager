@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { GanttTimeline } from '../GanttTimeline'
 import type { GanttTask, GanttDependency } from '../types'
@@ -33,7 +33,7 @@ describe('GanttTimeline', () => {
         timeRange={timeRange}
         scaleMode="day"
         config={DEFAULT_GANTT_CONFIG}
-        onOpenDetail={jest.fn()}
+        onOpenDetail={vi.fn()}
       />
     )
 
@@ -69,7 +69,7 @@ describe('GanttTimeline', () => {
         timeRange={timeRange}
         scaleMode="day"
         config={DEFAULT_GANTT_CONFIG}
-        onOpenDetail={jest.fn()}
+        onOpenDetail={vi.fn()}
       />
     )
 
@@ -106,7 +106,7 @@ describe('GanttTimeline', () => {
         timeRange={timeRange}
         scaleMode="day"
         config={DEFAULT_GANTT_CONFIG}
-        onOpenDetail={jest.fn()}
+        onOpenDetail={vi.fn()}
       />
     )
 
@@ -132,7 +132,7 @@ describe('GanttTimeline', () => {
         timeRange={timeRange}
         scaleMode="day"
         config={DEFAULT_GANTT_CONFIG}
-        onOpenDetail={jest.fn()}
+        onOpenDetail={vi.fn()}
       />
     )
 
@@ -161,7 +161,7 @@ describe('GanttTimeline', () => {
       totalDays: 19,
     }
 
-    const onOpenDetail = jest.fn()
+    const onOpenDetail = vi.fn()
 
     render(
       <GanttTimeline

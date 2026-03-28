@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { GanttTaskBar } from '../GanttTaskBar'
 import type { GanttTask, TaskBarPosition } from '../types'
@@ -22,7 +22,7 @@ describe('GanttTaskBar', () => {
       height: 24,
     }
 
-    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={jest.fn()} />)
+    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={vi.fn()} />)
 
     // Task bar should be rendered
     const svg = screen.getByRole('img')
@@ -47,7 +47,7 @@ describe('GanttTaskBar', () => {
       height: 24,
     }
 
-    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={jest.fn()} />)
+    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={vi.fn()} />)
 
     const svg = screen.getByRole('img')
     expect(svg).toBeInTheDocument()
@@ -71,7 +71,7 @@ describe('GanttTaskBar', () => {
       height: 24,
     }
 
-    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={jest.fn()} />)
+    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={vi.fn()} />)
 
     const svg = screen.getByRole('img')
     expect(svg).toBeInTheDocument()
@@ -95,7 +95,7 @@ describe('GanttTaskBar', () => {
       height: 24,
     }
 
-    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={jest.fn()} />)
+    render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={vi.fn()} />)
 
     const svg = screen.getByRole('img')
     expect(svg).toBeInTheDocument()
@@ -119,7 +119,7 @@ describe('GanttTaskBar', () => {
       height: 24,
     }
 
-    const onClick = jest.fn()
+    const onClick = vi.fn()
 
     render(<GanttTaskBar task={task} position={position} color="#eab308" onClick={onClick} />)
 
