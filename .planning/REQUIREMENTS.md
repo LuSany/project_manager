@@ -17,7 +17,7 @@
 - [x] **TASK-01**: 列表视图，支持排序、筛选、分组、内联编辑
 - [x] **TASK-02**: 看板视图，支持拖拽排序、跨列移动
 - [x] **TASK-03**: 日历视图，按日期展示任务，支持拖拽调整日期
-- [ ] **TASK-04**: 时间线/甘特图视图，展示任务时间线和依赖关系
+- [x] **TASK-04**: 时间线/甘特图视图，展示任务时间线和依赖关系
 - [x] **TASK-05**: 任务详情抽屉，支持子任务、评论、标签、依赖
 
 ### UI-003: 仪表盘组件
@@ -116,7 +116,7 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-02 | Phase 3 | Complete |
 | TASK-05 | Phase 3 | Complete |
 | TASK-03 | Phase 4 | Complete |
-| TASK-04 | Phase 5 | Pending |
+| TASK-04 | Phase 5 | Complete |
 | DASH-01 | Phase 6 | Pending |
 | DASH-02 | Phase 6 | Pending |
 | DASH-03 | Phase 6 | Pending |
