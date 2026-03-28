@@ -1,10 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import { calculateCriticalPath } from '../GanttCriticalPath'
-import type { GanttTask, GanttDependency } from './types'
+import type { GanttTask, GanttDependency } from '../types'
 import { DependencyType } from '@/types/task-dependency'
 
 describe('GanttCriticalPath', () => {
-  it.todo('线性依赖 A→B→C 的关键路径为 {A,B,C}', () => {
+  it('线性依赖 A→B→C 的关键路径为 {A,B,C}', () => {
     const tasks: GanttTask[] = [
       {
         id: 'A',
@@ -56,7 +56,7 @@ describe('GanttCriticalPath', () => {
     expect(result.has('C')).toBe(true)
   })
 
-  it.todo('分叉依赖取最长路径', () => {
+  it('分叉依赖取最长路径', () => {
     const tasks: GanttTask[] = [
       {
         id: 'A',
@@ -107,7 +107,7 @@ describe('GanttCriticalPath', () => {
     expect(result.has('C')).toBe(true)
   })
 
-  it.todo('无依赖时返回空 Set', () => {
+  it('无依赖时返回空 Set', () => {
     const tasks: GanttTask[] = [
       {
         id: 'A',
@@ -133,7 +133,7 @@ describe('GanttCriticalPath', () => {
     expect(result.size).toBe(0)
   })
 
-  it.todo('单任务无依赖不在关键路径上', () => {
+  it('单任务无依赖不在关键路径上', () => {
     const tasks: GanttTask[] = [
       {
         id: 'A',
@@ -150,7 +150,7 @@ describe('GanttCriticalPath', () => {
     expect(result.size).toBe(0)
   })
 
-  it.todo('钻石依赖（A→B, A→C, B→D, C→D）取最长分支', () => {
+  it('钻石依赖（A→B, A→C, B→D, C→D）取最长分支', () => {
     const tasks: GanttTask[] = [
       {
         id: 'A',

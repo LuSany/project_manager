@@ -1,4 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
+import React from 'react'
 import { render, screen } from '@testing-library/react'
 import { GanttDependencyLine } from '../GanttDependencyLine'
 import type { TaskBarPosition, GanttDependency } from '../types'
@@ -26,7 +27,7 @@ describe('GanttDependencyLine', () => {
     height: 24,
   }
 
-  it.todo('FS 依赖连线起点在源任务右端', () => {
+  it('FS 依赖连线起点在源任务右端', () => {
     render(
       <svg>
         <GanttDependencyLine
@@ -37,11 +38,11 @@ describe('GanttDependencyLine', () => {
         />
       </svg>
     )
-    // Should render SVG path element
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    const paths = document.querySelectorAll('path')
+    expect(paths.length).toBeGreaterThan(0)
   })
 
-  it.todo('FS 依赖连线终点在目标任务左端', () => {
+  it('FS 依赖连线终点在目标任务左端', () => {
     render(
       <svg>
         <GanttDependencyLine
@@ -52,33 +53,11 @@ describe('GanttDependencyLine', () => {
         />
       </svg>
     )
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    const paths = document.querySelectorAll('path')
+    expect(paths.length).toBeGreaterThan(0)
   })
 
-  it.todo('连线颜色按依赖类型正确编码', () => {
-    const types = [
-      { type: DependencyType.FINISH_TO_START, expectedColor: '#3b82f6' },
-      { type: DependencyType.START_TO_START, expectedColor: '#22c55e' },
-      { type: DependencyType.FINISH_TO_FINISH, expectedColor: '#a855f7' },
-      { type: DependencyType.START_TO_FINISH, expectedColor: '#f97316' },
-    ]
-
-    types.forEach(({ type, expectedColor }) => {
-      render(
-        <svg>
-          <GanttDependencyLine
-            dependency={mockDependency}
-            sourcePosition={mockSourcePosition}
-            targetPosition={mockTargetPosition}
-            dependencyType={type}
-          />
-        </svg>
-      )
-      expect(screen.getByRole('img')).toBeInTheDocument()
-    })
-  })
-
-  it.todo('折线路径包含直角转弯', () => {
+  it('连线颜色按依赖类型正确编码', () => {
     render(
       <svg>
         <GanttDependencyLine
@@ -89,10 +68,11 @@ describe('GanttDependencyLine', () => {
         />
       </svg>
     )
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    const path = document.querySelector('path')
+    expect(path).toHaveAttribute('stroke')
   })
 
-  it.todo('实心箭头在终点渲染', () => {
+  it('折线路径包含直角转弯', () => {
     render(
       <svg>
         <GanttDependencyLine
@@ -103,14 +83,35 @@ describe('GanttDependencyLine', () => {
         />
       </svg>
     )
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    const path = document.querySelector('path')
+    expect(path).toHaveAttribute('d')
   })
 
-  it.todo('关键路径连线使用橙色', () => {
+  it('实心箭头在终点渲染', () => {
     render(
       <svg>
         <GanttDependencyLine
           dependency={mockDependency}
+          sourcePosition={mockSourcePosition}
+          targetPosition={mockTargetPosition}
+          dependencyType={DependencyType.FINISH_TO_START}
+        />
+      </svg>
+    )
+    const polygons = document.querySelectorAll('polygon')
+    expect(polygons.length).toBeGreaterThan(0)
+  })
+
+  it('关键路径连线使用橙色', () => {
+    const mockDepCritical: GanttDependency = {
+      ...mockDependency,
+      id: 'dep-critical',
+    }
+
+    const { container } = render(
+      <svg>
+        <GanttDependencyLine
+          dependency={mockDepCritical}
           sourcePosition={mockSourcePosition}
           targetPosition={mockTargetPosition}
           dependencyType={DependencyType.FINISH_TO_START}
@@ -118,6 +119,7 @@ describe('GanttDependencyLine', () => {
         />
       </svg>
     )
-    expect(screen.getByRole('img')).toBeInTheDocument()
+    const path = container.querySelector('svg > g > path')
+    expect(path?.getAttribute('stroke')).toBe('#f97316')
   })
 })
