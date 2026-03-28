@@ -15,8 +15,8 @@ model ReviewTypeConfig {
   description      String?
   isSystem         Boolean            @default(false)
   isActive         Boolean            @default(true)
-  createdAt        DateTime           @default(now())
-  updatedAt        DateTime
+createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   review_templates review_templates[]
   reviews          reviews[]
 }
@@ -32,7 +32,7 @@ model ai_configs {
   isDefault Boolean    @default(false)
   config    String?
   createdAt DateTime   @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model ai_logs {
@@ -126,7 +126,7 @@ model email_templates {
   variables String?
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
 }
 
 model file_storage {
@@ -142,7 +142,7 @@ model file_storage {
   lockExpiresAt                        DateTime?
   lockedAt                             DateTime?
   lockedBy                             String?
-  updatedAt                            DateTime  @default(now())
+  updatedAt DateTime @updatedAt  @default(now())
   version                              Int       @default(1)
   users_file_storage_lockedByTousers   users?    @relation("file_storage_lockedByTousers", fields: [lockedBy], references: [id])
   users_file_storage_uploadedByTousers users     @relation("file_storage_uploadedByTousers", fields: [uploadedBy], references: [id])
@@ -666,7 +666,7 @@ model tags {
   name      String      @unique
   color     String      @default("#3B82F6")
   createdAt DateTime    @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   task_tags task_tags[]
 
   @@index([name])
@@ -729,7 +729,7 @@ model task_comments {
   userId    String
   content   String
   createdAt DateTime @default(now())
-  updatedAt DateTime
+  updatedAt DateTime @updatedAt
   tasks     tasks    @relation(fields: [taskId], references: [id], onDelete: Cascade)
   users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
