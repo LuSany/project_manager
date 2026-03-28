@@ -649,13 +649,16 @@ model subtasks {
   description    String?
   completed      Boolean    @default(false)
   taskId         String
+  assigneeId     String?    // 新增：负责人ID
   parentId       String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime
+  users          users?     @relation(fields: [assigneeId], references: [id]) // 新增
   subtasks       subtasks?  @relation("subtasksTosubtasks", fields: [parentId], references: [id], onDelete: Cascade)
   other_subtasks subtasks[] @relation("subtasksTosubtasks")
   tasks          tasks      @relation(fields: [taskId], references: [id], onDelete: Cascade)
 
+  @@index([assigneeId]) // 新增
   @@index([completed])
   @@index([parentId])
   @@index([taskId])
@@ -842,6 +845,7 @@ model users {
   task_watchers                               task_watchers[]
   task_comments                               task_comments[]
   tasks                                       tasks[]
+  subtasks                                    subtasks[]  // 新增：子任务负责人关系
 
   @@index([email])
 }
