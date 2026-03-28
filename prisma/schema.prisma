@@ -740,6 +740,24 @@ model task_comments {
   @@index([userId])
 }
 
+model task_acceptances {
+  id          String           @id
+  taskId      String
+  acceptorId  String           // 验收人ID
+  requesterId String           // 发起验收的任务负责人ID
+  result      AcceptanceResult @default(PENDING) // PENDING/PASSED/FAILED
+  notes       String?          // 验收意见
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  tasks       tasks            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  users_task_acceptances_acceptorIdTousers   users @relation("acceptorIdToUsers", fields: [acceptorId], references: [id])
+  users_task_acceptances_requesterIdTousers  users @relation("requesterIdToUsers", fields: [requesterId], references: [id])
+
+  @@index([taskId])
+  @@index([acceptorId])
+  @@index([result])
+}
+
 model task_templates {
   id           String   @id
   title        String
@@ -794,6 +812,7 @@ model tasks {
   task_tags                                              task_tags[]
   task_watchers                                          task_watchers[]
   task_comments                                          task_comments[]
+  task_acceptances                                       task_acceptances[]
   users                                                  users?                    @relation(fields: [acceptorId], references: [id])
   issues                                                 issues?                   @relation(fields: [issueId], references: [id])
   milestones                                             milestones?               @relation(fields: [milestoneId], references: [id])
@@ -844,6 +863,8 @@ model users {
   task_progress_history                       task_progress_history[]
   task_watchers                               task_watchers[]
   task_comments                               task_comments[]
+  task_acceptances                            task_acceptances[] @relation("acceptorIdToUsers")
+  task_acceptances_requesterIdToUsers         task_acceptances[] @relation("requesterIdToUsers")
   tasks                                       tasks[]
   subtasks                                    subtasks[]  // 新增：子任务负责人关系
 
