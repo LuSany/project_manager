@@ -236,7 +236,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 2. UI 功能组件    | 2/2            | Complete    | 2026-03-28 |
 | 3. 列表与看板视图 | 3/3            | Complete    | 2026-03-28 |
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
-| 5. 甘特图视图     | 2/3            | In Progress |            |
+| 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
 | 6. 仪表盘         | 0/0            | Not started | -          |
 | 7. 管理后台       | 0/0            | Not started | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
