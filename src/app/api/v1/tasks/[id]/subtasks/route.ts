@@ -6,7 +6,7 @@ import { z } from 'zod'
 const createSubTaskSchema = z.object({
   title: z.string().min(1, '子任务标题不能为空'),
   description: z.string().optional(),
-  assigneeId: z.string().optional(),
+  assigneeId: z.string().nullable().optional(),
 })
 
 async function getAuthUser(request: NextRequest) {

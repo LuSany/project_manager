@@ -179,7 +179,7 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
             .map((comment) => (
               <div key={comment.id} className="group flex gap-3 border-b pb-3">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={comment.user.avatar || ''} alt={comment.user.name} />
+                  <AvatarImage src={comment.user.avatar || undefined} alt={comment.user.name} />
                   <AvatarFallback>
                     {comment.user.name?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
