@@ -139,3 +139,22 @@ None - no external service configuration required.
 
 _Phase: 05-gantt_
 _Completed: 2026-03-28_
+
+## Self-Check: PASSED
+
+**Files created:** All 10 files verified present
+- src/components/tasks/gantt/types.ts ✓
+- src/components/tasks/gantt/utils.ts ✓
+- src/components/tasks/gantt/TaskGantt.tsx ✓
+- src/components/tasks/gantt/GanttTimeline.tsx ✓
+- src/components/tasks/gantt/GanttTaskBar.tsx ✓
+- src/components/tasks/gantt/GanttLeftPanel.tsx ✓
+- src/components/tasks/gantt/GanttTimeScaleHeader.tsx ✓
+- src/components/tasks/gantt/GanttTaskPopover.tsx ✓
+- src/components/tasks/gantt/index.ts ✓
+- .planning/phases/05-gantt/05-01-SUMMARY.md ✓
+
+**Commits:** All 3 commits verified present
+- fc86e39: test(05-01): add failing test scaffold for gantt utilities and components ✓
+- 80c6d9d: feat(05-01): implement gantt types, utilities, and store extension ✓
+- 8d9037b: feat(05-01): implement main gantt layout and core rendering components ✓
