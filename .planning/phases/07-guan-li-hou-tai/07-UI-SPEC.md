@@ -5,6 +5,7 @@ status: draft
 shadcn_initialized: true
 preset: new-york
 created: 2026-03-29
+updated: 2026-03-29
 ---
 
 # Phase 7 — UI Design Contract
@@ -89,6 +90,9 @@ Declared values (must be multiples of 4):
 | Empty state body         | 点击"创建"按钮添加第一条记录     |
 | Error state              | 操作失败，请重试或联系管理员     |
 | Destructive confirmation | 确认删除此用户？此操作不可撤销。 |
+| CSV 导入按钮             | 导入用户                         |
+| 批量操作按钮             | 批量操作                         |
+| 模板下载                 | 下载导入模板                     |
 
 **Destructive actions in this phase:**
 
@@ -97,8 +101,9 @@ Declared values (must be multiples of 4):
 - 删除 AI 配置 (Delete AI Config) — 使用 AlertDialog 二次确认
 - 归档项目 (Archive Project) — 使用 Popover + Confirm 确认
 - 批量删除 (Batch Delete) — 使用 AlertDialog 二次确认
+- 批量禁用 (Batch Disable) — 使用 AlertDialog 二次确认
 
-**Source:** Pre-populated from Phase 7 requirements and CONTEXT.md decisions D-01 through D-12.
+**Source:** Pre-populated from Phase 7 requirements and CONTEXT.md decisions D-01 through D-15.
 
 ---
 
@@ -121,6 +126,8 @@ Declared values (must be multiples of 4):
 | Tabs             | 页面内部视图切换 (如用户详情)                     |
 | Card             | 统计卡片、AI配置卡片                              |
 | Toast            | 操作成功/失败提示                                 |
+| Checkbox         | 批量选中                                          |
+| FileUpload       | CSV 文件上传                                      |
 
 **Source:** D-10, D-11, D-12 from 07-CONTEXT.md — Consistent with Phase 3 TanStack Table pattern.
 
@@ -130,43 +137,76 @@ Declared values (must be multiples of 4):
 
 ### 用户管理 (/admin/users)
 
-- 顶部：搜索栏 + 筛选器 + "创建用户"按钮
-- 主体：TanStack Table 表格（姓名、邮箱、角色、状态、创建时间）
+- 顶部：搜索栏 + 筛选器 + "创建用户"按钮 + "导入用户"按钮
+- 主体：TanStack Table 表格（复选框、姓名、邮箱、角色、状态、创建时间）
 - 行操作：编辑、禁用/启用、删除
 - 底部：分页控件
+- **批量操作 (D-01, D-02, D-03)**:
+  - 表格左侧添加复选框列
+  - 选中任意行后，表格顶部固定显示批量操作栏
+  - 批量操作栏显示：已选中 N 项 + 批量激活 + 批量禁用 + 批量修改角色
+  - 批量修改角色：点击后弹出 Select 选择新角色
+  - 最大选中数量：100 项
+- **CSV 导入 (D-01)**:
+  - 点击"导入用户"按钮打开 Dialog
+  - Dialog 内容：文件上传区 + 模板下载链接
+  - 上传后：显示预览表格（姓名、邮箱、部门、角色列）
+  - 预览确认后：执行导入，显示成功/失败数量
 
 ### 项目管理 (/admin/projects)
 
 - 顶部：搜索栏 + 筛选器 + "创建项目"按钮
 - 主体：TanStack Table 表格（名称、描述、负责人、成员数、状态、创建时间）
 - 行操作：编辑、成员管理、归档/取消归档、删除
-- 侧边栏/弹窗：成员管理面板
+- **成员管理面板 (D-05)**:
+  - 点击"成员管理"打开 Popover 或 Sheet
+  - 面板包含：成员列表 + 添加成员搜索框
+  - 搜索框：输入用户名过滤，下拉显示匹配用户
+  - 选择用户后自动添加，无需二次确认
+  - 成员列表显示：头像 + 姓名 + 角色 + 移除按钮
+- **归档功能 (D-06)**:
+  - 归档：Popover 确认后执行，状态标记为"已归档"
+  - 取消归档：同位置操作，恢复正常状态
 
 ### 权限配置 (/admin/permissions)
 
 - 左侧：资源树形结构（项目/任务）
 - 右侧：选中资源的权限列表（用户/角色 + 权限级别）
 - 权限级别：查看、编辑、管理员
+- **权限自动继承 (D-09)**:
+  - UI 层面体现：成员列表显示"继承"标识
+  - 继承说明：项目成员自动继承项目的任务查看权限
+  - 无需额外 UI 组件，仅在面板中显示状态
 
 ### 审计日志 (/admin/logs)
 
 - 顶部：时间范围筛选 + 操作类型筛选 + 用户筛选 + 导出按钮
 - 主体：TanStack Table 表格（时间、用户、操作、IP、详情）
 - 支持展开查看详情
+- **D-11: 保持现有功能不变**
 
 ### AI 配置 (/admin/ai)
 
 - 卡片布局：显示每个 AI 配置（Provider、Model、Status）
 - 卡片操作：编辑、测试连接、删除
 - 测试连接：显示 Loading 状态，结果 toast 通知
+- **多 Provider 支持 (D-14)**:
+  - Provider 选择：OpenAI / Anthropic / Ollama（Select 组件）
+  - Provider 配置项：
+    - OpenAI: API Key (Input type="password") + Base URL (可选 Input)
+    - Anthropic: API Key (Input type="password") + Base URL (可选 Input)
+    - Ollama: Base URL (Input, 默认 http://localhost:11434)
+  - 模型选择：Select 下拉，根据 Provider 动态加载可用模型列表
+  - 显示：Provider 图标 + Model 名称组合显示（如 "OpenAI / gpt-4o"）
+  - 测试连接：验证 API Key 有效性，超时时间 10 秒
 
 ---
 
 ## Registry Safety
 
-| Registry        | Blocks Used                                                                                                 | Safety Gate  |
-| --------------- | ----------------------------------------------------------------------------------------------------------- | ------------ |
-| shadcn official | table, dialog, form, button, badge, avatar, switch, popover, alert-dialog, tabs, card, toast, select, input | not required |
+| Registry        | Blocks Used                                                                                                                        | Safety Gate  |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ------------ |
+| shadcn official | table, dialog, form, button, badge, avatar, switch, popover, alert-dialog, tabs, card, toast, select, input, checkbox, file-upload | not required |
 
 **Third-party registries:** none
 
@@ -191,7 +231,7 @@ Declared values (must be multiples of 4):
 
 | Source          | Decisions Used                                       |
 | --------------- | ---------------------------------------------------- |
-| CONTEXT.md      | 9 (D-01 through D-09, D-10 through D-12)             |
+| CONTEXT.md      | 15 (D-01 through D-18)                               |
 | STATE.md        | 4 (TanStack Table, shadcn/ui, Zustand, Lucide icons) |
 | components.json | yes                                                  |
 | shadcn info     | yes                                                  |
@@ -201,4 +241,13 @@ Declared values (must be multiples of 4):
 
 - All design tokens inherited from shadcn new-york preset
 - Typography and color values from CSS variables in globals.css
+- New features added: CSV import (D-01), batch operations (D-02, D-03), inline member add (D-05), permission inheritance (D-09), multi-provider AI config (D-14)
 - No additional questions needed — all contract elements answered by upstream artifacts
+
+**Updates in this revision:**
+
+1. **CSV 导入 (D-01)**: 添加 FileUpload 组件、预览表格、模板下载链接、导入结果提示
+2. **批量操作 (D-02, D-03)**: 添加 Checkbox 列、批量操作栏（固定顶部）、批量激活/禁用/修改角色
+3. **成员列表内联添加 (D-05)**: 添加搜索框 + 下拉选择用户、选择后自动添加
+4. **权限自动继承 (D-09)**: 在成员列表显示"继承"状态标识
+5. **多 Provider 支持 (D-14)**: OpenAI/Anthropic/Ollama 三种 Provider + 各自配置项 + 模型选择动态加载
