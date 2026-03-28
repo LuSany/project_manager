@@ -1,36 +1,53 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { db } from '@/lib/db'
-import { randomUUID } from 'crypto'
+import { ApiResponder } from '@/lib/api/response'
+import { z } from 'zod'
 
-// 辅助函数：获取已认证用户
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
   return db.users.findUnique({ where: { id: userId } })
 }
 
-// GET: 获取任务的评论列表
+const createCommentSchema = z.object({
+  content: z.string().min(1, '评论内容不能为空').max(2000, '评论内容不能超过2000字'),
+})
+
 export async function GET(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id: taskId } = await context.params
 
-  // 认证检查
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
-    // 检查任务是否存在
     const task = await db.tasks.findUnique({
       where: { id: taskId },
-      select: { id: true, projectId: true },
+      include: {
+        projects: {
+          select: {
+            ownerId: true,
+            project_members: {
+              where: { userId: user.id },
+            },
+          },
+        },
+      },
     })
 
     if (!task) {
-      return NextResponse.json({ success: false, error: '任务不存在' }, { status: 404 })
+      return ApiResponder.notFound('任务不存在')
     }
 
-    // 从数据库获取评论
+    const isProjectOwner = task.projects.ownerId === user.id
+    const isProjectMember = task.projects.project_members.length > 0
+    const isAdmin = user.role === 'ADMIN'
+
+    if (!isProjectOwner && !isProjectMember && !isAdmin) {
+      return ApiResponder.forbidden('无权访问此任务')
+    }
+
     const comments = await db.task_comments.findMany({
       where: { taskId },
       orderBy: { createdAt: 'desc' },
@@ -41,7 +58,6 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       },
     })
 
-    // 格式化响应数据
     const formattedComments = comments.map((comment) => ({
       id: comment.id,
       content: comment.content,
@@ -51,53 +67,57 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       updatedAt: comment.updatedAt.toISOString(),
     }))
 
-    return NextResponse.json({
-      success: true,
-      data: formattedComments,
-    })
+    return ApiResponder.success(formattedComments)
   } catch (error) {
     console.error('获取评论列表失败:', error)
-    return NextResponse.json({ success: false, error: '获取评论列表失败' }, { status: 500 })
+    return ApiResponder.serverError('获取评论列表失败')
   }
 }
 
-// POST: 创建新评论
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   const { id: taskId } = await context.params
 
-  // 认证检查
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
     const body = await request.json()
-    const { content } = body
+    const validatedData = createCommentSchema.parse(body)
 
-    if (!content || !content.trim()) {
-      return NextResponse.json({ success: false, error: '评论内容不能为空' }, { status: 400 })
-    }
-
-    // 检查任务是否存在
     const task = await db.tasks.findUnique({
       where: { id: taskId },
-      select: { id: true, projectId: true },
+      include: {
+        projects: {
+          select: {
+            ownerId: true,
+            project_members: {
+              where: { userId: user.id },
+            },
+          },
+        },
+      },
     })
 
     if (!task) {
-      return NextResponse.json({ success: false, error: '任务不存在' }, { status: 404 })
+      return ApiResponder.notFound('任务不存在')
     }
 
-    // 保存评论到数据库
-    const commentId = randomUUID()
+    const isProjectOwner = task.projects.ownerId === user.id
+    const isProjectMember = task.projects.project_members.length > 0
+    const isAdmin = user.role === 'ADMIN'
+
+    if (!isProjectOwner && !isProjectMember && !isAdmin) {
+      return ApiResponder.forbidden('无权访问此任务')
+    }
+
     const newComment = await db.task_comments.create({
       data: {
-        id: commentId,
+        id: crypto.randomUUID(),
         taskId,
         userId: user.id,
-        content: content.trim(),
-        updatedAt: new Date(),
+        content: validatedData.content.trim(),
       },
       include: {
         users: {
@@ -106,7 +126,6 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       },
     })
 
-    // 格式化响应数据
     const formattedComment = {
       id: newComment.id,
       content: newComment.content,
@@ -116,12 +135,12 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       updatedAt: newComment.updatedAt.toISOString(),
     }
 
-    return NextResponse.json({
-      success: true,
-      data: formattedComment,
-    })
+    return ApiResponder.created(formattedComment, '评论创建成功')
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return ApiResponder.validationError(error.issues[0].message)
+    }
     console.error('创建评论失败:', error)
-    return NextResponse.json({ success: false, error: '创建评论失败' }, { status: 500 })
+    return ApiResponder.serverError('创建评论失败')
   }
 }
