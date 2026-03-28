@@ -6,7 +6,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Loader2, Send, Trash2 } from 'lucide-react'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog'
+import { Loader2, Send, Trash2, MessageSquare } from 'lucide-react'
 
 // ============================================================================
 // 类型定义
@@ -82,6 +90,7 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
   const queryClient = useQueryClient()
   const { user: currentUser } = useAuth()
   const [newComment, setNewComment] = useState('')
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
 
   // 获取评论列表
   const { data: comments = [], isLoading } = useQuery({
@@ -104,6 +113,9 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['comments', taskId] })
     },
+    onError: (error) => {
+      console.error('删除评论失败:', error)
+    },
   })
 
   // 处理发送评论
@@ -115,9 +127,7 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
 
   // 处理删除评论
   const handleDelete = (commentId: string) => {
-    if (confirm('确定要删除这条评论吗？')) {
-      deleteMutation.mutate(commentId)
-    }
+    setDeleteTarget(commentId)
   }
 
   // 处理回车发送
@@ -156,22 +166,10 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
 
   return (
     <div className="flex h-full flex-col p-4">
-      <div className="flex-1 space-y-4 overflow-y-auto" style={{ maxHeight: '300px' }}>
+      <div className="max-h-[300px] flex-1 space-y-4 overflow-y-auto">
         {comments.length === 0 ? (
           <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
-            <svg
-              className="mb-3 h-12 w-12 opacity-40"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={1.5}
-                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-              />
-            </svg>
+            <MessageSquare className="mb-3 h-12 w-12 opacity-40" />
             <p className="text-sm">暂无评论</p>
             <p className="text-muted-foreground mt-1 text-xs">成为第一个评论者</p>
           </div>
@@ -240,6 +238,31 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
           )}
         </Button>
       </div>
+
+      <Dialog open={deleteTarget !== null} onOpenChange={() => setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>删除评论</DialogTitle>
+            <DialogDescription>确定要删除这条评论吗？此操作无法撤销。</DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>
+              取消
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => {
+                if (deleteTarget) {
+                  deleteMutation.mutate(deleteTarget)
+                }
+                setDeleteTarget(null)
+              }}
+            >
+              删除
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
