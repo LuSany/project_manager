@@ -1,13 +1,12 @@
 'use client'
 
-import React from 'react'
+import { useAuth } from '@/hooks/useAuth'
 import { useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Loader2, Send } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Loader2, Send, Trash2 } from 'lucide-react'
 
 // ============================================================================
 // 类型定义
@@ -17,8 +16,9 @@ interface Comment {
   id: string
   content: string
   userId: string
-  user: { id: string; name: string; email: string }
+  user: { id: string; name: string; email: string; avatar?: string | null }
   createdAt: string
+  updatedAt: string
 }
 
 interface CommentsTabProps {
@@ -62,12 +62,25 @@ async function createComment(taskId: string, content: string): Promise<Comment> 
   return data.data
 }
 
+async function deleteComment(taskId: string, commentId: string): Promise<void> {
+  const response = await fetch(`/api/v1/tasks/${taskId}/comments/${commentId}`, {
+    method: 'DELETE',
+  })
+
+  const data: ApiResponse<void> = await response.json()
+
+  if (!data.success) {
+    throw new Error(data.error || '删除评论失败')
+  }
+}
+
 // ============================================================================
 // CommentsTab 组件
 // ============================================================================
 
 export function CommentsTab({ taskId }: CommentsTabProps) {
   const queryClient = useQueryClient()
+  const { user: currentUser } = useAuth()
   const [newComment, setNewComment] = useState('')
 
   // 获取评论列表
@@ -85,10 +98,25 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
     },
   })
 
+  // 删除评论
+  const deleteMutation = useMutation({
+    mutationFn: (commentId: string) => deleteComment(taskId, commentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['comments', taskId] })
+    },
+  })
+
   // 处理发送评论
   const handleSend = () => {
     if (newComment.trim()) {
       createMutation.mutate(newComment.trim())
+    }
+  }
+
+  // 处理删除评论
+  const handleDelete = (commentId: string) => {
+    if (confirm('确定要删除这条评论吗？')) {
+      deleteMutation.mutate(commentId)
     }
   }
 
@@ -121,37 +149,69 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
   if (isLoading) {
     return (
       <div className="flex h-32 items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
       </div>
     )
   }
 
   return (
     <div className="flex h-full flex-col p-4">
-      {/* 评论列表 */}
       <div className="flex-1 space-y-4 overflow-y-auto" style={{ maxHeight: '300px' }}>
         {comments.length === 0 ? (
-          <div className="py-8 text-center text-muted-foreground">
+          <div className="text-muted-foreground flex flex-col items-center justify-center py-12">
+            <svg
+              className="mb-3 h-12 w-12 opacity-40"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.5}
+                d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+              />
+            </svg>
             <p className="text-sm">暂无评论</p>
-            <p className="text-xs mt-1">成为第一个评论者</p>
+            <p className="text-muted-foreground mt-1 text-xs">成为第一个评论者</p>
           </div>
         ) : (
-          // 按时间倒序排列
           [...comments]
             .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
             .map((comment) => (
-              <div key={comment.id} className="flex gap-3 border-b pb-3">
+              <div key={comment.id} className="group flex gap-3 border-b pb-3">
                 <Avatar className="h-8 w-8">
+                  <AvatarImage src={comment.user.avatar || ''} alt={comment.user.name} />
                   <AvatarFallback>
                     {comment.user.name?.charAt(0).toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">{comment.user.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {formatRelativeTime(comment.createdAt)}
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium">{comment.user.name}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {formatRelativeTime(comment.createdAt)}
+                      </span>
+                      {comment.updatedAt !== comment.createdAt && (
+                        <span className="text-muted-foreground text-xs">(已编辑)</span>
+                      )}
+                    </div>
+                    {currentUser && currentUser.id === comment.userId && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                        onClick={() => handleDelete(comment.id)}
+                        disabled={deleteMutation.isPending}
+                      >
+                        {deleteMutation.isPending ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Trash2 className="text-muted-foreground h-3 w-3" />
+                        )}
+                      </Button>
+                    )}
                   </div>
                   <p className="mt-1 text-sm">{comment.content}</p>
                 </div>
@@ -160,13 +220,12 @@ export function CommentsTab({ taskId }: CommentsTabProps) {
         )}
       </div>
 
-      {/* 输入区域 */}
       <div className="mt-4 flex gap-2">
         <Input
           placeholder="添加评论..."
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleKeyPress}
           disabled={createMutation.isPending}
         />
         <Button
