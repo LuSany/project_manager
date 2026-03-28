@@ -723,6 +723,20 @@ model task_tags {
   @@index([tagId])
 }
 
+model task_comments {
+  id        String   @id
+  taskId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  tasks     tasks    @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  users     users    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([taskId])
+  @@index([userId])
+}
+
 model task_templates {
   id           String   @id
   title        String
@@ -776,6 +790,7 @@ model tasks {
   task_progress_history                                  task_progress_history[]
   task_tags                                              task_tags[]
   task_watchers                                          task_watchers[]
+  task_comments                                          task_comments[]
   users                                                  users?                    @relation(fields: [acceptorId], references: [id])
   issues                                                 issues?                   @relation(fields: [issueId], references: [id])
   milestones                                             milestones?               @relation(fields: [milestoneId], references: [id])
@@ -825,6 +840,7 @@ model users {
   task_assignees                              task_assignees[]
   task_progress_history                       task_progress_history[]
   task_watchers                               task_watchers[]
+  task_comments                               task_comments[]
   tasks                                       tasks[]
 
   @@index([email])
