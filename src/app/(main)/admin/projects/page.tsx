@@ -2,18 +2,37 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import { DataTable } from '@/components/ui/data-table'
+import { Badge } from '@/components/ui/badge'
 import { api } from '@/lib/api/client'
-import { Loader2, Users, CheckSquare, AlertCircle, Calendar, Trash2 } from 'lucide-react'
+import {
+  Loader2,
+  Users,
+  CheckSquare,
+  Calendar,
+  Trash2,
+  Edit,
+  Archive,
+  ArchiveRestore,
+  Plus,
+} from 'lucide-react'
+import { ProjectDialog } from './components/ProjectDialog'
+import { MembersPanel } from './components/MembersPanel'
+import { ColumnDef } from '@tanstack/react-table'
+
+interface Member {
+  id: string
+  userId: string
+  projectId: string
+  role: string
+  joinedAt: string
+  users: {
+    id: string
+    name: string
+    email: string
+  }
+}
 
 interface Project {
   id: string
@@ -23,24 +42,25 @@ interface Project {
   startDate?: string
   endDate?: string
   createdAt: string
+  updatedAt: string
+  ownerId: string
   users: {
     id: string
     name: string
     email: string
   }
   _count?: {
-    members: number
+    project_members: number
     tasks: number
-    risks: number
   }
 }
 
 const statusColors: Record<string, string> = {
-  PLANNING: 'bg-blue-100 text-blue-800',
-  ACTIVE: 'bg-green-100 text-green-800',
-  ON_HOLD: 'bg-yellow-100 text-yellow-800',
-  COMPLETED: 'bg-gray-100 text-gray-800',
-  CANCELLED: 'bg-red-100 text-red-800',
+  PLANNING: 'bg-blue-500/20 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+  ACTIVE: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+  ON_HOLD: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
+  COMPLETED: 'bg-gray-500/20 text-gray-700 dark:bg-gray-500/10 dark:text-gray-400',
+  CANCELLED: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400',
 }
 
 const statusLabels: Record<string, string> = {
@@ -59,6 +79,44 @@ export default function ProjectsAdminPage() {
     active: 0,
     completed: 0,
   })
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingProject, setEditingProject] = useState<Project | null>(null)
+  const [projectMembers, setProjectMembers] = useState<Record<string, Member[]>>({})
+
+  const fetchProjects = async () => {
+    setLoading(true)
+    try {
+      const response = await api.get<Project[]>('/admin/projects')
+      const data = (response as { data?: Project[] }).data || []
+      setProjects(data)
+
+      const total = data.length
+      const active = data.filter((p) => p.status === 'ACTIVE').length
+      const completed = data.filter((p) => p.status === 'COMPLETED').length
+      setStats({ total, active, completed })
+
+      await fetchAllMembers(data.map((p) => p.id))
+    } catch (error) {
+      console.error('获取项目列表失败:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchAllMembers = async (projectIds: string[]) => {
+    try {
+      const membersData: Record<string, Member[]> = {}
+      for (const projectId of projectIds) {
+        const response = await api.get<Member[]>(`/projects/${projectId}/members`)
+        if ((response as { success?: boolean }).success) {
+          membersData[projectId] = (response as { data?: Member[] }).data || []
+        }
+      }
+      setProjectMembers(membersData)
+    } catch (error) {
+      console.error('获取成员列表失败:', error)
+    }
+  }
 
   const handleDelete = async (id: string, name: string) => {
     if (!confirm(`确定要删除项目"${name}"吗？此操作不可恢复。`)) {
@@ -68,14 +126,7 @@ export default function ProjectsAdminPage() {
     try {
       const response = await api.delete('/admin/projects/' + id)
       if ((response as { success?: boolean }).success) {
-        setProjects((prev) => prev.filter((p) => p.id !== id))
-        // 更新统计
-        const updated = projects.filter((p) => p.id !== id)
-        setStats({
-          total: updated.length,
-          active: updated.filter((p) => p.status === 'ACTIVE').length,
-          completed: updated.filter((p) => p.status === 'COMPLETED').length,
-        })
+        await fetchProjects()
       }
     } catch (error) {
       console.error('删除项目失败:', error)
@@ -83,28 +134,147 @@ export default function ProjectsAdminPage() {
     }
   }
 
+  const handleArchive = async (id: string, name: string, currentStatus: string) => {
+    const isArchived = currentStatus === 'COMPLETED'
+    const action = isArchived ? '取消归档' : '归档'
+    const newStatus = isArchived ? 'PLANNING' : 'COMPLETED'
+
+    if (!confirm(`确定要${action}项目"${name}"吗？`)) {
+      return
+    }
+
+    try {
+      const response = await api.put(`/admin/projects/${id}`, {
+        status: newStatus,
+      })
+      if ((response as { success?: boolean }).success) {
+        await fetchProjects()
+      }
+    } catch (error) {
+      console.error(`${action}项目失败:`, error)
+      alert(`${action}项目失败，请重试`)
+    }
+  }
+
+  const handleEdit = (project: Project) => {
+    setEditingProject(project)
+    setDialogOpen(true)
+  }
+
+  const handleCreate = () => {
+    setEditingProject(null)
+    setDialogOpen(true)
+  }
+
+  const handleDialogSuccess = async () => {
+    await fetchProjects()
+  }
+
+  const handleMembersChange = async (projectId: string) => {
+    await fetchProjects()
+  }
+
   useEffect(() => {
     fetchProjects()
   }, [])
 
-  const fetchProjects = async () => {
-    try {
-      const response = await api.get<Project[]>('/projects?all=true')
-      // API 返回格式: { success: true, data: [...] }
-      const data = (response as { data?: Project[] }).data || []
-      setProjects(data)
+  const columns: ColumnDef<Project>[] = [
+    {
+      accessorKey: 'name',
+      header: '项目',
+      cell: ({ row }) => (
+        <div>
+          <p className="font-medium">{row.original.name}</p>
+          {row.original.description && (
+            <p className="text-muted-foreground max-w-xs truncate text-sm">
+              {row.original.description}
+            </p>
+          )}
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'users.name',
+      header: '负责人',
+      cell: ({ row }) => <p className="text-sm">{row.original.users?.name || '-'}</p>,
+    },
+    {
+      accessorKey: 'status',
+      header: '状态',
+      cell: ({ row }) => (
+        <Badge className={statusColors[row.original.status]}>
+          {statusLabels[row.original.status]}
+        </Badge>
+      ),
+    },
+    {
+      accessorKey: 'members',
+      header: '成员',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <Users className="text-muted-foreground h-4 w-4" />
+          <span>{row.original._count?.project_members || 0}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'tasks',
+      header: '任务',
+      cell: ({ row }) => (
+        <div className="flex items-center gap-1">
+          <CheckSquare className="text-muted-foreground h-4 w-4" />
+          <span>{row.original._count?.tasks || 0}</span>
+        </div>
+      ),
+    },
+    {
+      accessorKey: 'createdAt',
+      header: '创建时间',
+      cell: ({ row }) => (
+        <span>{new Date(row.original.createdAt).toLocaleDateString('zh-CN')}</span>
+      ),
+    },
+    {
+      id: 'actions',
+      header: '操作',
+      cell: ({ row }) => {
+        const project = row.original
+        const isArchived = project.status === 'COMPLETED'
 
-      // 计算统计
-      const total = data.length
-      const active = data.filter((p) => p.status === 'ACTIVE').length
-      const completed = data.filter((p) => p.status === 'COMPLETED').length
-      setStats({ total, active, completed })
-    } catch (error) {
-      console.error('获取项目列表失败:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
+        return (
+          <div className="flex items-center gap-2">
+            <MembersPanel
+              projectId={project.id}
+              members={projectMembers[project.id] || []}
+              onMembersChange={() => handleMembersChange(project.id)}
+            />
+            <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
+              <Edit className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleArchive(project.id, project.name, project.status)}
+              title={isArchived ? '取消归档' : '归档'}
+            >
+              {isArchived ? (
+                <ArchiveRestore className="h-4 w-4" />
+              ) : (
+                <Archive className="h-4 w-4" />
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => handleDelete(project.id, project.name)}
+            >
+              <Trash2 className="text-destructive h-4 w-4" />
+            </Button>
+          </div>
+        )
+      },
+    },
+  ]
 
   if (loading) {
     return (
@@ -116,13 +286,23 @@ export default function ProjectsAdminPage() {
 
   return (
     <div className="space-y-6">
-      {/* 统计卡片 */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">项目管理</h1>
+          <p className="text-muted-foreground">管理系统内所有项目及其成员</p>
+        </div>
+        <Button onClick={handleCreate}>
+          <Plus className="mr-2 h-4 w-4" />
+          创建项目
+        </Button>
+      </div>
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100">
-                <Calendar className="h-6 w-6 text-blue-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
+                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">总项目数</p>
@@ -134,8 +314,8 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100">
-                <CheckSquare className="h-6 w-6 text-green-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-500/20">
+                <CheckSquare className="h-6 w-6 text-green-600 dark:text-green-400" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">进行中</p>
@@ -147,8 +327,8 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100">
-                <AlertCircle className="h-6 w-6 text-gray-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-500/20">
+                <Archive className="h-6 w-6 text-gray-600 dark:text-gray-400" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">已完成</p>
@@ -159,76 +339,22 @@ export default function ProjectsAdminPage() {
         </Card>
       </div>
 
-      {/* 项目列表 */}
       <Card>
         <CardHeader>
           <CardTitle>项目列表</CardTitle>
           <CardDescription>系统内所有项目的概览</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="rounded-lg border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>项目名称</TableHead>
-                  <TableHead>负责人</TableHead>
-                  <TableHead>状态</TableHead>
-                  <TableHead>成员数</TableHead>
-                  <TableHead>任务数</TableHead>
-                  <TableHead>创建时间</TableHead>
-                  <TableHead>操作</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {projects.map((project) => (
-                  <TableRow key={project.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{project.name}</p>
-                        {project.description && (
-                          <p className="text-muted-foreground max-w-xs truncate text-sm">
-                            {project.description}
-                          </p>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <p className="text-sm">{project.users?.name || '-'}</p>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[project.status]}>
-                        {statusLabels[project.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <Users className="text-muted-foreground h-4 w-4" />
-                        <span>{project._count?.members || 0}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <CheckSquare className="text-muted-foreground h-4 w-4" />
-                        <span>{project._count?.tasks || 0}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{new Date(project.createdAt).toLocaleDateString('zh-CN')}</TableCell>
-                    <TableCell>
-                      <Button
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => handleDelete(project.id, project.name)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <DataTable columns={columns} data={projects} />
         </CardContent>
       </Card>
+
+      <ProjectDialog
+        open={dialogOpen}
+        onOpenChange={setDialogOpen}
+        project={editingProject}
+        onSuccess={handleDialogSuccess}
+      />
     </div>
   )
 }
