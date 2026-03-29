@@ -16,9 +16,11 @@ import {
   Archive,
   ArchiveRestore,
   Plus,
+  Settings,
 } from 'lucide-react'
 import { ProjectDialog } from './components/ProjectDialog'
 import { MembersPanel } from './components/MembersPanel'
+import Link from 'next/link'
 import { ColumnDef } from '@tanstack/react-table'
 
 interface Member {
@@ -248,6 +250,11 @@ export default function ProjectsAdminPage() {
               members={projectMembers[project.id] || []}
               onMembersChange={() => handleMembersChange(project.id)}
             />
+            <Link href={`/admin/projects/${project.id}/settings`}>
+              <Button variant="ghost" size="icon" title="项目设置">
+                <Settings className="h-4 w-4" />
+              </Button>
+            </Link>
             <Button variant="ghost" size="icon" onClick={() => handleEdit(project)}>
               <Edit className="h-4 w-4" />
             </Button>
@@ -301,8 +308,8 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-100 dark:bg-blue-500/20">
-                <Calendar className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-500/20 text-blue-600 dark:text-blue-400">
+                <Calendar className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">总项目数</p>
@@ -314,8 +321,8 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-100 dark:bg-green-500/20">
-                <CheckSquare className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-green-500/20 text-green-600 dark:text-green-400">
+                <CheckSquare className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">进行中</p>
@@ -327,8 +334,8 @@ export default function ProjectsAdminPage() {
         <Card>
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-500/20">
-                <Archive className="h-6 w-6 text-gray-600 dark:text-gray-400" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-gray-500/20 text-gray-600 dark:text-gray-400">
+                <Archive className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-muted-foreground text-sm">已完成</p>
