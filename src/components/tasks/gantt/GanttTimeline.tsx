@@ -12,6 +12,7 @@ import { getTaskPosition, getPriorityColor } from './utils'
 import { GanttTaskBar } from './GanttTaskBar'
 import { GanttDependencyLine } from './GanttDependencyLine'
 import { GanttDependencyTooltip } from './GanttDependencyTooltip'
+import { GanttTaskPopover } from './GanttTaskPopover'
 import { calculateCriticalPath } from './GanttCriticalPath'
 
 interface GanttTimelineProps {
@@ -37,6 +38,7 @@ export function GanttTimeline({
 
   const [hoveredDependencyId, setHoveredDependencyId] = useState<string | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState<{ x: number; y: number } | null>(null)
+  const [hoveredTaskId, setHoveredTaskId] = useState<string | null>(null)
 
   const criticalTaskIds = useMemo(
     () => calculateCriticalPath(tasks, dependencies),
@@ -157,6 +159,7 @@ export function GanttTimeline({
               color={color}
               isCritical={criticalTaskIds.has(task.id)}
               onClick={() => onOpenDetail(task.id)}
+              onHover={setHoveredTaskId}
             />
           )
         })}
@@ -183,6 +186,10 @@ export function GanttTimeline({
             : undefined
         }
         position={tooltipPosition}
+      />
+
+      <GanttTaskPopover
+        task={hoveredTaskId ? tasks.find((t) => t.id === hoveredTaskId) || null : null}
       />
 
       <div

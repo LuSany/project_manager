@@ -6,16 +6,37 @@ interface GanttTaskBarProps {
   color: string
   isCritical?: boolean
   onClick?: () => void
+  onHover?: (taskId: string | null) => void
 }
 
-export function GanttTaskBar({ task, position, color, isCritical, onClick }: GanttTaskBarProps) {
+export function GanttTaskBar({
+  task,
+  position,
+  color,
+  isCritical,
+  onClick,
+  onHover,
+}: GanttTaskBarProps) {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     onClick?.()
   }
 
+  const handleMouseEnter = () => {
+    onHover?.(task.id)
+  }
+
+  const handleMouseLeave = () => {
+    onHover?.(null)
+  }
+
   return (
-    <g className="cursor-pointer transition-opacity hover:opacity-80" onClick={handleClick}>
+    <g
+      className="cursor-pointer transition-opacity hover:opacity-80"
+      onClick={handleClick}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
       <rect
         x={position.x}
         y={position.y}
