@@ -116,7 +116,13 @@ async function deleteSubTask(taskId: string, subtaskId: string): Promise<void> {
   const response = await fetch(`/api/v1/tasks/${taskId}/subtasks/${subtaskId}`, {
     method: 'DELETE',
   })
-  const data: ApiResponse<null> = await response.json()
+  if (!response.ok) {
+    const text = await response.text()
+    throw new Error(text || '删除子任务失败')
+  }
+  const text = await response.text()
+  if (!text) return
+  const data: ApiResponse<null> = JSON.parse(text)
   if (!data.success) {
     throw new Error(data.error || '删除子任务失败')
   }
@@ -241,6 +247,9 @@ export function SubTaskList({ taskId, projectId }: SubTaskListProps) {
       setSelectedAssignee(null)
     } catch (error) {
       console.error('添加子任务失败:', error)
+      if (error instanceof Error) {
+        alert(error.message)
+      }
     } finally {
       setIsAdding(false)
     }
@@ -292,7 +301,7 @@ export function SubTaskList({ taskId, projectId }: SubTaskListProps) {
           />
           <Select
             value={selectedAssignee || ''}
-            onValueChange={(v) => setSelectedAssignee(v || null)}
+            onValueChange={(v) => setSelectedAssignee(v === '__unassigned__' ? null : v)}
             disabled={isAdding}
           >
             <SelectTrigger className="w-[150px] shrink-0">

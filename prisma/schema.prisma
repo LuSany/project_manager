@@ -15,8 +15,8 @@ model ReviewTypeConfig {
   description      String?
   isSystem         Boolean            @default(false)
   isActive         Boolean            @default(true)
-createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
   review_templates review_templates[]
   reviews          reviews[]
 }
@@ -32,7 +32,7 @@ model ai_configs {
   isDefault Boolean    @default(false)
   config    String?
   createdAt DateTime   @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime   @updatedAt
 }
 
 model ai_logs {
@@ -142,7 +142,7 @@ model file_storage {
   lockExpiresAt                        DateTime?
   lockedAt                             DateTime?
   lockedBy                             String?
-  updatedAt DateTime @updatedAt  @default(now())
+  updatedAt                            DateTime  @default(now()) @updatedAt
   version                              Int       @default(1)
   users_file_storage_lockedByTousers   users?    @relation("file_storage_lockedByTousers", fields: [lockedBy], references: [id])
   users_file_storage_uploadedByTousers users     @relation("file_storage_uploadedByTousers", fields: [uploadedBy], references: [id])
@@ -649,7 +649,7 @@ model subtasks {
   description    String?
   completed      Boolean    @default(false)
   taskId         String
-  assigneeId     String?    // 新增：负责人ID
+  assigneeId     String? // 新增：负责人ID
   parentId       String?
   createdAt      DateTime   @default(now())
   updatedAt      DateTime
@@ -669,7 +669,7 @@ model tags {
   name      String      @unique
   color     String      @default("#3B82F6")
   createdAt DateTime    @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime    @updatedAt
   task_tags task_tags[]
 
   @@index([name])
@@ -741,17 +741,17 @@ model task_comments {
 }
 
 model task_acceptances {
-  id          String           @id
-  taskId      String
-  acceptorId  String           // 验收人ID
-  requesterId String           // 发起验收的任务负责人ID
-  result      AcceptanceResult @default(PENDING) // PENDING/PASSED/FAILED
-  notes       String?          // 验收意见
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-  tasks       tasks            @relation(fields: [taskId], references: [id], onDelete: Cascade)
-  users_task_acceptances_acceptorIdTousers   users @relation("acceptorIdToUsers", fields: [acceptorId], references: [id])
-  users_task_acceptances_requesterIdTousers  users @relation("requesterIdToUsers", fields: [requesterId], references: [id])
+  id                                        String           @id
+  taskId                                    String
+  acceptorId                                String // 验收人ID
+  requesterId                               String // 发起验收的任务负责人ID
+  result                                    AcceptanceResult @default(PENDING) // PENDING/PASSED/FAILED
+  notes                                     String? // 验收意见
+  createdAt                                 DateTime         @default(now())
+  updatedAt                                 DateTime         @updatedAt
+  tasks                                     tasks            @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  users_task_acceptances_acceptorIdTousers  users            @relation("acceptorIdToUsers", fields: [acceptorId], references: [id])
+  users_task_acceptances_requesterIdTousers users            @relation("requesterIdToUsers", fields: [requesterId], references: [id])
 
   @@index([taskId])
   @@index([acceptorId])
@@ -863,10 +863,10 @@ model users {
   task_progress_history                       task_progress_history[]
   task_watchers                               task_watchers[]
   task_comments                               task_comments[]
-  task_acceptances                            task_acceptances[] @relation("acceptorIdToUsers")
-  task_acceptances_requesterIdToUsers         task_acceptances[] @relation("requesterIdToUsers")
+  task_acceptances                            task_acceptances[]         @relation("acceptorIdToUsers")
+  task_acceptances_requesterIdToUsers         task_acceptances[]         @relation("requesterIdToUsers")
   tasks                                       tasks[]
-  subtasks                                    subtasks[]  // 新增：子任务负责人关系
+  subtasks                                    subtasks[] // 新增：子任务负责人关系
 
   @@index([email])
 }

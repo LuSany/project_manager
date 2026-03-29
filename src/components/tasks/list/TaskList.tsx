@@ -42,7 +42,13 @@ interface TaskListProps {
 // 主组件
 // ============================================================================
 
-export function TaskList({ tasks, isLoading, onOpenDetail }: TaskListProps) {
+export function TaskList({
+  projectId,
+  tasks,
+  isLoading,
+  onTaskUpdate,
+  onOpenDetail,
+}: TaskListProps) {
   // 使用 selectors 获取稳定值
   const sorting = useTaskViewStore(useCallback((state) => state.sorting, []))
   const setSorting = useTaskViewStore(useCallback((state) => state.setSorting, []))
@@ -80,8 +86,8 @@ export function TaskList({ tasks, isLoading, onOpenDetail }: TaskListProps) {
     return (
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <p className="text-lg font-medium text-muted-foreground">暂无任务</p>
-          <p className="text-sm text-muted-foreground">点击"新建任务"开始创建第一个任务</p>
+          <p className="text-muted-foreground text-lg font-medium">暂无任务</p>
+          <p className="text-muted-foreground text-sm">点击"新建任务"开始创建第一个任务</p>
         </div>
       </div>
     )
@@ -122,7 +128,7 @@ export function TaskList({ tasks, isLoading, onOpenDetail }: TaskListProps) {
           {rows.map((row) => (
             <TableRow
               key={row.id}
-              className="h-12 hover:bg-accent/50 cursor-pointer"
+              className="hover:bg-accent/50 h-12 cursor-pointer"
               onClick={() => onOpenDetail?.(row.original.id)}
             >
               {row.getVisibleCells().map((cell) => (

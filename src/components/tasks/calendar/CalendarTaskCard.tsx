@@ -19,9 +19,9 @@ interface CalendarTaskCardProps {
 // ============================================================================
 
 const PRIORITY_COLORS: Record<string, string> = {
-  HIGH: '#ef4444',    // red-500
-  MEDIUM: '#eab308',  // yellow-500
-  LOW: '#3b82f6',     // blue-500
+  HIGH: '#ef4444', // red-500
+  MEDIUM: '#eab308', // yellow-500
+  LOW: '#3b82f6', // blue-500
   CRITICAL: '#b91c1c', // red-700
 }
 
@@ -48,20 +48,16 @@ export function CalendarTaskCard({ task, onOpenDetail }: CalendarTaskCardProps) 
       {...listeners}
       {...attributes}
       className={cn(
-        'h-6 px-1 rounded flex items-center gap-1 cursor-grab',
+        'flex h-6 cursor-grab items-center gap-1 rounded px-2',
         'bg-card/80 hover:bg-accent/50 transition-colors',
-        'text-xs truncate',
+        'truncate text-xs',
         isDragging && 'opacity-50'
       )}
+      style={{ borderLeft: `4px solid ${priorityColor}`, paddingLeft: '8px' }}
       onClick={handleClick}
     >
-      {/* 优先级颜色条 */}
-      <div
-        className="w-1 h-4 rounded-full flex-shrink-0"
-        style={{ backgroundColor: priorityColor }}
-      />
       {/* 任务标题 */}
-      <span className="truncate flex-1">{task.title}</span>
+      <span className="flex-1 truncate">{task.title}</span>
     </div>
   )
 }

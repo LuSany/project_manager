@@ -87,3 +87,56 @@ export async function PUT(
     return NextResponse.json({ success: false, error: '更新子任务失败' }, { status: 500 })
   }
 }
+
+// DELETE /api/v1/tasks/[id]/subtasks/[subtaskId] - 删除子任务
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string; subtaskId: string }> }
+) {
+  const user = await getAuthUser(request)
+  if (!user) {
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+  }
+
+  const { id: taskId, subtaskId } = await params
+
+  try {
+    const task = await db.tasks.findUnique({
+      where: { id: taskId },
+      include: {
+        task_assignees: { select: { userId: true } },
+        projects: { select: { ownerId: true } },
+      },
+    })
+
+    if (!task) {
+      return NextResponse.json({ success: false, error: '任务不存在' }, { status: 404 })
+    }
+
+    const isAssignee = task.task_assignees.some((a) => a.userId === user.id)
+    const isProjectOwner = task.projects?.ownerId === user.id
+    const isAdmin = user.role === 'ADMIN'
+
+    const projectMember = await db.project_members.findUnique({
+      where: {
+        projectId_userId: {
+          projectId: task.projectId,
+          userId: user.id,
+        },
+      },
+    })
+
+    if (!isAssignee && !isProjectOwner && !projectMember && !isAdmin) {
+      return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
+    }
+
+    await db.subtasks.delete({
+      where: { id: subtaskId },
+    })
+
+    return NextResponse.json({ success: true, data: null })
+  } catch (error) {
+    console.error('删除子任务失败:', error)
+    return NextResponse.json({ success: false, error: '删除子任务失败' }, { status: 500 })
+  }
+}

@@ -76,11 +76,14 @@ export function TaskCalendar({
   )
 
   // 按日期分组任务 (D-04)
+  // 修复：直接从 ISO 字符串提取日期，避免时区转换导致的日期偏移
   const tasksByDate = useMemo(() => {
     const grouped = new Map<string, Task[]>()
     tasks.forEach((task) => {
       if (!task.dueDate) return
-      const dateKey = format(new Date(task.dueDate), 'yyyy-MM-dd')
+      // task.dueDate 格式："2026-03-28T00:00:00.000Z"
+      // 直接提取前 10 个字符 "2026-03-28" 作为 dateKey，避免时区转换
+      const dateKey = task.dueDate.slice(0, 10)
       if (!grouped.has(dateKey)) grouped.set(dateKey, [])
       grouped.get(dateKey)!.push(task)
     })

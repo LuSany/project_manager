@@ -131,8 +131,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         id: crypto.randomUUID(),
         title: validatedData.title,
         description: validatedData.description,
-        assigneeId: validatedData.assigneeId || null,
-        tasks: { connect: { id } },
+        taskId: id,
+        assigneeId:
+          validatedData.assigneeId && validatedData.assigneeId !== '__unassigned__'
+            ? validatedData.assigneeId
+            : null,
         updatedAt: new Date(),
       } as any,
       include: {

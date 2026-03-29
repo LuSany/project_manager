@@ -58,40 +58,29 @@ export function CalendarDayCell({
       ref={setNodeRef}
       onDoubleClick={handleDoubleClick}
       className={cn(
-        'min-h-[80px] p-1 border rounded transition-colors',
+        'min-h-[80px] rounded border p-1 transition-colors',
         'flex flex-col',
         isCurrentMonth ? 'bg-background' : 'bg-muted/30',
-        isTodayDate && 'ring-2 ring-primary',
         isOver && 'bg-primary/10 border-primary',
         !isCurrentMonth && 'text-muted-foreground',
+        isTodayDate && 'ring-primary bg-primary/5 ring-2 ring-offset-1'
       )}
     >
       {/* 日期数字 */}
-      <div
-        className={cn(
-          'text-xs font-medium mb-1',
-          isTodayDate && 'text-primary font-bold',
-        )}
-      >
+      <div className={cn('mb-1 text-xs font-medium', isTodayDate && 'text-primary font-bold')}>
         {format(date, 'd')}
       </div>
 
       {/* 任务列表 */}
       <div className="flex-1 space-y-1 overflow-hidden">
         {visibleTasks.map((task) => (
-          <CalendarTaskCard
-            key={task.id}
-            task={task}
-            onOpenDetail={onOpenDetail}
-          />
+          <CalendarTaskCard key={task.id} task={task} onOpenDetail={onOpenDetail} />
         ))}
       </div>
 
       {/* 更多任务指示器 */}
       {remainingCount > 0 && (
-        <div className="text-xs text-muted-foreground text-center mt-1">
-          +{remainingCount} 更多
-        </div>
+        <div className="text-muted-foreground mt-1 text-center text-xs">+{remainingCount} 更多</div>
       )}
     </div>
   )

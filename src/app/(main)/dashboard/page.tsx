@@ -7,6 +7,7 @@ import { ActivityChart } from '@/components/dashboard/ActivityChart'
 import { TaskBoard } from '@/components/dashboard/TaskBoard'
 import { RiskOverview } from '@/components/dashboard/RiskOverview'
 import { QuickActions } from '@/components/dashboard/QuickActions'
+import { ChartsGrid } from '@/components/dashboard/ChartsGrid'
 
 interface DashboardStats {
   totalProjects: number
@@ -29,7 +30,7 @@ export default function DashboardPage() {
   const fetchStats = async () => {
     try {
       const statsResponse = await fetch('/api/v1/dashboard/stats', {
-        credentials: 'include'
+        credentials: 'include',
       })
       if (!statsResponse.ok) {
         // 未授权或错误响应，不尝试解析 JSON
@@ -64,11 +65,14 @@ export default function DashboardPage() {
       {/* 统计卡片 */}
       <StatsGrid loading={loading} />
 
+      {/* 图表区域 */}
+      <ChartsGrid />
+
       {/* 活动趋势图 */}
       <ActivityChart />
 
       {/* 主要内容区域 - 两列布局 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* 左侧：任务看板 */}
         <TaskBoard />
 

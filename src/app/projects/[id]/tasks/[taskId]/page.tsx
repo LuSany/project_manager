@@ -1,258 +1,265 @@
-"use client";
+'use client'
 
-import { useParams } from "next/navigation";
-import { useState, useEffect } from "react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
+import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
-import { ArrowLeft, Save, Loader2, Plus, Trash2, TrendingUp } from "lucide-react";
-import { Combobox } from "@/components/ui/combobox";
+} from '@/components/ui/select'
+import { ArrowLeft, Save, Loader2, Plus, Trash2, TrendingUp } from 'lucide-react'
+import { Combobox } from '@/components/ui/combobox'
 
 interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: string;
-  progress: number;
-  priority: string;
-  startDate: string | null;
-  dueDate: string | null;
-  estimatedHours: number | null;
-  actualHours: number | null;
-  projectId: string;
-  milestoneId?: string | null;
+  id: string
+  title: string
+  description: string | null
+  status: string
+  progress: number
+  priority: string
+  startDate: string | null
+  dueDate: string | null
+  estimatedHours: number | null
+  actualHours: number | null
+  projectId: string
+  milestoneId?: string | null
   project: {
-    id: string;
-    name: string;
-  };
+    id: string
+    name: string
+  }
   milestone?: {
-    id: string;
-    title: string;
-  } | null;
+    id: string
+    title: string
+  } | null
   assignees: Array<{
-    userId: string;
+    userId: string
     user: {
-      id: string;
-      name: string;
-      email: string;
-    };
-  }>;
+      id: string
+      name: string
+      email: string
+    }
+  }>
   subTasks?: Array<{
-    id: string;
-    title: string;
-    completed: boolean;
-  }>;
-  createdAt: string;
-  updatedAt: string;
+    id: string
+    title: string
+    completed: boolean
+  }>
+  createdAt: string
+  updatedAt: string
 }
 
 interface Member {
-  userId: string;
-  userName: string;
-  userEmail: string;
+  userId: string
+  userName: string
+  userEmail: string
 }
 
 interface Milestone {
-  id: string;
-  title: string;
-  status: string;
+  id: string
+  title: string
+  status: string
 }
 
 interface SubTask {
-  id: string;
-  title: string;
-  completed: boolean;
+  id: string
+  title: string
+  completed: boolean
+  assigneeId?: string | null
+  users?: {
+    id: string
+    name: string
+    avatar: string | null
+  } | null
 }
 
 interface ProgressHistory {
-  id: string;
-  progress: number;
-  status: string | null;
-  comment: string | null;
-  previousProgress: number | null;
+  id: string
+  progress: number
+  status: string | null
+  comment: string | null
+  previousProgress: number | null
   user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  createdAt: string;
+    id: string
+    name: string
+    email: string
+  }
+  createdAt: string
 }
 
 const statusLabels: Record<string, string> = {
-  TODO: "待办",
-  IN_PROGRESS: "进行中",
-  REVIEW: "待审核",
-  TESTING: "测试中",
-  DONE: "已完成",
-  CANCELLED: "已取消",
-  DELAYED: "延期",
-  BLOCKED: "阻塞",
-};
+  TODO: '待办',
+  IN_PROGRESS: '进行中',
+  REVIEW: '待审核',
+  TESTING: '测试中',
+  DONE: '已完成',
+  CANCELLED: '已取消',
+  DELAYED: '延期',
+  BLOCKED: '阻塞',
+}
 
 const priorityLabels: Record<string, string> = {
-  LOW: "低",
-  MEDIUM: "中",
-  HIGH: "高",
-  CRITICAL: "紧急",
-};
+  LOW: '低',
+  MEDIUM: '中',
+  HIGH: '高',
+  CRITICAL: '紧急',
+}
 
 const statusColors: Record<string, string> = {
-  TODO: "bg-gray-100 text-gray-800",
-  IN_PROGRESS: "bg-blue-100 text-blue-800",
-  REVIEW: "bg-yellow-100 text-yellow-800",
-  TESTING: "bg-purple-100 text-purple-800",
-  DONE: "bg-green-100 text-green-800",
-  CANCELLED: "bg-red-100 text-red-800",
-  DELAYED: "bg-orange-100 text-orange-800",
-  BLOCKED: "bg-red-200 text-red-900",
-};
+  TODO: 'bg-gray-100 text-gray-800',
+  IN_PROGRESS: 'bg-blue-100 text-blue-800',
+  REVIEW: 'bg-yellow-100 text-yellow-800',
+  TESTING: 'bg-purple-100 text-purple-800',
+  DONE: 'bg-green-100 text-green-800',
+  CANCELLED: 'bg-red-100 text-red-800',
+  DELAYED: 'bg-orange-100 text-orange-800',
+  BLOCKED: 'bg-red-200 text-red-900',
+}
 
 export default function TaskDetailPage() {
-  const params = useParams();
-  const projectId = params?.id as string;
-  const taskId = params?.taskId as string;
+  const params = useParams()
+  const projectId = params?.id as string
+  const taskId = params?.taskId as string
 
-  const [task, setTask] = useState<Task | null>(null);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [milestones, setMilestones] = useState<Milestone[]>([]);
-  const [subTasks, setSubTasks] = useState<SubTask[]>([]);
-  const [progressHistory, setProgressHistory] = useState<ProgressHistory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
-  const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
-  const [newProgress, setNewProgress] = useState("");
-  const [newComment, setNewComment] = useState("");
-  const [showProgressForm, setShowProgressForm] = useState(false);
+  const [task, setTask] = useState<Task | null>(null)
+  const [members, setMembers] = useState<Member[]>([])
+  const [milestones, setMilestones] = useState<Milestone[]>([])
+  const [subTasks, setSubTasks] = useState<SubTask[]>([])
+  const [progressHistory, setProgressHistory] = useState<ProgressHistory[]>([])
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [newSubTaskTitle, setNewSubTaskTitle] = useState('')
+  const [newSubTaskAssignee, setNewSubTaskAssignee] = useState<string | null>(null)
+  const [newProgress, setNewProgress] = useState('')
+  const [newComment, setNewComment] = useState('')
+  const [showProgressForm, setShowProgressForm] = useState(false)
 
   const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    status: "TODO",
+    title: '',
+    description: '',
+    status: 'TODO',
     progress: 0,
-    priority: "MEDIUM",
-    startDate: "",
-    dueDate: "",
-    estimatedHours: "",
-    actualHours: "",
+    priority: 'MEDIUM',
+    startDate: '',
+    dueDate: '',
+    estimatedHours: '',
+    actualHours: '',
     assigneeIds: [] as string[],
-    milestoneId: "__none__",
-  });
+    milestoneId: '__none__',
+  })
 
   useEffect(() => {
     if (taskId) {
-      fetchTask();
-      fetchMembers();
-      fetchMilestones();
-      fetchProgressHistory();
+      fetchTask()
+      fetchMembers()
+      fetchMilestones()
+      fetchProgressHistory()
     }
-  }, [taskId]);
+  }, [taskId])
 
   const fetchTask = async () => {
     try {
-      const response = await fetch(`/api/v1/tasks/${taskId}`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/tasks/${taskId}`)
+      const data = await response.json()
       if (data.success) {
-        setTask(data.data);
-        setSubTasks(data.data.subTasks || []);
+        setTask(data.data)
+        setSubTasks(Array.isArray(data.data.subtasks) ? data.data.subtasks : [])
         setFormData({
           title: data.data.title,
-          description: data.data.description || "",
+          description: data.data.description || '',
           status: data.data.status,
           progress: data.data.progress,
           priority: data.data.priority,
-          startDate: data.data.startDate ? data.data.startDate.split("T")[0] : "",
-          dueDate: data.data.dueDate ? data.data.dueDate.split("T")[0] : "",
-          estimatedHours: data.data.estimatedHours?.toString() || "",
-          actualHours: data.data.actualHours?.toString() || "",
+          startDate: data.data.startDate ? data.data.startDate.split('T')[0] : '',
+          dueDate: data.data.dueDate ? data.data.dueDate.split('T')[0] : '',
+          estimatedHours: data.data.estimatedHours?.toString() || '',
+          actualHours: data.data.actualHours?.toString() || '',
           assigneeIds: data.data.assignees?.length > 0 ? [data.data.assignees[0].userId] : [],
-          milestoneId: data.data.milestoneId || "__none__",
-        });
+          milestoneId: data.data.milestoneId || '__none__',
+        })
       }
     } catch (error) {
-      console.error("获取任务失败:", error);
+      console.error('获取任务失败:', error)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const fetchMembers = async () => {
     try {
-      const response = await fetch(`/api/v1/projects/${projectId}/members`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/projects/${projectId}/members`)
+      const data = await response.json()
       if (data.success) {
-        setMembers(data.data || []);
+        setMembers(data.data || [])
       }
     } catch (error) {
-      console.error("获取成员失败:", error);
+      console.error('获取成员失败:', error)
     }
-  };
+  }
 
   const fetchMilestones = async () => {
     try {
-      const response = await fetch(`/api/v1/projects/${projectId}/milestones`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/projects/${projectId}/milestones`)
+      const data = await response.json()
       if (data.success) {
-        setMilestones(data.data || []);
+        setMilestones(data.data || [])
       }
     } catch (error) {
-      console.error("获取里程碑失败:", error);
+      console.error('获取里程碑失败:', error)
     }
-  };
+  }
 
   const fetchProgressHistory = async () => {
     try {
-      const response = await fetch(`/api/v1/tasks/${taskId}/progress-history`);
-      const data = await response.json();
+      const response = await fetch(`/api/v1/tasks/${taskId}/progress-history`)
+      const data = await response.json()
       if (data.success) {
-        setProgressHistory(data.data || []);
+        setProgressHistory(data.data || [])
       }
     } catch (error) {
-      console.error("获取进展历史失败:", error);
+      console.error('获取进展历史失败:', error)
     }
-  };
+  }
 
   const handleAddProgress = async () => {
-    if (!newProgress) return;
+    if (!newProgress) return
 
     try {
       const response = await fetch(`/api/v1/tasks/${taskId}/progress-history`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           progress: parseInt(newProgress),
           comment: newComment || undefined,
         }),
-      });
-      const data = await response.json();
+      })
+      const data = await response.json()
       if (data.success) {
-        setProgressHistory([data.data, ...progressHistory]);
-        setNewProgress("");
-        setNewComment("");
-        setShowProgressForm(false);
-        fetchTask(); // 刷新任务数据
+        setProgressHistory([data.data, ...progressHistory])
+        setNewProgress('')
+        setNewComment('')
+        setShowProgressForm(false)
+        fetchTask() // 刷新任务数据
       }
     } catch (error) {
-      console.error("添加进展记录失败:", error);
+      console.error('添加进展记录失败:', error)
     }
-  };
+  }
 
   const handleSave = async () => {
-    setSaving(true);
+    setSaving(true)
     try {
       const response = await fetch(`/api/v1/tasks/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,
@@ -263,91 +270,107 @@ export default function TaskDetailPage() {
           dueDate: formData.dueDate || null,
           estimatedHours: formData.estimatedHours ? Number(formData.estimatedHours) : null,
           actualHours: formData.actualHours ? Number(formData.actualHours) : null,
-          milestoneId: formData.milestoneId === "__none__" ? null : formData.milestoneId,
+          milestoneId: formData.milestoneId === '__none__' ? null : formData.milestoneId,
           assigneeIds: formData.assigneeIds,
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
       if (data.success) {
-        alert("保存成功");
-        fetchTask();
+        alert('保存成功')
+        fetchTask()
       } else {
-        alert("保存失败: " + (data.error?.message || data.error || "未知错误"));
+        alert('保存失败: ' + (data.error?.message || data.error || '未知错误'))
       }
     } catch (error) {
-      console.error("保存失败:", error);
-      alert("保存失败");
+      console.error('保存失败:', error)
+      alert('保存失败')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
-  };
+  }
 
   const handleAddSubTask = async () => {
-    if (!newSubTaskTitle.trim()) return;
+    if (!newSubTaskTitle.trim()) return
 
     try {
       const response = await fetch(`/api/v1/tasks/${taskId}/subtasks`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: newSubTaskTitle }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setSubTasks(data.data || []);
-        setNewSubTaskTitle("");
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: newSubTaskTitle,
+          assigneeId: newSubTaskAssignee,
+        }),
+      })
+      const data = await response.json()
+      if (data.success && data.data) {
+        setSubTasks([...subTasks, data.data])
+        setNewSubTaskTitle('')
+        setNewSubTaskAssignee(null)
+      } else if (data.error) {
+        console.error('添加子任务失败:', data.error)
       }
     } catch (error) {
-      console.error("添加子任务失败:", error);
+      console.error('添加子任务失败:', error)
     }
-  };
+  }
 
-  const handleToggleSubTask = async (subTaskId: string, completed: boolean) => {
+  const handleToggleSubTask = async (subTaskId: string, _completed: boolean) => {
     try {
-      await fetch(`/api/v1/tasks/${taskId}/subtasks/${subTaskId}/toggle`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed: !completed }),
-      });
-      fetchTask();
+      const response = await fetch(`/api/v1/tasks/${taskId}/subtasks/${subTaskId}/toggle`, {
+        method: 'PUT',
+      })
+      const data = await response.json()
+      if (data.success && data.data) {
+        setSubTasks(
+          subTasks.map((st) =>
+            st.id === subTaskId ? { ...st, completed: data.data.completed } : st
+          )
+        )
+      }
     } catch (error) {
-      console.error("切换子任务状态失败:", error);
+      console.error('切换子任务状态失败:', error)
     }
-  };
+  }
 
   const handleDeleteSubTask = async (subTaskId: string) => {
-    if (!confirm("确定要删除此子任务吗？")) return;
+    if (!confirm('确定要删除此子任务吗？')) return
 
     try {
-      await fetch(`/api/v1/tasks/${taskId}/subtasks/${subTaskId}`, {
-        method: "DELETE",
-      });
-      fetchTask();
+      const response = await fetch(`/api/v1/tasks/${taskId}/subtasks/${subTaskId}`, {
+        method: 'DELETE',
+      })
+      const data = await response.json()
+      if (data.success) {
+        setSubTasks(subTasks.filter((st) => st.id !== subTaskId))
+      } else if (data.error) {
+        console.error('删除子任务失败:', data.error)
+      }
     } catch (error) {
-      console.error("删除子任务失败:", error);
+      console.error('删除子任务失败:', error)
     }
-  };
+  }
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="flex items-center justify-center p-6">
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
-    );
+    )
   }
 
   if (!task) {
     return (
       <div className="p-6">
-        <div className="text-center text-muted-foreground">任务不存在</div>
+        <div className="text-muted-foreground text-center">任务不存在</div>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="p-6 max-w-5xl mx-auto">
+    <div className="mx-auto max-w-5xl p-6">
       {/* 返回导航 */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <Link href={`/projects/${projectId}/tasks`}>
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="h-4 w-4" />
@@ -366,29 +389,30 @@ export default function TaskDetailPage() {
         </Link>
       </div>
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">{task.title}</h1>
           <p className="text-muted-foreground">
-            项目: {task.project?.name} | 创建于 {new Date(task.createdAt).toLocaleDateString("zh-CN")}
+            项目: {task.project?.name} | 创建于{' '}
+            {new Date(task.createdAt).toLocaleDateString('zh-CN')}
           </p>
         </div>
         <Button onClick={handleSave} disabled={saving}>
           {saving ? (
             <>
-              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               保存中...
             </>
           ) : (
             <>
-              <Save className="h-4 w-4 mr-2" />
+              <Save className="mr-2 h-4 w-4" />
               保存
             </>
           )}
         </Button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
         {/* 基本信息 */}
         <Card>
           <CardHeader>
@@ -492,11 +516,13 @@ export default function TaskDetailPage() {
                 min="0"
                 max="100"
                 value={formData.progress}
-                onChange={(e) => setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })}
+                onChange={(e) =>
+                  setFormData({ ...formData, progress: parseInt(e.target.value) || 0 })
+                }
               />
-              <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+              <div className="mt-2 h-2 w-full rounded-full bg-gray-200">
                 <div
-                  className="bg-blue-600 h-2 rounded-full transition-all"
+                  className="h-2 rounded-full bg-blue-600 transition-all"
                   style={{ width: `${formData.progress}%` }}
                 />
               </div>
@@ -558,7 +584,8 @@ export default function TaskDetailPage() {
             <CardTitle className="flex items-center justify-between">
               <span>子任务</span>
               <Badge variant="outline">
-                {subTasks.filter(s => s.completed).length}/{subTasks.length}
+                {(Array.isArray(subTasks) ? subTasks : []).filter((s) => s.completed).length}/
+                {(Array.isArray(subTasks) ? subTasks : []).length}
               </Badge>
             </CardTitle>
           </CardHeader>
@@ -569,22 +596,39 @@ export default function TaskDetailPage() {
                 placeholder="添加子任务..."
                 value={newSubTaskTitle}
                 onChange={(e) => setNewSubTaskTitle(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleAddSubTask()}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddSubTask()}
+                className="flex-1"
               />
+              <Select
+                value={newSubTaskAssignee || ''}
+                onValueChange={(v) => setNewSubTaskAssignee(v || null)}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="选择负责人" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="__unassigned__">未分配</SelectItem>
+                  {members.map((member) => (
+                    <SelectItem key={member.userId} value={member.userId}>
+                      {member.userName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <Button size="sm" onClick={handleAddSubTask}>
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
 
             {/* 子任务列表 */}
-            {subTasks.length === 0 ? (
+            {(Array.isArray(subTasks) ? subTasks : []).length === 0 ? (
               <p className="text-muted-foreground text-sm">暂无子任务</p>
             ) : (
               <div className="space-y-2">
-                {subTasks.map((subTask) => (
+                {(Array.isArray(subTasks) ? subTasks : []).map((subTask) => (
                   <div
                     key={subTask.id}
-                    className="flex items-center justify-between p-2 border rounded-lg"
+                    className="flex items-center justify-between rounded-lg border p-2"
                   >
                     <div className="flex items-center gap-2">
                       <input
@@ -593,7 +637,9 @@ export default function TaskDetailPage() {
                         onChange={() => handleToggleSubTask(subTask.id, subTask.completed)}
                         className="h-4 w-4"
                       />
-                      <span className={subTask.completed ? "line-through text-muted-foreground" : ""}>
+                      <span
+                        className={subTask.completed ? 'text-muted-foreground line-through' : ''}
+                      >
                         {subTask.title}
                       </span>
                     </div>
@@ -602,7 +648,7 @@ export default function TaskDetailPage() {
                       size="sm"
                       onClick={() => handleDeleteSubTask(subTask.id)}
                     >
-                      <Trash2 className="h-4 w-4 text-muted-foreground" />
+                      <Trash2 className="text-muted-foreground h-4 w-4" />
                     </Button>
                   </div>
                 ))}
@@ -625,12 +671,12 @@ export default function TaskDetailPage() {
                   value: member.userId,
                   label: `${member.userName} (${member.userEmail})`,
                 }))}
-                value={formData.assigneeIds[0] || ""}
+                value={formData.assigneeIds[0] || ''}
                 onChange={(value) => {
                   setFormData((prev) => ({
                     ...prev,
                     assigneeIds: [value],
-                  }));
+                  }))
                 }}
                 placeholder="选择负责人"
                 emptyText="无匹配成员"
@@ -653,7 +699,7 @@ export default function TaskDetailPage() {
               size="sm"
               onClick={() => setShowProgressForm(!showProgressForm)}
             >
-              <Plus className="h-4 w-4 mr-1" />
+              <Plus className="mr-1 h-4 w-4" />
               添加进展
             </Button>
           </CardTitle>
@@ -661,7 +707,7 @@ export default function TaskDetailPage() {
         <CardContent>
           {/* 添加进展表单 */}
           {showProgressForm && (
-            <div className="mb-4 p-4 border rounded-lg bg-slate-50 space-y-3">
+            <div className="mb-4 space-y-3 rounded-lg border bg-slate-50 p-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="newProgress">进度 (%)</Label>
@@ -699,14 +745,12 @@ export default function TaskDetailPage() {
           {/* 进展历史列表 */}
           <div className="space-y-3">
             {progressHistory.length === 0 ? (
-              <div className="text-center py-4 text-muted-foreground">
-                暂无进展记录
-              </div>
+              <div className="text-muted-foreground py-4 text-center">暂无进展记录</div>
             ) : (
               progressHistory.map((record) => (
                 <div
                   key={record.id}
-                  className="flex items-start gap-3 p-3 border rounded-lg hover:bg-slate-50"
+                  className="flex items-start gap-3 rounded-lg border p-3 hover:bg-slate-50"
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -716,14 +760,16 @@ export default function TaskDetailPage() {
                           : `${record.progress}%`}
                       </span>
                       {record.status && (
-                        <Badge variant="outline">{statusLabels[record.status] || record.status}</Badge>
+                        <Badge variant="outline">
+                          {statusLabels[record.status] || record.status}
+                        </Badge>
                       )}
                     </div>
                     {record.comment && (
-                      <p className="text-sm text-muted-foreground mt-1">{record.comment}</p>
+                      <p className="text-muted-foreground mt-1 text-sm">{record.comment}</p>
                     )}
-                    <div className="text-xs text-muted-foreground mt-1">
-                      {record.user.name} · {new Date(record.createdAt).toLocaleString("zh-CN")}
+                    <div className="text-muted-foreground mt-1 text-xs">
+                      {record.user.name} · {new Date(record.createdAt).toLocaleString('zh-CN')}
                     </div>
                   </div>
                 </div>
@@ -731,11 +777,11 @@ export default function TaskDetailPage() {
             )}
 
             {/* 任务创建记录 */}
-            <div className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
+            <div className="flex items-start gap-3 rounded-lg bg-gray-50 p-3">
               <div className="flex-1">
                 <div className="font-medium">任务创建</div>
                 <div className="text-muted-foreground">
-                  {new Date(task.createdAt).toLocaleString("zh-CN")}
+                  {new Date(task.createdAt).toLocaleString('zh-CN')}
                 </div>
               </div>
             </div>
@@ -743,5 +789,5 @@ export default function TaskDetailPage() {
         </CardContent>
       </Card>
     </div>
-  );
+  )
 }

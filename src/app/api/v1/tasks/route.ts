@@ -17,8 +17,8 @@ const createTaskSchema = z.object({
   status: z.enum(['TODO', 'IN_PROGRESS', 'REVIEW', 'TESTING', 'DONE']).optional(),
   progress: z.number().min(0).max(100).optional(),
   priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
-  startDate: z.string().datetime().optional(),
-  dueDate: z.string().datetime().optional(),
+  startDate: z.string().optional(), // 接受日期字符串如 "2026-03-28"
+  dueDate: z.string().optional(), // 接受日期字符串如 "2026-03-28"
   estimatedHours: z.number().positive().optional(),
   projectId: z.string(),
   milestoneId: z.string().optional(),

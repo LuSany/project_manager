@@ -71,4 +71,4 @@ coverage/
 .sisyphus/
 
 # GSD
-.planning/
+#.planning/
