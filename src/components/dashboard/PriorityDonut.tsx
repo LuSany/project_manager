@@ -1,77 +1,111 @@
 'use client'
 
+import React from 'react'
 import { useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Label } from 'recharts'
 import { AlertCircle } from 'lucide-react'
 import { ChartCard } from '@/components/dashboard/ChartCard'
-import {
-  PriorityDistributionItem,
-  PRIORITY_COLORS,
-  PRIORITY_LABELS,
-  EMPTY_STATE_MESSAGES,
-} from '@/types/dashboard-charts'
+import { PRIORITY_COLORS, PRIORITY_LABELS } from '@/types/dashboard-charts'
+import type { TaskPriority } from '@prisma/client'
+
+interface DistributionItem {
+  name: string
+  value: number
+}
 
 export function PriorityDonut() {
-  const [data, setData] = useState<PriorityDistributionItem[]>([])
+  const [data, setData] = useState<DistributionItem[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true)
       try {
         const response = await fetch('/api/v1/dashboard/stats', {
           credentials: 'include',
         })
         const result = await response.json()
-        if (result.success && result.data.priorityDistribution) {
+        if (result.success && result.data?.priorityDistribution) {
           setData(result.data.priorityDistribution)
+        } else {
+          setData([])
         }
       } catch (e) {
-        console.error('获取优先级分布失败:', e)
+        console.error('获取优先级分布数据失败:', e)
+        setData([])
       } finally {
         setLoading(false)
       }
     }
+
     fetchData()
   }, [])
 
   const total = data.reduce((sum, item) => sum + item.value, 0)
+  const isEmpty = !loading && data.length === 0
 
   return (
     <ChartCard
-      title="优先级分布"
       icon={AlertCircle}
       iconColor="text-amber-500"
+      title="优先级分布"
       loading={loading}
-      empty={!loading && data.length === 0}
-      emptyMessage={EMPTY_STATE_MESSAGES.tasks}
+      empty={isEmpty}
+      emptyMessage="暂无数据"
     >
-      {data.length > 0 && (
+      <div className="flex flex-col items-center">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
-              dataKey="value"
-              nameKey="name"
+              cx="50%"
+              cy="50%"
               innerRadius={50}
               outerRadius={80}
               paddingAngle={2}
+              dataKey="value"
+              nameKey="name"
             >
               {data.map((entry) => (
-                <Cell key={entry.name} fill={PRIORITY_COLORS[entry.name] || '#6b7280'} />
+                <Cell
+                  key={entry.name}
+                  fill={PRIORITY_COLORS[entry.name as TaskPriority] || '#6b7280'}
+                  name={entry.name}
+                />
               ))}
-              <Label value={total} position="center" fill="#333" fontSize={20} fontWeight="bold" />
+              <Label value={total} position="center" />
             </Pie>
             <Tooltip
-              formatter={(value: number, name: string) => [value, PRIORITY_LABELS[name] || name]}
               contentStyle={{
                 backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
+                border: '1px solid #e2e8f0',
                 borderRadius: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
               }}
+              formatter={(value: number, name: string) => [
+                `${value} 个任务`,
+                PRIORITY_LABELS[name as TaskPriority] || name,
+              ]}
             />
           </PieChart>
         </ResponsiveContainer>
-      )}
+
+        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
+          {data.map((entry) => (
+            <div key={entry.name} className="flex items-center gap-1">
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{
+                  backgroundColor: PRIORITY_COLORS[entry.name as TaskPriority] || '#6b7280',
+                }}
+              />
+              <span className="text-xs text-slate-600 dark:text-slate-400">
+                {PRIORITY_LABELS[entry.name as TaskPriority] || entry.name}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
     </ChartCard>
   )
 }
