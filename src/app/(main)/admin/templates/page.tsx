@@ -3,9 +3,12 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, FileText, CheckSquare } from 'lucide-react'
+import { Loader2, Plus, FileText, CheckSquare, Edit2, Trash2 } from 'lucide-react'
+import { TemplateDialog } from './components/TemplateDialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface TaskTemplate {
   id: string
@@ -29,9 +32,13 @@ interface ReviewTemplate {
 }
 
 export default function TemplatesAdminPage() {
+  const { toast } = useToast()
   const [taskTemplates, setTaskTemplates] = useState<TaskTemplate[]>([])
   const [reviewTemplates, setReviewTemplates] = useState<ReviewTemplate[]>([])
   const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | ReviewTemplate | null>(null)
+  const [dialogType, setDialogType] = useState<'task' | 'review'>('task')
 
   useEffect(() => {
     fetchTemplates()
@@ -43,8 +50,8 @@ export default function TemplatesAdminPage() {
         api.get('/templates'),
         api.get('/review-templates'),
       ])
-      setTaskTemplates((taskRes as { data?: TaskTemplate[] }).data || [])
-      setReviewTemplates((reviewRes as { data?: ReviewTemplate[] }).data || [])
+      setTaskTemplates((taskRes as { data?: { items?: TaskTemplate[] } }).data?.items || [])
+      setReviewTemplates((reviewRes as { data?: { data?: ReviewTemplate[] } }).data?.data || [])
     } catch (error) {
       console.error('获取模板列表失败:', error)
     } finally {
@@ -52,10 +59,50 @@ export default function TemplatesAdminPage() {
     }
   }
 
+  const handleCreateTemplate = (type: 'task' | 'review') => {
+    setDialogType(type)
+    setEditingTemplate(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditTemplate = (template: TaskTemplate | ReviewTemplate, type: 'task' | 'review') => {
+    setDialogType(type)
+    setEditingTemplate(template)
+    setDialogOpen(true)
+  }
+
+  const handleDeleteTemplate = async (id: string, type: 'task' | 'review') => {
+    if (!confirm('确定要删除这个模板吗?')) {
+      return
+    }
+
+    try {
+      await api.delete(`/${type === 'task' ? 'templates' : 'review-templates'}/${id}`)
+      toast({
+        title: '删除成功',
+        variant: 'success',
+      })
+      fetchTemplates()
+    } catch (error) {
+      console.error('删除模板失败:', error)
+      toast({
+        title: '删除失败',
+        description: '请重试',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDialogSuccess = () => {
+    fetchTemplates()
+    setDialogOpen(false)
+    setEditingTemplate(null)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -80,36 +127,48 @@ export default function TemplatesAdminPage() {
 
           <TabsContent value="task">
             <div className="space-y-4">
-              <div className="flex justify-end">
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+              <div className="flex justify-between">
+                <Button size="sm" onClick={() => handleCreateTemplate('task')}>
+                  <Plus className="mr-2 h-4 w-4" />
                   新建模板
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {taskTemplates.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无任务模板
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无任务模板</div>
                 ) : (
                   taskTemplates.map((template) => (
-                    <div key={template.id} className="p-4 flex items-center justify-between">
+                    <div key={template.id} className="flex items-center justify-between p-4">
                       <div>
                         <p className="font-medium">{template.title}</p>
                         {template.description && (
-                          <p className="text-sm text-muted-foreground">{template.description}</p>
+                          <p className="text-muted-foreground text-sm">{template.description}</p>
                         )}
                       </div>
                       <div className="flex items-center gap-4">
                         {template.isPublic && (
-                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          <Badge className="bg-blue-500/20 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400">
                             公开
-                          </span>
+                          </Badge>
                         )}
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {new Date(template.createdAt).toLocaleDateString('zh-CN')}
                         </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditTemplate(template, 'task')}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteTemplate(template.id, 'task')}
+                        >
+                          <Trash2 className="text-destructive h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -121,39 +180,51 @@ export default function TemplatesAdminPage() {
           <TabsContent value="review">
             <div className="space-y-4">
               <div className="flex justify-end">
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button size="sm" onClick={() => handleCreateTemplate('review')}>
+                  <Plus className="mr-2 h-4 w-4" />
                   新建模板
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {reviewTemplates.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无评审模板
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无评审模板</div>
                 ) : (
                   reviewTemplates.map((template) => (
-                    <div key={template.id} className="p-4 flex items-center justify-between">
+                    <div key={template.id} className="flex items-center justify-between p-4">
                       <div>
                         <p className="font-medium">{template.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           类型: {template.type?.displayName || template.type?.name}
                         </p>
                       </div>
                       <div className="flex items-center gap-4">
                         {template.isActive ? (
-                          <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                          <Badge className="bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400">
                             启用
-                          </span>
+                          </Badge>
                         ) : (
-                          <span className="text-xs bg-gray-100 text-gray-800 px-2 py-1 rounded">
+                          <Badge className="bg-gray-500/20 text-gray-700 dark:bg-gray-500/10 dark:text-gray-400">
                             禁用
-                          </span>
+                          </Badge>
                         )}
-                        <span className="text-sm text-muted-foreground">
+                        <span className="text-muted-foreground text-sm">
                           {new Date(template.createdAt).toLocaleDateString('zh-CN')}
                         </span>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleEditTemplate(template, 'review')}
+                        >
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteTemplate(template.id, 'review')}
+                        >
+                          <Trash2 className="text-destructive h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -162,6 +233,13 @@ export default function TemplatesAdminPage() {
             </div>
           </TabsContent>
         </Tabs>
+        <TemplateDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          template={editingTemplate}
+          type={dialogType}
+          onSuccess={handleDialogSuccess}
+        />
       </CardContent>
     </Card>
   )

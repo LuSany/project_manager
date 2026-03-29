@@ -6,7 +6,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Brain, History, Database } from 'lucide-react'
+import { Loader2, Plus, Brain, History, Database, Edit2, Trash2 } from 'lucide-react'
+import { AIConfigDialog } from './components/AIConfigDialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface AIConfig {
   id: string
@@ -36,10 +38,13 @@ interface AICache {
 }
 
 export default function AIAdminPage() {
+  const { toast } = useToast()
   const [configs, setConfigs] = useState<AIConfig[]>([])
   const [logs, setLogs] = useState<AILog[]>([])
   const [cache, setCache] = useState<AICache[]>([])
   const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingConfig, setEditingConfig] = useState<AIConfig | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -60,6 +65,44 @@ export default function AIAdminPage() {
     }
   }
 
+  const handleCreateConfig = () => {
+    setEditingConfig(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditConfig = (config: AIConfig) => {
+    setEditingConfig(config)
+    setDialogOpen(true)
+  }
+
+  const handleDeleteConfig = async (id: string) => {
+    if (!confirm('确定要删除这个配置吗?')) {
+      return
+    }
+
+    try {
+      await api.delete(`/admin/ai/configs/${id}`)
+      toast({
+        title: '删除成功',
+        variant: 'success',
+      })
+      fetchData()
+    } catch (error) {
+      console.error('删除配置失败:', error)
+      toast({
+        title: '删除失败',
+        description: '请重试',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDialogSuccess = () => {
+    fetchData()
+    setDialogOpen(false)
+    setEditingConfig(null)
+  }
+
   const serviceTypeLabels: Record<string, string> = {
     RISK_ANALYSIS: '风险分析',
     REVIEW_AUDIT: '评审审核',
@@ -67,9 +110,9 @@ export default function AIAdminPage() {
   }
 
   const statusColors: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    SUCCESS: 'bg-green-100 text-green-800',
-    FAILED: 'bg-red-100 text-red-800',
+    PENDING: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
+    SUCCESS: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+    FAILED: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400',
   }
 
   const statusLabels: Record<string, string> = {
@@ -81,7 +124,7 @@ export default function AIAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -112,35 +155,43 @@ export default function AIAdminPage() {
           <TabsContent value="configs">
             <div className="space-y-4">
               <div className="flex justify-end">
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button size="sm" onClick={handleCreateConfig}>
+                  <Plus className="mr-2 h-4 w-4" />
                   添加配置
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {configs.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无 AI 服务配置
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无 AI 服务配置</div>
                 ) : (
                   configs.map((config) => (
-                    <div key={config.id} className="p-4 flex items-center justify-between">
+                    <div key={config.id} className="flex items-center justify-between p-4">
                       <div>
                         <p className="font-medium">{config.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {config.provider} · {config.model}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {config.isDefault && (
-                          <Badge variant="secondary">默认</Badge>
-                        )}
+                        {config.isDefault && <Badge variant="secondary">默认</Badge>}
                         {config.isActive ? (
-                          <Badge className="bg-green-100 text-green-800">启用</Badge>
+                          <Badge className="bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                            启用
+                          </Badge>
                         ) : (
                           <Badge variant="outline">禁用</Badge>
                         )}
+                        <Button size="sm" variant="ghost" onClick={() => handleEditConfig(config)}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteConfig(config.id)}
+                        >
+                          <Trash2 className="text-destructive h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -150,28 +201,24 @@ export default function AIAdminPage() {
           </TabsContent>
 
           <TabsContent value="logs">
-            <div className="border rounded-lg divide-y">
+            <div className="divide-y rounded-lg border">
               {logs.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  暂无调用日志
-                </div>
+                <div className="text-muted-foreground p-8 text-center">暂无调用日志</div>
               ) : (
                 logs.slice(0, 30).map((log) => (
-                  <div key={log.id} className="p-4 flex items-center justify-between">
+                  <div key={log.id} className="flex items-center justify-between p-4">
                     <div>
-                      <p className="font-medium text-sm">
+                      <p className="text-sm font-medium">
                         {serviceTypeLabels[log.serviceType] || log.serviceType}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         {log.provider} · {log.model}
                         {log.duration && ` · ${log.duration}ms`}
                       </p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Badge className={statusColors[log.status]}>
-                        {statusLabels[log.status]}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
+                      <Badge className={statusColors[log.status]}>{statusLabels[log.status]}</Badge>
+                      <span className="text-muted-foreground text-sm">
                         {new Date(log.createdAt).toLocaleString('zh-CN')}
                       </span>
                     </div>
@@ -183,32 +230,26 @@ export default function AIAdminPage() {
 
           <TabsContent value="cache">
             <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <p className="text-sm text-muted-foreground">
-                  AI 响应缓存可减少重复调用，降低成本
-                </p>
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground text-sm">AI 响应缓存可减少重复调用，降低成本</p>
                 <Button variant="outline" size="sm">
                   清理过期缓存
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {cache.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无缓存记录
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无缓存记录</div>
                 ) : (
                   cache.map((item) => (
-                    <div key={item.id} className="p-4 flex items-center justify-between">
+                    <div key={item.id} className="flex items-center justify-between p-4">
                       <div>
-                        <p className="font-medium text-sm">
+                        <p className="text-sm font-medium">
                           {serviceTypeLabels[item.serviceType] || item.serviceType}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          命中次数: {item.hitCount}
-                        </p>
+                        <p className="text-muted-foreground text-sm">命中次数: {item.hitCount}</p>
                       </div>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="text-muted-foreground text-sm">
                         过期: {new Date(item.expiresAt).toLocaleString('zh-CN')}
                       </span>
                     </div>
@@ -218,6 +259,12 @@ export default function AIAdminPage() {
             </div>
           </TabsContent>
         </Tabs>
+        <AIConfigDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          config={editingConfig}
+          onSuccess={handleDialogSuccess}
+        />
       </CardContent>
     </Card>
   )

@@ -6,7 +6,19 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Mail, FileText, History } from 'lucide-react'
+import {
+  Loader2,
+  Plus,
+  Mail,
+  FileText,
+  History,
+  Edit2,
+  Trash2,
+  Upload,
+  Download,
+} from 'lucide-react'
+import { EmailConfigDialog } from './components/EmailConfigDialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface EmailConfig {
   id: string
@@ -35,10 +47,13 @@ interface EmailLog {
 }
 
 export default function EmailAdminPage() {
+  const { toast } = useToast()
   const [configs, setConfigs] = useState<EmailConfig[]>([])
   const [templates, setTemplates] = useState<EmailTemplate[]>([])
   const [logs, setLogs] = useState<EmailLog[]>([])
   const [loading, setLoading] = useState(true)
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingConfig, setEditingConfig] = useState<EmailConfig | null>(null)
 
   useEffect(() => {
     fetchData()
@@ -61,11 +76,49 @@ export default function EmailAdminPage() {
     }
   }
 
+  const handleCreateConfig = () => {
+    setEditingConfig(null)
+    setDialogOpen(true)
+  }
+
+  const handleEditConfig = (config: EmailConfig) => {
+    setEditingConfig(config)
+    setDialogOpen(true)
+  }
+
+  const handleDeleteConfig = async (id: string) => {
+    if (!confirm('确定要删除这个配置吗?')) {
+      return
+    }
+
+    try {
+      await api.delete(`/admin/email/configs/${id}`)
+      toast({
+        title: '删除成功',
+        variant: 'success',
+      })
+      fetchData()
+    } catch (error) {
+      console.error('删除配置失败:', error)
+      toast({
+        title: '删除失败',
+        description: '请重试',
+        variant: 'destructive',
+      })
+    }
+  }
+
+  const handleDialogSuccess = () => {
+    fetchData()
+    setDialogOpen(false)
+    setEditingConfig(null)
+  }
+
   const statusColors: Record<string, string> = {
-    PENDING: 'bg-yellow-100 text-yellow-800',
-    SENT: 'bg-blue-100 text-blue-800',
-    DELIVERED: 'bg-green-100 text-green-800',
-    FAILED: 'bg-red-100 text-red-800',
+    PENDING: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
+    SENT: 'bg-blue-500/20 text-blue-700 dark:bg-blue-500/10 dark:text-blue-400',
+    DELIVERED: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+    FAILED: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400',
   }
 
   const statusLabels: Record<string, string> = {
@@ -78,7 +131,7 @@ export default function EmailAdminPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
       </div>
     )
   }
@@ -109,35 +162,43 @@ export default function EmailAdminPage() {
           <TabsContent value="configs">
             <div className="space-y-4">
               <div className="flex justify-end">
-                <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                <Button size="sm" onClick={handleCreateConfig}>
+                  <Plus className="mr-2 h-4 w-4" />
                   添加配置
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {configs.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无邮件服务配置
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无邮件服务配置</div>
                 ) : (
                   configs.map((config) => (
-                    <div key={config.id} className="p-4 flex items-center justify-between">
+                    <div key={config.id} className="flex items-center justify-between p-4">
                       <div>
                         <p className="font-medium">{config.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {config.provider} · {config.fromAddress}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        {config.isDefault && (
-                          <Badge variant="secondary">默认</Badge>
-                        )}
+                        {config.isDefault && <Badge variant="secondary">默认</Badge>}
                         {config.isActive ? (
-                          <Badge className="bg-green-100 text-green-800">启用</Badge>
+                          <Badge className="bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400">
+                            启用
+                          </Badge>
                         ) : (
                           <Badge variant="outline">禁用</Badge>
                         )}
+                        <Button size="sm" variant="ghost" onClick={() => handleEditConfig(config)}>
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleDeleteConfig(config.id)}
+                        >
+                          <Trash2 className="text-destructive h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -150,22 +211,20 @@ export default function EmailAdminPage() {
             <div className="space-y-4">
               <div className="flex justify-end">
                 <Button size="sm">
-                  <Plus className="h-4 w-4 mr-2" />
+                  <Plus className="mr-2 h-4 w-4" />
                   新建模板
                 </Button>
               </div>
 
-              <div className="border rounded-lg divide-y">
+              <div className="divide-y rounded-lg border">
                 {templates.length === 0 ? (
-                  <div className="p-8 text-center text-muted-foreground">
-                    暂无邮件模板
-                  </div>
+                  <div className="text-muted-foreground p-8 text-center">暂无邮件模板</div>
                 ) : (
                   templates.map((template) => (
-                    <div key={template.id} className="p-4 flex items-center justify-between">
+                    <div key={template.id} className="flex items-center justify-between p-4">
                       <div>
                         <p className="font-medium">{template.name}</p>
-                        <p className="text-sm text-muted-foreground">{template.subject}</p>
+                        <p className="text-muted-foreground text-sm">{template.subject}</p>
                       </div>
                       <Badge variant="outline">{template.type}</Badge>
                     </div>
@@ -176,23 +235,19 @@ export default function EmailAdminPage() {
           </TabsContent>
 
           <TabsContent value="logs">
-            <div className="border rounded-lg divide-y">
+            <div className="divide-y rounded-lg border">
               {logs.length === 0 ? (
-                <div className="p-8 text-center text-muted-foreground">
-                  暂无发送记录
-                </div>
+                <div className="text-muted-foreground p-8 text-center">暂无发送记录</div>
               ) : (
                 logs.slice(0, 20).map((log) => (
-                  <div key={log.id} className="p-4 flex items-center justify-between">
+                  <div key={log.id} className="flex items-center justify-between p-4">
                     <div>
-                      <p className="font-medium text-sm">{log.subject}</p>
-                      <p className="text-sm text-muted-foreground">收件人: {log.to}</p>
+                      <p className="text-sm font-medium">{log.subject}</p>
+                      <p className="text-muted-foreground text-sm">收件人: {log.to}</p>
                     </div>
                     <div className="flex items-center gap-4">
-                      <Badge className={statusColors[log.status]}>
-                        {statusLabels[log.status]}
-                      </Badge>
-                      <span className="text-sm text-muted-foreground">
+                      <Badge className={statusColors[log.status]}>{statusLabels[log.status]}</Badge>
+                      <span className="text-muted-foreground text-sm">
                         {new Date(log.createdAt).toLocaleString('zh-CN')}
                       </span>
                     </div>
@@ -202,6 +257,12 @@ export default function EmailAdminPage() {
             </div>
           </TabsContent>
         </Tabs>
+        <EmailConfigDialog
+          open={dialogOpen}
+          onOpenChange={setDialogOpen}
+          config={editingConfig}
+          onSuccess={handleDialogSuccess}
+        />
       </CardContent>
     </Card>
   )
