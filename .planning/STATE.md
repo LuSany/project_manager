@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Ready to execute
-stopped_at: Completed 06-dashboard-02-PLAN.md
-last_updated: "2026-03-29T23:39:36.580Z"
+stopped_at: Completed 06-dashboard-03-PLAN.md
+last_updated: "2026-03-29T23:57:41.133Z"
 progress:
   total_phases: 10
   completed_phases: 5
   total_plans: 36
-  completed_plans: 21
+  completed_plans: 22
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 06 (dashboard) — EXECUTING
-Plan: 3 of 5
+Plan: 4 of 5
 
 ## Performance Metrics
 
@@ -63,6 +63,7 @@ Plan: 3 of 5
 | Phase 05-gantt P04 | 5min | 3 tasks | 3 files |
 | Phase 06-dashboard P01 | 4min | 3 tasks | 8 files |
 | Phase 06-dashboard P02 | 16min | 2 tasks | 5 files |
+| Phase 06-dashboard P03 | 12min | 4 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -107,6 +108,8 @@ Plan: 3 of 5
 - [Phase 06-dashboard]: Value-based color mapping (hex colors for Recharts, Tailwind classes for UI)
 - [Phase 06-dashboard]: 使用本地 DistributionItem {name, value} 接口匹配 API 响应格式，而非 Prisma 类型接口
 - [Phase 06-dashboard]: ChartCard 及 dashboard 组件需显式 import React 以兼容 vitest jsdom 环境
+- [Phase 06-dashboard]: Use MILESTONE_DOT_COLORS (Tailwind bg-only classes) for status indicator dots, separate from MILESTONE_STATUS_COLORS (bg+text combined)
+- [Phase 06-dashboard]: MilestoneProgressItem.dueDate 类型改为 string|null（匹配 JSON 序列化行为）, 添加可选 projectName 字段
 
 ### Pending Todos
 
@@ -119,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-29T23:39:36.576Z
-Stopped at: Completed 06-dashboard-02-PLAN.md
+Last session: 2026-03-29T23:57:41.128Z
+Stopped at: Completed 06-dashboard-03-PLAN.md
 Resume file: None
