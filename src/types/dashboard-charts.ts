@@ -44,11 +44,12 @@ export interface ProjectComparisonItem {
 export interface MilestoneProgressItem {
   milestoneId: string
   title: string
-  dueDate: Date | null
+  dueDate: string | null
   status: MilestoneStatus
   completedTasks: number
   totalTasks: number
   progress: number
+  projectName?: string
 }
 
 // ============================================================================
@@ -87,6 +88,16 @@ export const MILESTONE_STATUS_COLORS: Record<MilestoneStatus, string> = {
   IN_PROGRESS: 'bg-blue-500 text-white',
   COMPLETED: 'bg-green-500 text-white',
   CANCELLED: 'bg-gray-400 text-white',
+}
+
+/**
+ * Milestone status dot colors (Tailwind bg classes for status indicator dots)
+ */
+export const MILESTONE_DOT_COLORS: Record<MilestoneStatus, string> = {
+  NOT_STARTED: 'bg-slate-400',
+  IN_PROGRESS: 'bg-blue-500',
+  COMPLETED: 'bg-emerald-500',
+  CANCELLED: 'bg-red-500',
 }
 
 /**
