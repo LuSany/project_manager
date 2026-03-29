@@ -1,18 +1,9 @@
 'use client'
 
+import type { ChartCardProps } from '@/types/dashboard-charts'
 import { LucideIcon, PieChart as PieChartIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-
-interface ChartCardProps {
-  title: string
-  icon: LucideIcon
-  iconColor?: string
-  children: React.ReactNode
-  loading?: boolean
-  empty?: boolean
-  emptyMessage?: string
-}
 
 export function ChartCard({
   title,

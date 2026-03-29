@@ -139,5 +139,6 @@ export interface ChartCardProps {
   iconColor?: string
   children: React.ReactNode
   loading?: boolean
+  empty?: boolean
   emptyMessage?: string
 }
