@@ -1,9 +1,9 @@
 ---
-status: diagnosed
+status: resolved
 phase: 05-gantt
-source: 05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md
+source: 05-01-SUMMARY.md, 05-02-SUMMARY.md, 05-03-SUMMARY.md, 05-04-SUMMARY.md
 started: 2026-03-29T03:00:00Z
-updated: 2026-03-29T03:10:00Z
+updated: 2026-03-30T00:15:00Z
 ---
 
 ## Current Test
@@ -32,17 +32,18 @@ result: pass
 ## Summary
 
 total: 7
-passed: 2
-issues: 3
+passed: 5
+issues: 0
 pending: 0
 skipped: 0
-blocked: 2
+blocked: 0
+resolved: 3
 
 ## Gaps
 
 - truth: "今天日期在时间线上有高亮显示"
-  status: failed
-  reason: "User reported: 今天日期没有高亮"
+  status: resolved
+  resolution: "Fixed in 05-04: 使用 date-fns 的 differenceInDays 和 setHours 替代 Date.prototype.setHours()，避免原地修改 Date 对象"
   severity: minor
   test: 3
   root_cause: "timeRange.start.setHours() 原地修改了 Date 对象，导致今天指示线位置计算错误。setHours() 返回时间戳的同时会修改原对象，后续计算使用了错误的时间基准。"
@@ -56,8 +57,8 @@ blocked: 2
     debug_session: ""
 
 - truth: "鼠标悬停任务条时显示Popover弹窗"
-  status: failed
-  reason: "User reported: 鼠标悬停,没有显示popover弹窗"
+  status: resolved
+  resolution: "Fixed in 05-04: 添加 hoveredTaskId state 到 GanttTimeline，添加 onHover prop 到 GanttTaskBar，集成 GanttTaskPopover"
   severity: major
   test: 5
   root_cause: "GanttTimeline 完全缺少任务悬停状态管理和 GanttTaskPopover 集成。GanttTaskBar 没有 hover 事件处理器，GanttTimeline 不渲染 GanttTaskPopover。"
@@ -75,8 +76,8 @@ blocked: 2
     debug_session: ""
 
 - truth: "编辑任务详情支持自动保存并同步到其他视图"
-  status: failed
-  reason: "User reported: 编辑任务详情后没有保存按钮,需要设置为自动保存,且可以自动同步到其他视图"
+  status: resolved
+  resolution: "Fixed in 05-04: 实现了 useDebouncedValue hook，600ms 延迟后自动保存标题和描述，添加 isSaving spinner 视觉反馈"
   severity: major
   test: 6
   root_cause: "DetailTab 组件中标题和描述字段使用传统编辑模式（需手动保存），而其他字段（状态、优先级等）使用实时自动保存，体验不一致。updateMutation 已正确配置 invalidateQueries，同步机制无问题。"
