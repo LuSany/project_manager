@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { isToday } from 'date-fns'
+import { differenceInDays, isToday, setHours } from 'date-fns'
 import type {
   GanttTask,
   GanttDependency,
@@ -66,10 +66,8 @@ export function GanttTimeline({
 
   const days = getDaysArray()
   const todayX = isToday(new Date())
-    ? Math.ceil(
-        (new Date().setHours(0, 0, 0, 0) - timeRange.start.setHours(0, 0, 0, 0)) /
-          (1000 * 60 * 60 * 24)
-      ) * cellWidth
+    ? Math.ceil(differenceInDays(setHours(new Date(), 0), setHours(new Date(timeRange.start), 0))) *
+      cellWidth
     : null
 
   return (
