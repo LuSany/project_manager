@@ -160,8 +160,18 @@ Plans:
 3. 管理员可以配置细粒度权限
 4. 管理员可以查看审计日志，按条件筛选
 5. 管理员可以配置 AI API Key、选择模型、测试连接
-   **Plans**: TBD
-   **UI hint**: yes
+   **Plans**: 6 plans in 4 waves
+
+Plans:
+
+- [ ] 07-00-PLAN.md — Wave 0: Install dependencies + create test scaffolds
+- [ ] 07-01-PLAN.md — Wave 1: User management (TanStack Table + CSV import + bulk ops)
+- [ ] 07-02-PLAN.md — Wave 1: Project management (CRUD + members + archive)
+- [ ] 07-03-PLAN.md — Wave 1: AI/Email/Template CRUD + test connection
+- [ ] 07-04-PLAN.md — Wave 2: Permission system (RBAC + resource-based)
+- [ ] 07-05-PLAN.md — Wave 3: Project settings + integration verification
+
+**UI hint**: yes
 
 ### Phase 8: 设备管理 MVP
 
@@ -238,7 +248,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
 | 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
 | 6. 仪表盘         | 0/0            | Not started | -          |
-| 7. 管理后台       | 0/0            | Not started | -          |
+| 7. 管理后台       | 0/6            | Planned     | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
 | 9. 审批配额与统计 | 0/0            | Not started | -          |
 | 10. AI 增强功能   | 0/0            | Not started | -          |
