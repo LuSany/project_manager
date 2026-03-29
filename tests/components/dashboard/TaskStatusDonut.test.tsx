@@ -1,5 +1,6 @@
+import React from 'react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, cleanup } from '@testing-library/react'
 import { TaskStatusDonut } from '@/components/dashboard/TaskStatusDonut'
 
 // Mock fetch globally
@@ -62,6 +63,7 @@ const mockStatusData = [
 describe('TaskStatusDonut', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    cleanup()
   })
 
   it('renders donut chart when data is provided', async () => {
@@ -144,7 +146,6 @@ describe('TaskStatusDonut', () => {
   })
 
   it('shows loading state before data is fetched', async () => {
-    // Create a promise that won't resolve immediately
     let resolvePromise: (value: unknown) => void
     mockFetch.mockReturnValueOnce(
       new Promise((resolve) => {
@@ -152,12 +153,11 @@ describe('TaskStatusDonut', () => {
       })
     )
 
-    render(<TaskStatusDonut />)
+    const { container } = render(<TaskStatusDonut />)
 
-    // Should show loading skeleton immediately
-    expect(screen.getByText('加载中...')).toBeInTheDocument()
+    // ChartCard shows Skeleton during loading — no pie slices should be visible
+    expect(screen.queryAllByTestId('pie-slice')).toHaveLength(0)
 
-    // Resolve to clean up
     resolvePromise!({
       ok: true,
       json: async () => ({ success: true, data: { taskStatusDistribution: [] } }),

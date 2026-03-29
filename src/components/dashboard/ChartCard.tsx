@@ -1,5 +1,6 @@
 'use client'
 
+import * as React from 'react'
 import type { ChartCardProps } from '@/types/dashboard-charts'
 import { LucideIcon, PieChart as PieChartIcon } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
