@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Table,
   TableBody,
@@ -29,8 +29,27 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { ArrowLeft, Search, Loader2, UserPlus, Edit, Trash2, Users } from 'lucide-react'
+import { Label } from '@/components/ui/label'
+import { ArrowLeft, Search, Loader2, UserPlus, Edit, Trash2, Users, Upload } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  RowSelectionState,
+  flexRender,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { BulkActionsBar } from './components/BulkActionsBar'
+import { CSVImportDialog } from './components/CSVImportDialog'
+import { useToast } from '@/hooks/use-toast'
 
 interface User {
   id: string
@@ -47,9 +66,9 @@ interface User {
 }
 
 const statusColors: Record<string, string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  ACTIVE: 'bg-green-100 text-green-800',
-  DISABLED: 'bg-red-100 text-red-800',
+  PENDING: 'bg-yellow-500/20 text-yellow-700 dark:bg-yellow-500/10 dark:text-yellow-400',
+  ACTIVE: 'bg-green-500/20 text-green-700 dark:bg-green-500/10 dark:text-green-400',
+  DISABLED: 'bg-red-500/20 text-red-700 dark:bg-red-500/10 dark:text-red-400',
 }
 
 const statusLabels: Record<string, string> = {
@@ -66,31 +85,198 @@ const roleLabels: Record<string, string> = {
   EMPLOYEE: '普通员工',
 }
 
+const createUserSchema = z.object({
+  name: z.string().min(1, '姓名不能为空'),
+  email: z.string().email('邮箱格式不正确'),
+  password: z.string().min(6, '密码至少6个字符'),
+  role: z.enum(['ADMIN', 'PROJECT_ADMIN', 'PROJECT_OWNER', 'PROJECT_MEMBER', 'EMPLOYEE']),
+  department: z.string().optional(),
+  position: z.string().optional(),
+})
+
+const updateUserSchema = z.object({
+  name: z.string().min(1, '姓名不能为空').optional(),
+  email: z.string().email('邮箱格式不正确').optional(),
+  password: z.string().min(6, '密码至少6个字符').optional(),
+  role: z
+    .enum(['ADMIN', 'PROJECT_ADMIN', 'PROJECT_OWNER', 'PROJECT_MEMBER', 'EMPLOYEE'])
+    .optional(),
+  department: z.string().optional().nullable(),
+  position: z.string().optional().nullable(),
+  phone: z.string().optional().nullable(),
+  status: z.enum(['PENDING', 'ACTIVE', 'DISABLED']).optional(),
+})
+
+type CreateUserFormData = z.infer<typeof createUserSchema>
+type UpdateUserFormData = z.infer<typeof updateUserSchema>
+
 export default function UsersAdminPage() {
   const router = useRouter()
+  const { toast } = useToast()
   const [users, setUsers] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [roleFilter, setRoleFilter] = useState<string>('all')
+  const [sorting, setSorting] = useState<SortingState>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  const [rowSelection, setRowSelection] = useState<RowSelectionState>({})
 
-  // 对话框状态
   const [addDialogOpen, setAddDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [csvImportOpen, setCsvImportOpen] = useState(false)
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [submitting, setSubmitting] = useState(false)
 
-  // 表单数据
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    role: 'EMPLOYEE',
-    department: '',
-    position: '',
-    phone: '',
-    status: 'ACTIVE',
+  const createForm = useForm<CreateUserFormData>({
+    resolver: zodResolver(createUserSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      role: 'EMPLOYEE',
+      department: '',
+      position: '',
+    },
+  })
+
+  const updateForm = useForm<UpdateUserFormData>({
+    resolver: zodResolver(updateUserSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      password: '',
+      role: 'EMPLOYEE',
+      department: '',
+      position: '',
+      phone: '',
+      status: 'ACTIVE',
+    },
+  })
+
+  const columns = useMemo<ColumnDef<User>[]>(
+    () => [
+      {
+        id: 'select',
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected()
+                ? true
+                : table.getIsSomePageRowsSelected()
+                  ? 'indeterminate'
+                  : false
+            }
+            onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+            aria-label="选择所有行"
+          />
+        ),
+        cell: ({ row }) => (
+          <Checkbox
+            checked={row.getIsSelected()}
+            onCheckedChange={(value) => row.toggleSelected(!!value)}
+            aria-label="选择行"
+          />
+        ),
+        enableSorting: false,
+        enableHiding: false,
+      },
+      {
+        accessorKey: 'name',
+        header: '用户',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <div className="flex items-center gap-3">
+              <div className="bg-primary/10 flex h-10 w-10 items-center justify-center rounded-full">
+                <span className="text-primary text-sm font-medium">
+                  {user.name.charAt(0).toUpperCase()}
+                </span>
+              </div>
+              <div>
+                <p className="font-medium">{user.name}</p>
+                <p className="text-muted-foreground text-sm">{user.email}</p>
+              </div>
+            </div>
+          )
+        },
+      },
+      {
+        accessorKey: 'department',
+        header: '部门/职位',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <p className="text-sm">
+              {user.department || '-'}
+              {user.position && ` / ${user.position}`}
+            </p>
+          )
+        },
+      },
+      {
+        accessorKey: 'role',
+        header: '角色',
+        cell: ({ row }) => {
+          const role = row.getValue('role') as string
+          return <Badge variant="outline">{roleLabels[role] || role}</Badge>
+        },
+      },
+      {
+        accessorKey: 'status',
+        header: '状态',
+        cell: ({ row }) => {
+          const status = row.getValue('status') as string
+          return <Badge className={statusColors[status]}>{statusLabels[status]}</Badge>
+        },
+      },
+      {
+        accessorKey: 'createdAt',
+        header: '注册时间',
+        cell: ({ row }) => {
+          const date = row.getValue('createdAt') as string
+          return <span>{new Date(date).toLocaleDateString('zh-CN')}</span>
+        },
+      },
+      {
+        id: 'actions',
+        header: '操作',
+        cell: ({ row }) => {
+          const user = row.original
+          return (
+            <div className="flex justify-end gap-2">
+              <Button size="sm" variant="ghost" onClick={() => openEditDialog(user)}>
+                <Edit className="h-4 w-4" />
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => openDeleteDialog(user)}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          )
+        },
+      },
+    ],
+    []
+  )
+
+  const table = useReactTable({
+    data: users,
+    columns,
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onRowSelectionChange: setRowSelection,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+      rowSelection,
+    },
   })
 
   useEffect(() => {
@@ -105,87 +291,68 @@ export default function UsersAdminPage() {
       if (data.success) {
         setUsers(data.data || [])
       } else {
-        console.error('获取用户列表失败:', data.error)
-        // 如果API返回错误，显示错误信息
-        alert(data.error?.message || '获取用户列表失败')
+        toast({
+          title: '获取失败',
+          description: data.error?.message || '获取用户列表失败',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
-      console.error('获取用户列表失败:', error)
-      alert('获取用户列表失败，请检查网络连接')
+      toast({
+        title: '获取失败',
+        description: '获取用户列表失败，请检查网络连接',
+        variant: 'destructive',
+      })
     } finally {
       setLoading(false)
     }
   }
 
-  const resetForm = () => {
-    setFormData({
-      name: '',
-      email: '',
-      password: '',
-      role: 'EMPLOYEE',
-      department: '',
-      position: '',
-      phone: '',
-      status: 'ACTIVE',
-    })
-  }
-
-  const handleAddUser = async () => {
-    if (!formData.name || !formData.email || !formData.password) {
-      alert('请填写必填项')
-      return
-    }
-
+  const handleCreateUser = async (data: CreateUserFormData) => {
     setSubmitting(true)
     try {
       const response = await fetch('/api/v1/admin/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          role: formData.role,
-          department: formData.department || undefined,
-          position: formData.position || undefined,
-        }),
+        body: JSON.stringify(data),
       })
 
-      const data = await response.json()
-      if (data.success) {
+      const result = await response.json()
+      if (result.success) {
+        toast({
+          title: '创建成功',
+          description: '用户已创建',
+          variant: 'success',
+        })
         setAddDialogOpen(false)
-        resetForm()
+        createForm.reset()
         fetchUsers()
       } else {
-        alert(data.error?.message || data.error || '添加失败')
+        toast({
+          title: '创建失败',
+          description: result.error?.message || '添加失败',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
-      console.error('添加用户失败:', error)
-      alert('添加用户失败')
+      toast({
+        title: '创建失败',
+        description: '添加用户失败',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
   }
 
-  const handleEditUser = async () => {
-    if (!selectedUser || !formData.name || !formData.email) {
-      alert('请填写必填项')
-      return
-    }
+  const handleUpdateUser = async (data: UpdateUserFormData) => {
+    if (!selectedUser) return
 
     setSubmitting(true)
     try {
       const updateData: any = {
-        name: formData.name,
-        email: formData.email,
-        role: formData.role,
-        status: formData.status,
+        ...data,
       }
-
-      if (formData.department !== undefined) updateData.department = formData.department || null
-      if (formData.position !== undefined) updateData.position = formData.position || null
-      if (formData.phone !== undefined) updateData.phone = formData.phone || null
-      if (formData.password) updateData.password = formData.password
 
       const response = await fetch(`/api/v1/admin/users/${selectedUser.id}`, {
         method: 'PUT',
@@ -193,18 +360,30 @@ export default function UsersAdminPage() {
         body: JSON.stringify(updateData),
       })
 
-      const data = await response.json()
-      if (data.success) {
+      const result = await response.json()
+      if (result.success) {
+        toast({
+          title: '更新成功',
+          description: '用户已更新',
+          variant: 'success',
+        })
         setEditDialogOpen(false)
         setSelectedUser(null)
-        resetForm()
+        updateForm.reset()
         fetchUsers()
       } else {
-        alert(data.error?.message || data.error || '更新失败')
+        toast({
+          title: '更新失败',
+          description: result.error?.message || '更新失败',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
-      console.error('更新用户失败:', error)
-      alert('更新用户失败')
+      toast({
+        title: '更新失败',
+        description: '更新用户失败',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
@@ -219,33 +398,82 @@ export default function UsersAdminPage() {
         method: 'DELETE',
       })
 
-      const data = await response.json()
-      if (data.success) {
+      const result = await response.json()
+      if (result.success) {
+        toast({
+          title: '删除成功',
+          description: '用户已删除',
+          variant: 'success',
+        })
         setDeleteDialogOpen(false)
         setSelectedUser(null)
         fetchUsers()
       } else {
-        alert(data.error?.message || data.error || '删除失败')
+        toast({
+          title: '删除失败',
+          description: result.error?.message || '删除失败',
+          variant: 'destructive',
+        })
       }
     } catch (error) {
-      console.error('删除用户失败:', error)
-      alert('删除用户失败')
+      toast({
+        title: '删除失败',
+        description: '删除用户失败',
+        variant: 'destructive',
+      })
     } finally {
       setSubmitting(false)
     }
   }
 
+  const handleBulkStatus = async (status: 'ACTIVE' | 'DISABLED') => {
+    const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)
+
+    try {
+      const response = await fetch('/api/v1/admin/users/bulk/status', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: selectedIds, status }),
+      })
+
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error?.message || '批量更新失败')
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
+  const handleBulkRole = async (role: string) => {
+    const selectedIds = table.getFilteredSelectedRowModel().rows.map((row) => row.original.id)
+
+    try {
+      const response = await fetch('/api/v1/admin/users/bulk/role', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userIds: selectedIds, role }),
+      })
+
+      const result = await response.json()
+      if (!result.success) {
+        throw new Error(result.error?.message || '批量更新失败')
+      }
+    } catch (error) {
+      throw error
+    }
+  }
+
   const openEditDialog = (user: User) => {
     setSelectedUser(user)
-    setFormData({
+    updateForm.reset({
       name: user.name,
       email: user.email,
-      password: '',
-      role: user.role,
+      role: user.role as any,
       department: user.department || '',
       position: user.position || '',
       phone: user.phone || '',
-      status: user.status,
+      status: user.status as any,
     })
     setEditDialogOpen(true)
   }
@@ -255,20 +483,12 @@ export default function UsersAdminPage() {
     setDeleteDialogOpen(true)
   }
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(search.toLowerCase()) ||
-      user.email.toLowerCase().includes(search.toLowerCase())
-    const matchesStatus = statusFilter === 'all' || user.status === statusFilter
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter
-    return matchesSearch && matchesStatus && matchesRole
-  })
+  const selectedCount = table.getFilteredSelectedRowModel().rows.length
 
   return (
     <div className="space-y-6">
-      {/* 返回按钮 */}
       <Button variant="ghost" onClick={() => router.back()} className="mb-2">
-        <ArrowLeft className="h-4 w-4 mr-2" />
+        <ArrowLeft className="mr-2 h-4 w-4" />
         返回
       </Button>
 
@@ -282,25 +502,40 @@ export default function UsersAdminPage() {
               </CardTitle>
               <CardDescription>管理系统用户，包括查看、新增、编辑和删除用户</CardDescription>
             </div>
-            <Button onClick={() => { resetForm(); setAddDialogOpen(true); }}>
-              <UserPlus className="h-4 w-4 mr-2" />
-              新增用户
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setCsvImportOpen(true)}>
+                <Upload className="mr-2 h-4 w-4" />
+                导入用户
+              </Button>
+              <Button
+                onClick={() => {
+                  createForm.reset()
+                  setAddDialogOpen(true)
+                }}
+              >
+                <UserPlus className="mr-2 h-4 w-4" />
+                新增用户
+              </Button>
+            </div>
           </div>
         </CardHeader>
-        <CardContent>
-          {/* 筛选栏 */}
-          <div className="flex flex-wrap gap-4 mb-6">
-            <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-4">
+            <div className="relative min-w-[200px] flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2" />
               <Input
                 placeholder="搜索姓名或邮箱..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
+                onChange={(event) => table.getColumn('name')?.setFilterValue(event.target.value)}
                 className="pl-9"
               />
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select
+              value={(table.getColumn('status')?.getFilterValue() as string) ?? 'all'}
+              onValueChange={(value) =>
+                table.getColumn('status')?.setFilterValue(value === 'all' ? undefined : value)
+              }
+            >
               <SelectTrigger className="w-32">
                 <SelectValue placeholder="状态筛选" />
               </SelectTrigger>
@@ -311,7 +546,12 @@ export default function UsersAdminPage() {
                 <SelectItem value="DISABLED">已禁用</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
+            <Select
+              value={(table.getColumn('role')?.getFilterValue() as string) ?? 'all'}
+              onValueChange={(value) =>
+                table.getColumn('role')?.setFilterValue(value === 'all' ? undefined : value)
+              }
+            >
               <SelectTrigger className="w-36">
                 <SelectValue placeholder="角色筛选" />
               </SelectTrigger>
@@ -326,148 +566,141 @@ export default function UsersAdminPage() {
             </Select>
           </div>
 
-          {/* 用户统计 */}
-          <div className="flex gap-4 mb-4 text-sm text-muted-foreground">
+          <div className="text-muted-foreground mb-4 flex gap-4 text-sm">
             <span>共 {users.length} 个用户</span>
             <span>|</span>
-            <span>已激活: {users.filter(u => u.status === 'ACTIVE').length}</span>
-            <span>待审批: {users.filter(u => u.status === 'PENDING').length}</span>
-            <span>已禁用: {users.filter(u => u.status === 'DISABLED').length}</span>
+            <span>已激活: {users.filter((u) => u.status === 'ACTIVE').length}</span>
+            <span>待审批: {users.filter((u) => u.status === 'PENDING').length}</span>
+            <span>已禁用: {users.filter((u) => u.status === 'DISABLED').length}</span>
           </div>
 
-          {/* 用户表格 */}
+          <BulkActionsBar
+            selectedCount={selectedCount}
+            onBulkStatus={handleBulkStatus}
+            onBulkRole={handleBulkRole}
+            onClearSelection={() => setRowSelection({})}
+          />
+
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Loader2 className="text-muted-foreground h-8 w-8 animate-spin" />
             </div>
           ) : (
-            <div className="border rounded-lg overflow-hidden">
+            <div className="overflow-hidden rounded-lg border">
               <Table>
                 <TableHeader>
-                  <TableRow>
-                    <TableHead>用户</TableHead>
-                    <TableHead>联系方式</TableHead>
-                    <TableHead>部门/职位</TableHead>
-                    <TableHead>角色</TableHead>
-                    <TableHead>状态</TableHead>
-                    <TableHead>注册时间</TableHead>
-                    <TableHead className="text-right">操作</TableHead>
-                  </TableRow>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow key={headerGroup.id}>
+                      {headerGroup.headers.map((header) => (
+                        <TableHead key={header.id}>
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(header.column.columnDef.header, header.getContext())}
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
                 </TableHeader>
                 <TableBody>
-                  {filteredUsers.length === 0 ? (
+                  {table.getRowModel().rows?.length ? (
+                    table.getRowModel().rows.map((row) => (
+                      <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                          </TableCell>
+                        ))}
+                      </TableRow>
+                    ))
+                  ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={columns.length} className="h-24 text-center">
                         暂无用户数据
                       </TableCell>
                     </TableRow>
-                  ) : (
-                    filteredUsers.map((user) => (
-                      <TableRow key={user.id}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                              <span className="text-sm font-medium text-primary">
-                                {user.name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <p className="font-medium">{user.name}</p>
-                              <p className="text-sm text-muted-foreground">{user.email}</p>
-                            </div>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">{user.phone || '-'}</p>
-                        </TableCell>
-                        <TableCell>
-                          <p className="text-sm">
-                            {user.department || '-'}
-                            {user.position && ` / ${user.position}`}
-                          </p>
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="outline">{roleLabels[user.role] || user.role}</Badge>
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={statusColors[user.status]}>
-                            {statusLabels[user.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(user.createdAt).toLocaleDateString('zh-CN')}
-                        </TableCell>
-                        <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => openEditDialog(user)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => openDeleteDialog(user)}
-                              className="text-destructive hover:text-destructive"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
                   )}
                 </TableBody>
               </Table>
+
+              <div className="flex items-center justify-between space-x-2 px-4 py-4">
+                <div className="text-muted-foreground text-sm">
+                  已选择 {table.getFilteredSelectedRowModel().rows.length} /{' '}
+                  {table.getFilteredRowModel().rows.length} 行
+                </div>
+                <div className="flex items-center space-x-2">
+                  <button
+                    onClick={() => table.previousPage()}
+                    disabled={!table.getCanPreviousPage()}
+                    className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+                  >
+                    上一页
+                  </button>
+                  <span className="text-sm">
+                    第 {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} 页
+                  </span>
+                  <button
+                    onClick={() => table.nextPage()}
+                    disabled={!table.getCanNextPage()}
+                    className="rounded border px-3 py-1 text-sm disabled:opacity-50"
+                  >
+                    下一页
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* 新增用户对话框 */}
       <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>新增用户</DialogTitle>
             <DialogDescription>创建一个新的系统用户</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <form onSubmit={createForm.handleSubmit(handleCreateUser)} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="add-name">姓名 *</Label>
-              <Input
-                id="add-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="输入用户姓名"
-              />
+              <Input id="add-name" {...createForm.register('name')} placeholder="输入用户姓名" />
+              {createForm.formState.errors.name && (
+                <p className="text-destructive text-sm">
+                  {createForm.formState.errors.name.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="add-email">邮箱 *</Label>
               <Input
                 id="add-email"
                 type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                {...createForm.register('email')}
                 placeholder="输入邮箱地址"
               />
+              {createForm.formState.errors.email && (
+                <p className="text-destructive text-sm">
+                  {createForm.formState.errors.email.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="add-password">密码 *</Label>
               <Input
                 id="add-password"
                 type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                {...createForm.register('password')}
                 placeholder="至少6个字符"
               />
+              {createForm.formState.errors.password && (
+                <p className="text-destructive text-sm">
+                  {createForm.formState.errors.password.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>角色</Label>
               <Select
-                value={formData.role}
-                onValueChange={(value) => setFormData({ ...formData, role: value })}
+                value={createForm.watch('role')}
+                onValueChange={(value) => createForm.setValue('role', value as any)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -486,8 +719,7 @@ export default function UsersAdminPage() {
                 <Label htmlFor="add-department">部门</Label>
                 <Input
                   id="add-department"
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  {...createForm.register('department')}
                   placeholder="部门名称"
                 />
               </div>
@@ -495,66 +727,74 @@ export default function UsersAdminPage() {
                 <Label htmlFor="add-position">职位</Label>
                 <Input
                   id="add-position"
-                  value={formData.position}
-                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
+                  {...createForm.register('position')}
                   placeholder="职位名称"
                 />
               </div>
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setAddDialogOpen(false)} disabled={submitting}>
-              取消
-            </Button>
-            <Button onClick={handleAddUser} disabled={submitting}>
-              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              创建
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setAddDialogOpen(false)}
+                disabled={submitting}
+              >
+                取消
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                创建
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
-      {/* 编辑用户对话框 */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>编辑用户</DialogTitle>
             <DialogDescription>修改用户信息</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <form onSubmit={updateForm.handleSubmit(handleUpdateUser)} className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="edit-name">姓名 *</Label>
-              <Input
-                id="edit-name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              />
+              <Input id="edit-name" {...updateForm.register('name')} />
+              {updateForm.formState.errors.name && (
+                <p className="text-destructive text-sm">
+                  {updateForm.formState.errors.name.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-email">邮箱 *</Label>
-              <Input
-                id="edit-email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              />
+              <Input id="edit-email" type="email" {...updateForm.register('email')} />
+              {updateForm.formState.errors.email && (
+                <p className="text-destructive text-sm">
+                  {updateForm.formState.errors.email.message}
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-password">新密码（留空不修改）</Label>
               <Input
                 id="edit-password"
                 type="password"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                {...updateForm.register('password')}
                 placeholder="留空则不修改密码"
               />
+              {updateForm.formState.errors.password && (
+                <p className="text-destructive text-sm">
+                  {updateForm.formState.errors.password.message}
+                </p>
+              )}
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>角色</Label>
                 <Select
-                  value={formData.role}
-                  onValueChange={(value) => setFormData({ ...formData, role: value })}
+                  value={updateForm.watch('role')}
+                  onValueChange={(value) => updateForm.setValue('role', value as any)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -571,8 +811,8 @@ export default function UsersAdminPage() {
               <div className="space-y-2">
                 <Label>状态</Label>
                 <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
+                  value={updateForm.watch('status')}
+                  onValueChange={(value) => updateForm.setValue('status', value as any)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -588,53 +828,50 @@ export default function UsersAdminPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="edit-department">部门</Label>
-                <Input
-                  id="edit-department"
-                  value={formData.department}
-                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                />
+                <Input id="edit-department" {...updateForm.register('department')} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="edit-position">职位</Label>
-                <Input
-                  id="edit-position"
-                  value={formData.position}
-                  onChange={(e) => setFormData({ ...formData, position: e.target.value })}
-                />
+                <Input id="edit-position" {...updateForm.register('position')} />
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-phone">电话</Label>
-              <Input
-                id="edit-phone"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              />
+              <Input id="edit-phone" {...updateForm.register('phone')} />
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={submitting}>
-              取消
-            </Button>
-            <Button onClick={handleEditUser} disabled={submitting}>
-              {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              保存
-            </Button>
-          </DialogFooter>
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setEditDialogOpen(false)}
+                disabled={submitting}
+              >
+                取消
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                保存
+              </Button>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
 
-      {/* 删除确认对话框 */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>确认删除</DialogTitle>
             <DialogDescription>
-              确定要删除用户「{selectedUser?.name}」吗？此操作不可撤销，用户相关的所有数据将被永久删除。
+              确定要删除用户「{selectedUser?.name}
+              」吗？此操作不可撤销，用户相关的所有数据将被永久删除。
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={submitting}>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={submitting}
+            >
               取消
             </Button>
             <Button variant="destructive" onClick={handleDeleteUser} disabled={submitting}>
@@ -644,6 +881,12 @@ export default function UsersAdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CSVImportDialog
+        open={csvImportOpen}
+        onOpenChange={setCsvImportOpen}
+        onSuccess={fetchUsers}
+      />
     </div>
   )
 }
