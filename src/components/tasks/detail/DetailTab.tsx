@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
-import { Loader2, CalendarIcon, Check, X, Send } from 'lucide-react'
+import { Loader2, CalendarIcon, Send } from 'lucide-react'
 import {
   Select,
   SelectContent,
@@ -32,6 +32,22 @@ import { cn } from '@/lib/utils'
 import { useAuth } from '@/hooks/useAuth'
 import { AcceptancePanel } from './AcceptancePanel'
 import { AcceptanceHistory } from './AcceptanceHistory'
+
+function useDebouncedValue<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value)
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value)
+    }, delay)
+
+    return () => {
+      clearTimeout(handler)
+    }
+  }, [value, delay])
+
+  return debouncedValue
+}
 
 interface Task {
   id: string
@@ -112,10 +128,9 @@ async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> 
 export function DetailTab({ taskId, onUpdate }: DetailTabProps) {
   const queryClient = useQueryClient()
   const { user } = useAuth()
-  const [isEditingTitle, setIsEditingTitle] = useState(false)
-  const [editedTitle, setEditedTitle] = useState('')
-  const [isEditingDesc, setIsEditingDesc] = useState(false)
-  const [editedDesc, setEditedDesc] = useState('')
+  const [localTitle, setLocalTitle] = useState('')
+  const [localDesc, setLocalDesc] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
   const [isRequestDialogOpen, setIsRequestDialogOpen] = useState(false)
   const [selectedAcceptorId, setSelectedAcceptorId] = useState('')
 
@@ -154,6 +169,43 @@ export function DetailTab({ taskId, onUpdate }: DetailTabProps) {
     },
   })
 
+  const debouncedTitle = useDebouncedValue(localTitle, 600)
+  const debouncedDesc = useDebouncedValue(localDesc, 600)
+
+  // Sync local state when task changes
+  useEffect(() => {
+    if (task) {
+      setLocalTitle(task.title)
+      setLocalDesc(task.description || '')
+    }
+  }, [task?.id])
+
+  // Auto-save title
+  useEffect(() => {
+    if (task && debouncedTitle.trim() && debouncedTitle !== task.title) {
+      setIsSaving(true)
+      updateMutation.mutate(
+        { title: debouncedTitle },
+        {
+          onSettled: () => setIsSaving(false),
+        }
+      )
+    }
+  }, [debouncedTitle, task])
+
+  // Auto-save description
+  useEffect(() => {
+    if (task && debouncedDesc !== (task.description || '')) {
+      setIsSaving(true)
+      updateMutation.mutate(
+        { description: debouncedDesc || null },
+        {
+          onSettled: () => setIsSaving(false),
+        }
+      )
+    }
+  }, [debouncedDesc, task])
+
   const handleUpdate = (field: string, value: string | number | null) => {
     updateMutation.mutate({ [field]: value } as Partial<Task>)
   }
@@ -167,25 +219,6 @@ export function DetailTab({ taskId, onUpdate }: DetailTabProps) {
   }
 
   if (!task) return null
-
-  const handleTitleEdit = () => {
-    setEditedTitle(task.title)
-    setIsEditingTitle(true)
-  }
-
-  const handleTitleSave = () => {
-    if (editedTitle.trim() && editedTitle !== task.title) {
-      updateMutation.mutate({ title: editedTitle })
-    }
-    setIsEditingTitle(false)
-  }
-
-  const handleDescSave = () => {
-    if (editedDesc !== (task.description || '')) {
-      updateMutation.mutate({ description: editedDesc || null })
-    }
-    setIsEditingDesc(false)
-  }
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return '未设置'
@@ -278,65 +311,32 @@ export function DetailTab({ taskId, onUpdate }: DetailTabProps) {
       <AcceptanceHistory taskId={taskId} />
       <div className="space-y-2">
         <Label>任务标题</Label>
-        {isEditingTitle ? (
-          <div className="flex gap-2">
-            <Input
-              value={editedTitle}
-              onChange={(e) => setEditedTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleTitleSave()
-                if (e.key === 'Escape') setIsEditingTitle(false)
-              }}
-              autoFocus
-              className="flex-1"
-            />
-            <Button size="icon" variant="ghost" onClick={handleTitleSave}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button size="icon" variant="ghost" onClick={() => setIsEditingTitle(false)}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        ) : (
-          <div
-            className="hover:bg-muted/50 cursor-pointer rounded-md border p-2"
-            onClick={handleTitleEdit}
-          >
-            {task.title}
-          </div>
-        )}
+        <div className="relative">
+          <Input
+            value={localTitle}
+            onChange={(e) => setLocalTitle(e.target.value)}
+            placeholder="输入任务标题..."
+            className={cn(isSaving && 'border-primary')}
+          />
+          {isSaving && (
+            <Loader2 className="text-muted-foreground absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin" />
+          )}
+        </div>
       </div>
 
       <div className="space-y-2">
         <Label>描述</Label>
-        {isEditingDesc ? (
-          <div className="space-y-2">
-            <Textarea
-              value={editedDesc}
-              onChange={(e) => setEditedDesc(e.target.value)}
-              className="min-h-[100px]"
-              autoFocus
-            />
-            <div className="flex gap-2">
-              <Button size="sm" onClick={handleDescSave}>
-                保存
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsEditingDesc(false)}>
-                取消
-              </Button>
-            </div>
-          </div>
-        ) : (
-          <div
-            className="hover:bg-muted/50 min-h-[60px] cursor-pointer rounded-md border p-2"
-            onClick={() => {
-              setEditedDesc(task.description || '')
-              setIsEditingDesc(true)
-            }}
-          >
-            {task.description || <span className="text-muted-foreground">点击添加描述...</span>}
-          </div>
-        )}
+        <div className="relative">
+          <Textarea
+            value={localDesc}
+            onChange={(e) => setLocalDesc(e.target.value)}
+            placeholder="输入任务描述..."
+            className={cn('min-h-[100px]', isSaving && 'border-primary')}
+          />
+          {isSaving && (
+            <Loader2 className="text-muted-foreground absolute top-4 right-3 h-4 w-4 animate-spin" />
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
