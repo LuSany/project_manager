@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
         return {
           projectId: project.id,
-          name: project.name,
+          projectName: project.name,
           completionRate,
         }
       })

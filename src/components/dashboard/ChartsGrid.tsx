@@ -1,3 +1,5 @@
+'use client'
+
 import { TaskStatusDonut } from './TaskStatusDonut'
 import { PriorityDonut } from './PriorityDonut'
 import { ProjectComparisonChart } from './ProjectComparisonChart'

@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(
         success({
           milestones: globalMilestones.map((m) => ({
-            id: m.id,
+            milestoneId: m.id,
             title: m.title,
             status: m.status,
             progress: m.progress,
