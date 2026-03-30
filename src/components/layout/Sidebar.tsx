@@ -10,6 +10,7 @@ import {
   Menu,
   Clock,
   LayoutDashboard,
+  Monitor,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -61,6 +62,11 @@ const navItems: NavItem[] = [
     title: '机时管理',
     icon: Clock,
     path: '/timesheet',
+  },
+  {
+    title: '设备管理',
+    icon: Monitor,
+    path: '/devices',
   },
   {
     title: '用户管理',
@@ -127,10 +133,10 @@ export function Sidebar({ className }: SidebarProps) {
           className
         )}
       >
-        <div className="h-16 animate-pulse bg-muted/50" />
+        <div className="bg-muted/50 h-16 animate-pulse" />
         <div className="flex-1 p-4">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="mb-2 h-10 animate-pulse rounded bg-muted/50" />
+            <div key={i} className="bg-muted/50 mb-2 h-10 animate-pulse rounded" />
           ))}
         </div>
       </aside>
