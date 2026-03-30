@@ -449,30 +449,28 @@ export function DetailTab({ taskId, onUpdate }: DetailTabProps) {
         <Label>负责人</Label>
         {members.length > 0 ? (
           <div className="flex flex-wrap gap-2">
-            {members.map((member) => {
-              const isAssigned = currentAssigneeIds.includes(member.id)
-              return (
-                <Button
-                  key={member.id}
-                  size="sm"
-                  variant={isAssigned ? 'default' : 'outline'}
-                  onClick={() => {
-                    const newIds = isAssigned
-                      ? currentAssigneeIds.filter((id) => id !== member.id)
-                      : [...currentAssigneeIds, member.id]
-                    updateMutation.mutate({ assigneeIds: newIds } as Partial<Task>)
-                  }}
-                  className="flex items-center gap-2"
-                >
-                  <Avatar className="h-5 w-5">
-                    <AvatarFallback className="text-xs">
-                      {member.name?.charAt(0).toUpperCase() || 'U'}
-                    </AvatarFallback>
-                  </Avatar>
-                  {member.name}
-                </Button>
-              )
-            })}
+            {members.map((member) => (
+              <Button
+                key={member.id}
+                size="sm"
+                variant={currentAssigneeIds.includes(member.id) ? 'default' : 'outline'}
+                onClick={() => {
+                  const isAssigned = currentAssigneeIds.includes(member.id)
+                  const newIds = isAssigned
+                    ? currentAssigneeIds.filter((id) => id !== member.id)
+                    : [...currentAssigneeIds, member.id]
+                  updateMutation.mutate({ assigneeIds: newIds } as Partial<Task>)
+                }}
+                className="flex items-center gap-2"
+              >
+                <Avatar className="h-5 w-5">
+                  <AvatarFallback className="text-xs">
+                    {member.name?.charAt(0).toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
+                {member.name}
+              </Button>
+            ))}
           </div>
         ) : (
           <div className="text-muted-foreground text-sm">暂无项目成员</div>
