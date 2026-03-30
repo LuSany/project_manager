@@ -1,0 +1,38 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { db } from '@/lib/db'
+
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value
+  if (!userId) return null
+  return db.users.findUnique({ where: { id: userId } })
+}
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const user = await getAuthUser(request)
+  if (!user) {
+    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+  }
+
+  try {
+    const { id } = await params
+    const booking = await db.bookings.findUnique({
+      where: { id },
+      include: {
+        devices: {
+          include: { device_types: true },
+        },
+        users: { select: { id: true, name: true, email: true } },
+        projects: { select: { id: true, name: true } },
+      },
+    })
+
+    if (!booking) {
+      return NextResponse.json({ success: false, error: '预定不存在' }, { status: 404 })
+    }
+
+    return NextResponse.json({ success: true, data: booking })
+  } catch (error) {
+    console.error('获取预定失败:', error)
+    return NextResponse.json({ success: false, error: '获取预定失败' }, { status: 500 })
+  }
+}
