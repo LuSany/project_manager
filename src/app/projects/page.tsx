@@ -15,6 +15,7 @@ import {
   AlertCircle,
   ChevronRight,
   Calendar,
+  PauseCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -22,7 +23,7 @@ interface Project {
   id: string
   name: string
   description: string | null
-  status: 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELED'
+  status: 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED'
   createdAt: string
   updatedAt: string
   progress?: number
@@ -41,13 +42,19 @@ const statusConfig = {
     icon: FolderOpen,
     bgColor: 'hover:border-emerald-200 dark:hover:border-emerald-800',
   },
+  ON_HOLD: {
+    label: '已暂停',
+    color: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+    icon: PauseCircle,
+    bgColor: 'hover:border-orange-200 dark:hover:border-orange-800',
+  },
   COMPLETED: {
     label: '已完成',
     color: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
     icon: CheckCircle2,
     bgColor: 'hover:border-blue-200 dark:hover:border-blue-800',
   },
-  CANCELED: {
+  CANCELLED: {
     label: '已取消',
     color: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400',
     icon: AlertCircle,

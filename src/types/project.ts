@@ -28,7 +28,7 @@ export interface Project {
   members?: ProjectMember[]
 }
 
-export type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'COMPLETED' | 'CANCELED'
+export type ProjectStatus = 'PLANNING' | 'ACTIVE' | 'ON_HOLD' | 'COMPLETED' | 'CANCELLED'
 
 export interface ProjectMember {
   id: string
@@ -53,4 +53,4 @@ export interface Milestone {
   updatedAt: string
 }
 
-export type MilestoneStatus = 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELED'
+export type MilestoneStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
