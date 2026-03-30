@@ -209,6 +209,7 @@ function ProjectCard({ project, onDelete }: { project: Project; onDelete: (id: s
 export default function ProjectsPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
+  const [totalCount, setTotalCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
 
@@ -228,6 +229,7 @@ export default function ProjectsPage() {
 
       if (data.success) {
         setProjects(data.data.items)
+        setTotalCount(data.data.total || 0)
       }
     } catch (error) {
       console.error('获取项目列表失败:', error)
@@ -259,9 +261,8 @@ export default function ProjectsPage() {
     fetchProjects()
   }, [page])
 
-  // 统计数据
   const stats = {
-    total: projects.length,
+    total: totalCount,
     active: projects.filter((p) => p.status === 'ACTIVE').length,
     completed: projects.filter((p) => p.status === 'COMPLETED').length,
     planning: projects.filter((p) => p.status === 'PLANNING').length,
