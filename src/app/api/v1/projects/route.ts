@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-import { prisma } from '@/lib/prisma';
-import { success, error } from '@/lib/api/response';
-import type { AuthenticatedRequest } from '@/middleware';
+import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+import { prisma } from '@/lib/prisma'
+import { success, error } from '@/lib/api/response'
+import type { AuthenticatedRequest } from '@/middleware'
 
 // 项目创建验证 Schema
 const createProjectSchema = z.object({
@@ -11,44 +11,41 @@ const createProjectSchema = z.object({
   status: z.enum(['PLANNING', 'ACTIVE', 'ON_HOLD', 'COMPLETED', 'CANCELLED']).default('PLANNING'),
   startDate: z.string().optional(), // 接受日期字符串
   endDate: z.string().optional(), // 接受日期字符串
-});
+})
 
 export async function GET(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value;
+  const userId = request.cookies.get('user-id')?.value
 
   if (!userId) {
-    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
+    return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401)
   }
 
   // 检查用户是否存在
   const user = await prisma.users.findUnique({
     where: { id: userId },
-  });
+  })
   if (!user) {
-    return error('USER_NOT_FOUND_ERROR', '用户不存在', undefined, 404);
+    return error('USER_NOT_FOUND_ERROR', '用户不存在', undefined, 404)
   }
 
-  const { searchParams } = new URL(request.url);
+  const { searchParams } = new URL(request.url)
 
-  const page = parseInt(searchParams.get('page') || '1');
-  const pageSize = parseInt(searchParams.get('pageSize') || '10');
-  const status = searchParams.get('status') as any;
-  const getAll = searchParams.get('all') === 'true'; // 支持 all=true 参数
+  const page = parseInt(searchParams.get('page') || '1')
+  const pageSize = parseInt(searchParams.get('pageSize') || '10')
+  const status = searchParams.get('status') as any
+  const getAll = searchParams.get('all') === 'true' // 支持 all=true 参数
 
   // 构建查询条件：用户只能看到自己作为所有者或成员的项目，或者管理员可以看到所有项目
-  const where: any = {};
+  const where: any = {}
 
   if (status) {
-    where.status = status;
+    where.status = status
   }
 
   // 非管理员只能看到自己有权限的项目
   if (user.role !== 'ADMIN') {
-    where.OR = [
-      { ownerId: userId },
-      { project_members: { some: { userId: userId } } }
-    ];
+    where.OR = [{ ownerId: userId }, { project_members: { some: { userId: userId } } }]
   }
 
   // 如果 all=true，返回所有项目（不分页）
@@ -72,16 +69,16 @@ export async function GET(request: NextRequest, context: any) {
           },
         },
       },
-    });
+    })
 
-    return success(projects);
+    return success(projects)
   }
 
-  const skip = (page - 1) * pageSize;
-  const take = pageSize;
+  const skip = (page - 1) * pageSize
+  const take = pageSize
 
   try {
-    const [total, projects] = await Promise.all([
+    const [total, projects, statusCounts] = await Promise.all([
       prisma.projects.count({ where }),
       prisma.projects.findMany({
         where,
@@ -101,7 +98,20 @@ export async function GET(request: NextRequest, context: any) {
           },
         },
       }),
-    ]);
+      prisma.projects.groupBy({
+        by: ['status'],
+        where,
+        _count: true,
+      }),
+    ])
+
+    const statusStats = {
+      active: statusCounts.find((s) => s.status === 'ACTIVE')?._count || 0,
+      completed: statusCounts.find((s) => s.status === 'COMPLETED')?._count || 0,
+      planning: statusCounts.find((s) => s.status === 'PLANNING')?._count || 0,
+      onHold: statusCounts.find((s) => s.status === 'ON_HOLD')?._count || 0,
+      cancelled: statusCounts.find((s) => s.status === 'CANCELLED')?._count || 0,
+    }
 
     return success({
       items: projects,
@@ -109,34 +119,35 @@ export async function GET(request: NextRequest, context: any) {
       page,
       pageSize,
       totalPages: Math.ceil(Number(total) / pageSize),
-    });
+      stats: statusStats,
+    })
   } catch (err) {
-    console.error('获取项目列表失败:', err);
-    return error('获取项目列表失败_ERROR', '获取项目列表失败', undefined, 500);
+    console.error('获取项目列表失败:', err)
+    return error('获取项目列表失败_ERROR', '获取项目列表失败', undefined, 500)
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     // 从中间件获取用户信息
-    const userId = request.cookies.get('user-id')?.value;
+    const userId = request.cookies.get('user-id')?.value
 
     if (!userId) {
-      return error('UNAUTHORIZED', '未授权，请先登录', undefined, 401);
+      return error('UNAUTHORIZED', '未授权，请先登录', undefined, 401)
     }
 
     // 检查用户是否存在
     const user = await prisma.users.findUnique({
       where: { id: userId },
-    });
+    })
 
     if (!user) {
-      return error('USER_NOT_FOUND', '用户不存在', undefined, 404);
+      return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
     // 解析并验证请求体
-    const body = await request.json();
-    const validatedData = createProjectSchema.parse(body);
+    const body = await request.json()
+    const validatedData = createProjectSchema.parse(body)
 
     // 创建项目
     const project = await prisma.projects.create({
@@ -159,7 +170,7 @@ export async function POST(request: NextRequest) {
           },
         },
       },
-    });
+    })
 
     return NextResponse.json({
       success: true,
@@ -173,13 +184,13 @@ export async function POST(request: NextRequest) {
         owner: project.users,
       },
       message: '项目创建成功',
-    });
+    })
   } catch (err) {
     if (err instanceof z.ZodError) {
-      console.error('项目创建验证失败:', err.issues);
-      return error('VALIDATION_ERROR', '请求数据验证失败', { issues: err.issues }, 400);
+      console.error('项目创建验证失败:', err.issues)
+      return error('VALIDATION_ERROR', '请求数据验证失败', { issues: err.issues }, 400)
     }
-    console.error('创建项目错误:', err);
-    return error('INTERNAL_ERROR', '创建项目失败', undefined, 500);
+    console.error('创建项目错误:', err)
+    return error('INTERNAL_ERROR', '创建项目失败', undefined, 500)
   }
 }

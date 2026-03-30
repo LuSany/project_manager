@@ -217,6 +217,13 @@ export default function ProjectsPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [totalCount, setTotalCount] = useState(0)
+  const [statusStats, setStatusStats] = useState({
+    active: 0,
+    completed: 0,
+    planning: 0,
+    onHold: 0,
+    cancelled: 0,
+  })
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
 
@@ -237,6 +244,9 @@ export default function ProjectsPage() {
       if (data.success) {
         setProjects(data.data.items)
         setTotalCount(data.data.total || 0)
+        if (data.data.stats) {
+          setStatusStats(data.data.stats)
+        }
       }
     } catch (error) {
       console.error('获取项目列表失败:', error)
@@ -270,9 +280,9 @@ export default function ProjectsPage() {
 
   const stats = {
     total: totalCount,
-    active: projects.filter((p) => p.status === 'ACTIVE').length,
-    completed: projects.filter((p) => p.status === 'COMPLETED').length,
-    planning: projects.filter((p) => p.status === 'PLANNING').length,
+    active: statusStats.active,
+    completed: statusStats.completed,
+    planning: statusStats.planning,
   }
 
   return (
