@@ -14,10 +14,19 @@ import {
   CheckCircle2,
   AlertCircle,
   ChevronRight,
+  ChevronLeft,
+  ChevronRight as ArrowRight,
   Calendar,
   PauseCircle,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Project {
   id: string
@@ -217,6 +226,7 @@ export default function ProjectsPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<Project[]>([])
   const [totalCount, setTotalCount] = useState(0)
+  const [totalPages, setTotalPages] = useState(0)
   const [statusStats, setStatusStats] = useState({
     active: 0,
     completed: 0,
@@ -226,13 +236,15 @@ export default function ProjectsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(12)
+  const [jumpPage, setJumpPage] = useState('')
 
   const fetchProjects = async () => {
     setLoading(true)
     try {
       const searchParams = new URLSearchParams({
         page: page.toString(),
-        pageSize: '12',
+        pageSize: pageSize.toString(),
       })
 
       const response = await fetch('/api/v1/projects?' + searchParams, {
@@ -244,6 +256,7 @@ export default function ProjectsPage() {
       if (data.success) {
         setProjects(data.data.items)
         setTotalCount(data.data.total || 0)
+        setTotalPages(data.data.totalPages || 0)
         if (data.data.stats) {
           setStatusStats(data.data.stats)
         }
@@ -276,7 +289,7 @@ export default function ProjectsPage() {
 
   useEffect(() => {
     fetchProjects()
-  }, [page])
+  }, [page, pageSize])
 
   const stats = {
     total: totalCount,
@@ -382,20 +395,88 @@ export default function ProjectsPage() {
             ))}
           </div>
 
-          {/* 分页 */}
-          <div className="flex items-center justify-center gap-2 pt-4">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={page === 1}
-              onClick={() => setPage(page - 1)}
-            >
-              上一页
-            </Button>
-            <span className="px-4 text-sm text-slate-500 dark:text-slate-400">第 {page} 页</span>
-            <Button variant="outline" size="sm" onClick={() => setPage(page + 1)}>
-              下一页
-            </Button>
+          <div className="flex flex-col items-center gap-4 pt-4 sm:flex-row sm:justify-between">
+            <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+              <span>每页显示</span>
+              <Select
+                value={pageSize.toString()}
+                onValueChange={(value) => {
+                  setPageSize(Number(value))
+                  setPage(1)
+                }}
+              >
+                <SelectTrigger className="h-8 w-[70px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="12">12</SelectItem>
+                  <SelectItem value="24">24</SelectItem>
+                  <SelectItem value="48">48</SelectItem>
+                  <SelectItem value="96">96</SelectItem>
+                </SelectContent>
+              </Select>
+              <span>条</span>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page === 1}
+                onClick={() => setPage(page - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+
+              <span className="px-3 text-sm text-slate-600 dark:text-slate-400">
+                第 {page} / {totalPages} 页
+              </span>
+
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page >= totalPages}
+                onClick={() => setPage(page + 1)}
+              >
+                <ArrowRight className="h-4 w-4" />
+              </Button>
+
+              <div className="ml-4 flex items-center gap-2">
+                <span className="text-sm text-slate-600 dark:text-slate-400">跳转到</span>
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={jumpPage}
+                  onChange={(e) => setJumpPage(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      const pageNum = parseInt(jumpPage)
+                      if (pageNum >= 1 && pageNum <= totalPages) {
+                        setPage(pageNum)
+                        setJumpPage('')
+                      }
+                    }
+                  }}
+                  placeholder="页码"
+                  className="h-8 w-20 rounded-md border border-slate-300 bg-white px-2 text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-slate-700 dark:bg-slate-800 dark:text-slate-100"
+                />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  disabled={!jumpPage || parseInt(jumpPage) < 1 || parseInt(jumpPage) > totalPages}
+                  onClick={() => {
+                    const pageNum = parseInt(jumpPage)
+                    if (pageNum >= 1 && pageNum <= totalPages) {
+                      setPage(pageNum)
+                      setJumpPage('')
+                    }
+                  }}
+                >
+                  跳转
+                </Button>
+              </div>
+            </div>
           </div>
         </>
       )}
