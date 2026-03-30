@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Monitor,
   ShieldCheck,
+  BarChart3,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -69,6 +70,11 @@ const navItems: NavItem[] = [
     title: '设备管理',
     icon: Monitor,
     path: '/devices',
+  },
+  {
+    title: '设备统计',
+    icon: BarChart3,
+    path: '/equipment/stats',
   },
   {
     title: '我的预定',
