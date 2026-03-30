@@ -282,10 +282,19 @@ export function TemplateDialog({
     const templateData = taskForm.watch('templateData')
     try {
       const parsed = JSON.parse(templateData || '{}')
+      const formatted = JSON.stringify(parsed, null, 2)
+      // 高亮变量占位符 {{xxx}}
+      const highlighted = formatted.replace(
+        /\{\{(\w+)\}\}/g,
+        '<mark className="bg-yellow-500/30 text-yellow-700 dark:bg-yellow-500/20 dark:text-yellow-400 rounded px-0.5">{{$1}}</mark>'
+      )
       return (
         <div className="bg-muted mt-4 rounded-lg p-4">
           <h4 className="mb-2 font-medium">预览</h4>
-          <pre className="max-h-60 overflow-auto text-xs">{JSON.stringify(parsed, null, 2)}</pre>
+          <pre
+            className="max-h-60 overflow-auto text-xs"
+            dangerouslySetInnerHTML={{ __html: highlighted }}
+          />
         </div>
       )
     } catch {

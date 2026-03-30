@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, FileText, CheckSquare, Edit2, Trash2 } from 'lucide-react'
+import { Loader2, Plus, FileText, CheckSquare, Edit2, Trash2, Upload, Download } from 'lucide-react'
 import { TemplateDialog } from './components/TemplateDialog'
 import { useToast } from '@/hooks/use-toast'
 
@@ -39,6 +39,7 @@ export default function TemplatesAdminPage() {
   const [dialogOpen, setDialogOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | ReviewTemplate | null>(null)
   const [dialogType, setDialogType] = useState<'task' | 'review'>('task')
+  const importFileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchTemplates()
@@ -99,6 +100,76 @@ export default function TemplatesAdminPage() {
     setEditingTemplate(null)
   }
 
+  const handlePageImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const text = await file.text()
+      const data = JSON.parse(text)
+
+      if (!Array.isArray(data)) {
+        toast({
+          title: '导入失败',
+          description: '文件格式不正确，需要 JSON 数组',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      let imported = 0
+      let failed = 0
+
+      for (const item of data) {
+        try {
+          await api.post('/templates', item)
+          imported++
+        } catch {
+          failed++
+        }
+      }
+
+      toast({
+        title: '导入完成',
+        description: `成功导入 ${imported} 个模板${failed > 0 ? `，${failed} 个失败` : ''}`,
+        variant: imported > 0 ? 'success' : 'destructive',
+      })
+      fetchTemplates()
+    } catch {
+      toast({ title: '导入失败', description: '无法解析 JSON 文件', variant: 'destructive' })
+    }
+
+    if (importFileRef.current) {
+      importFileRef.current.value = ''
+    }
+  }
+
+  const handlePageExport = async (type: 'task' | 'review') => {
+    try {
+      const endpoint = type === 'task' ? '/templates' : '/review-templates'
+      const response = await api.get(endpoint)
+      const templates =
+        (response as { data?: { items?: any[] } }).data?.items ||
+        (response as { data?: { data?: any[] } }).data?.data ||
+        []
+      const filename = `${type}-templates-${new Date().toISOString().split('T')[0]}.json`
+
+      const blob = new Blob([JSON.stringify(templates, null, 2)], { type: 'application/json' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = filename
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      URL.revokeObjectURL(url)
+
+      toast({ title: '导出成功', variant: 'success' })
+    } catch {
+      toast({ title: '导出失败', variant: 'destructive' })
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -127,11 +198,26 @@ export default function TemplatesAdminPage() {
 
           <TabsContent value="task">
             <div className="space-y-4">
-              <div className="flex justify-between">
+              <div className="flex items-center gap-2">
                 <Button size="sm" onClick={() => handleCreateTemplate('task')}>
                   <Plus className="mr-2 h-4 w-4" />
                   新建模板
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => importFileRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  导入
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => handlePageExport('task')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  导出
+                </Button>
+                <input
+                  ref={importFileRef}
+                  type="file"
+                  accept=".json"
+                  onChange={handlePageImport}
+                  className="hidden"
+                />
               </div>
 
               <div className="divide-y rounded-lg border">
@@ -179,10 +265,14 @@ export default function TemplatesAdminPage() {
 
           <TabsContent value="review">
             <div className="space-y-4">
-              <div className="flex justify-end">
+              <div className="flex items-center justify-end gap-2">
                 <Button size="sm" onClick={() => handleCreateTemplate('review')}>
                   <Plus className="mr-2 h-4 w-4" />
                   新建模板
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => handlePageExport('review')}>
+                  <Download className="mr-2 h-4 w-4" />
+                  导出
                 </Button>
               </div>
 
