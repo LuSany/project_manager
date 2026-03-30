@@ -1,7 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
 
-
 export type NotificationType =
   | 'RISK_ALERT'
   | 'REVIEW_INVITE'
@@ -14,6 +13,11 @@ export type NotificationType =
   | 'COMMENT_REPLY'
   | 'COMMENT_RESOLVED'
   | 'REVIEW_ALL_AGREED'
+  | 'APPROVAL_REQUEST'
+  | 'APPROVAL_APPROVED'
+  | 'APPROVAL_REJECTED'
+  | 'QUOTA_WARNING'
+  | 'QUOTA_EXCEEDED'
 
 // Notification channel types
 export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS'
@@ -75,10 +79,7 @@ async function getAllUserNotificationPreferences(
 /**
  * 检查是否应该发送邮件通知
  */
-async function shouldSendEmail(
-  userId: string,
-  type: NotificationType
-): Promise<boolean> {
+async function shouldSendEmail(userId: string, type: NotificationType): Promise<boolean> {
   const preference = await getUserNotificationPreference(userId, type)
 
   // 如果通知被禁用，不发送
@@ -152,7 +153,7 @@ export async function createNotification(options: CreateNotificationOptions): Pr
 
   // 获取用户通知偏好
   const preference = await getUserNotificationPreference(userId, type)
-  
+
   // 如果通知被禁用，直接返回
   if (!preference || !preference.enabled) {
     return
@@ -370,6 +371,71 @@ export async function notifyReviewAllAgreed(
     title: '评审全员同意',
     content: `评审"${reviewTitle}"已获得所有评审人同意，可以结束评审`,
     link: `/projects/${projectId}/reviews`,
+    projectId,
+  })
+}
+
+// 审批通知 (Phase 09) per D-11, D-32
+
+export async function notifyApprovalRequest(
+  approverId: string,
+  bookingId: string,
+  deviceName: string,
+  requesterName: string,
+  projectName: string,
+  projectId: string
+): Promise<void> {
+  await createNotification({
+    userId: approverId,
+    type: 'APPROVAL_REQUEST',
+    title: '设备预定审批',
+    content: `${requesterName} 申请预定设备"${deviceName}"${projectName ? `（项目：${projectName}）` : ''}，请审批`,
+    link: `/approvals`,
+    projectId,
+  })
+}
+
+export async function notifyApprovalResult(
+  requesterId: string,
+  bookingId: string,
+  deviceName: string,
+  approved: boolean,
+  comment?: string,
+  projectId?: string
+): Promise<void> {
+  await createNotification({
+    userId: requesterId,
+    type: approved ? 'APPROVAL_APPROVED' : 'APPROVAL_REJECTED',
+    title: approved ? '预定审批通过' : '预定审批驳回',
+    content: approved
+      ? `您预定设备"${deviceName}"的申请已通过${comment ? `，备注：${comment}` : ''}`
+      : `您预定设备"${deviceName}"的申请已驳回${comment ? `，原因：${comment}` : ''}`,
+    link: `/bookings`,
+    projectId,
+  })
+}
+
+// 配额预警通知 (Phase 09) per D-30, D-32, D-33
+
+export async function notifyQuotaWarning(
+  userId: string,
+  projectName: string,
+  usedHours: number,
+  totalHours: number,
+  percentage: number,
+  projectId: string
+): Promise<void> {
+  const type = percentage >= 100 ? 'QUOTA_EXCEEDED' : 'QUOTA_WARNING'
+  const title =
+    percentage >= 100 ? '配额已超限' : percentage >= 80 ? '配额即将超限' : '配额使用提醒'
+  const remaining = Math.max(0, totalHours - usedHours)
+
+  await createNotification({
+    userId,
+    type,
+    title,
+    content: `项目"${projectName}"配额使用 ${usedHours.toFixed(1)}/${totalHours.toFixed(1)} 小时（${percentage.toFixed(0)}%），剩余 ${remaining.toFixed(1)} 小时`,
+    link: `/equipment/stats`,
     projectId,
   })
 }

@@ -283,6 +283,7 @@ model projects {
   reviews              reviews[]
   risks                risks[]
   tasks                tasks[]
+  quota                quotas?
 
   @@index([ownerId])
   @@index([status])
@@ -869,6 +870,7 @@ model users {
   task_acceptances_requesterIdToUsers         task_acceptances[]         @relation("requesterIdToUsers")
   tasks                                       tasks[]
   subtasks                                    subtasks[] // 新增：子任务负责人关系
+  approvalRecords                             approval_records[]
 
   @@index([email])
 }
@@ -1021,6 +1023,11 @@ enum NotificationType {
   COMMENT_REPLY
   COMMENT_RESOLVED
   REVIEW_ALL_AGREED
+  APPROVAL_REQUEST
+  APPROVAL_APPROVED
+  APPROVAL_REJECTED
+  QUOTA_WARNING
+  QUOTA_EXCEEDED
 }
 
 enum PreviewServiceType {
@@ -1154,6 +1161,8 @@ model device_types {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   devices     devices[]
+  approvalConfig approval_configs?
+  quotaSubItems quota_sub_items[]
 
   @@index([name])
 }
@@ -1185,6 +1194,7 @@ model bookings {
   devices   devices       @relation(fields: [deviceId], references: [id], onDelete: Cascade)
   users     users         @relation(fields: [userId], references: [id])
   projects  projects?    @relation(fields: [projectId], references: [id])
+  approvalRecords approval_records[]
 
   @@index([deviceId])
   @@index([userId])
@@ -1200,8 +1210,68 @@ enum DeviceStatus {
 }
 
 enum BookingStatus {
+  PENDING_APPROVAL
   RESERVED
   IN_PROGRESS
   COMPLETED
   CANCELLED
+}
+
+// Approval Flow Models (Phase 09)
+model approval_configs {
+  id           String   @id
+  deviceTypeId String   @unique
+  levels       Int      @default(1)
+  approverIds  String   // JSON array of user IDs per level: [["uid1","uid2"],["uid3"]]
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  device_types device_types @relation(fields: [deviceTypeId], references: [id], onDelete: Cascade)
+
+  @@index([deviceTypeId])
+}
+
+model approval_records {
+  id         String   @id
+  bookingId  String
+  approverId String
+  level      Int      @default(1)
+  action     String   // APPROVED, REJECTED, FORWARDED
+  comment    String?
+  createdAt  DateTime @default(now())
+  bookings   bookings @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  users      users    @relation(fields: [approverId], references: [id])
+
+  @@index([bookingId])
+  @@index([approverId])
+}
+
+// Quota Management Models (Phase 09)
+model quotas {
+  id            String   @id
+  projectId     String   @unique
+  totalHours    Float    @default(0)
+  period        String   @default("MONTHLY") // monthly reset
+  warningSent50 Boolean  @default(false) // 50% notice sent
+  warningSent80 Boolean  @default(false) // 80% warning sent
+  warningSent100 Boolean @default(false) // 100% exceeded sent
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  projects     projects @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  subItems     quota_sub_items[]
+
+  @@index([projectId])
+}
+
+model quota_sub_items {
+  id           String   @id
+  quotaId      String
+  deviceTypeId String
+  subHours     Float    @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  quotas       quotas       @relation(fields: [quotaId], references: [id], onDelete: Cascade)
+  device_types device_types @relation(fields: [deviceTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([quotaId, deviceTypeId])
+  @@index([quotaId])
 }
