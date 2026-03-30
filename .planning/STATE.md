@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 08
-stopped_at: Completed 08-00-EXECUTE.md
-last_updated: '2026-03-30T08:45:00.000Z'
+stopped_at: Completed 08-01-EXECUTE.md
+last_updated: '2026-03-30T09:30:00.000Z'
 progress:
   total_phases: 10
   completed_phases: 6
   total_plans: 42
-  completed_plans: 31
+  completed_plans: 32
 ---
 
 # Project State
@@ -24,7 +24,7 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 08 (mvp) — EXECUTING
-Plan: 1 of 6
+Plan: 2 of 6
 
 ## Performance Metrics
 
@@ -45,7 +45,7 @@ Plan: 1 of 6
 
 **Recent Trend:**
 
-- Last 5 plans: P01, P02, P00, P01, P05 (Phase 03-04)
+- Last 5 plans: P02, P00, P01, P00, P01 (Phase 07-08)
 - Trend: Stable velocity
 
 | Phase 01-ui P01 | 7min | 3 tasks | 4 files |
@@ -69,6 +69,7 @@ Plan: 1 of 6
 | Phase 07 P01 | 4min | 2 tasks | 6 files |
 | Phase 07 P02 | 13min | 2 tasks | 3 files |
 | Phase 08 P00 | 5min | 2 tasks | 4 files |
+| Phase 08 P01 | 15min | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -124,6 +125,8 @@ Plan: 1 of 6
 - [Phase 08-00]: 设备类型采用固定字段设计（名称、型号、位置、描述、负责人）
 - [Phase 08-00]: 完整设备状态机（AVAILABLE/RESERVED/IN_USE/MAINTENANCE/DISABLED）
 - [Phase 08-00]: Wave 0 test stubs pattern: Use it.todo() for all planned test cases to satisfy Nyquist rule
+- [Phase 08-01]: 使用 PATCH 而非 PUT 更新设备状态，遵循 REST 最佳实践
+- [Phase 08-01]: 禁止 IN_USE → AVAILABLE 直接状态转换，强制通过预定流程管理
 
 ### Pending Todos
 
@@ -136,6 +139,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:00:00.000Z
-Stopped at: Completed 08-00-PLAN.md
-Resume file: .planning/phases/08-mvp/08-00-SUMMARY.md
+Last session: 2026-03-30T09:30:00.000Z
+Stopped at: Completed 08-01-EXECUTE.md
+Resume file: .planning/phases/08-mvp/08-01-SUMMARY.md
