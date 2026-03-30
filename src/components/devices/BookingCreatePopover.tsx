@@ -5,6 +5,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
+import { useToast } from '@/hooks/use-toast'
 import {
   Select,
   SelectContent,
@@ -33,6 +34,7 @@ export function BookingCreatePopover({
 }: BookingCreatePopoverProps) {
   const [projectId, setProjectId] = useState<string>('')
   const [error, setError] = useState<string>('')
+  const { toast } = useToast()
   const queryClient = useQueryClient()
 
   const { data: projects } = useQuery({
@@ -70,9 +72,23 @@ export function BookingCreatePopover({
       }
       return json.data
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['device-bookings', deviceId] })
       queryClient.invalidateQueries({ queryKey: ['device', deviceId] })
+
+      if (data.approval?.needsApproval) {
+        toast({
+          title: '预定已提交，等待审批',
+          description: '您的预定申请需要等待审批，请留意审批通知',
+        })
+      } else {
+        toast({
+          title: '预定成功',
+          description: '设备预定已确认',
+          variant: 'success',
+        })
+      }
+
       onOpenChange(false)
       setProjectId('')
       setError('')

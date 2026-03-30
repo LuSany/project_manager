@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
 import { hasBookingConflict } from '@/lib/booking-conflict'
+import { getApprovalConfigByDeviceType, startApprovalChain } from '@/lib/approval-flow'
+import { checkWarningThresholds } from '@/lib/quota'
 
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
@@ -116,6 +118,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    const config = await getApprovalConfigByDeviceType(device.device_types.id)
+    const needsApproval = config !== null
+
     const booking = await db.bookings.create({
       data: {
         id: crypto.randomUUID(),
@@ -124,7 +129,7 @@ export async function POST(request: NextRequest) {
         projectId: validatedData.projectId,
         startTime,
         endTime,
-        status: 'RESERVED',
+        status: needsApproval ? ('PENDING_APPROVAL' as const) : ('RESERVED' as const),
       },
       include: {
         devices: { include: { device_types: true } },
@@ -132,14 +137,26 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    if (device.status === 'AVAILABLE') {
+    const approvalInfo: { needsApproval: boolean; config?: typeof config } = {
+      needsApproval: false,
+    }
+    if (needsApproval && config) {
+      await startApprovalChain(booking.id, device.device_types.id)
+      approvalInfo.needsApproval = true
+      approvalInfo.config = config
+    } else if (!needsApproval && device.status === 'AVAILABLE') {
       await db.devices.update({
         where: { id: validatedData.deviceId },
         data: { status: 'RESERVED' },
       })
     }
 
-    return NextResponse.json({ success: true, data: booking })
+    // 检查配额并触发警告 (D-12, D-30)
+    if (validatedData.projectId) {
+      await checkWarningThresholds(validatedData.projectId)
+    }
+
+    return NextResponse.json({ success: true, data: { ...booking, approval: approvalInfo } })
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
