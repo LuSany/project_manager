@@ -30,11 +30,11 @@
 
 ### UI-004: 管理ZQZQ
 
-- [ ] **ADMIN-01**: 用户管理界面，CRUD、角色分配、状态切换
-- [ ] **ADMIN-02**: 项目管理界面，CRUD、成员管理、归档
+- [x] **ADMIN-01**: 用户管理界面，CRUD、角色分配、状态切换
+- [x] **ADMIN-02**: 项目管理界面，CRUD、成员管理、归档
 - [ ] **ADMIN-03**: 权限配置界面，细粒度权限设置
 - [ ] **ADMIN-04**: 审计日志界面，按条件筛选查看
-- [ ] **ADMIN-05**: AI 配置界面，API Key、模型选择、测试连接
+- [x] **ADMIN-05**: AI 配置界面，API Key、模型选择、测试连接
 
 ### EQUIP-001: 设备管理基础
 
@@ -122,11 +122,11 @@ Which phases cover which requirements. Updated during roadmap creation.
 | DASH-03 | Phase 6 | Complete |
 | DASH-04 | Phase 6 | Complete |
 | DASH-05 | Phase 6 | Complete |
-| ADMIN-01 | Phase 7 | Pending |
-| ADMIN-02 | Phase 7 | Pending |
+| ADMIN-01 | Phase 7 | Complete |
+| ADMIN-02 | Phase 7 | Complete |
 | ADMIN-03 | Phase 7 | Pending |
 | ADMIN-04 | Phase 7 | Pending |
-| ADMIN-05 | Phase 7 | Pending |
+| ADMIN-05 | Phase 7 | Complete |
 | EQUIP-01 | Phase 8 | Pending |
 | EQUIP-02 | Phase 8 | Pending |
 | EQUIP-03 | Phase 8 | Pending |
