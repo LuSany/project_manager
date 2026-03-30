@@ -165,7 +165,7 @@ Plans:
 Plans:
 
 - [x] 07-00-PLAN.md — Wave 0: Install dependencies + create test scaffolds
-- [ ] 07-01-PLAN.md — Wave 1: User management (TanStack Table + CSV import + bulk ops)
+- [x] 07-01-PLAN.md — Wave 1: User management (TanStack Table + CSV import + bulk ops)
 - [ ] 07-02-PLAN.md — Wave 1: Project management (CRUD + members + archive)
 - [ ] 07-03-PLAN.md — Wave 1: AI/Email/Template CRUD + test connection
 - [ ] 07-04-PLAN.md — Wave 2: Permission system (RBAC + resource-based)
