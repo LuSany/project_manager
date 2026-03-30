@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
       activeProjects,
       completedProjects,
       myTasksCount,
+      completedTasksCount,
       highRisksCount,
       taskStatusDistribution,
       priorityDistribution,
@@ -44,6 +45,11 @@ export async function GET(request: NextRequest) {
         where: {
           OR: [{ task_assignees: { some: { users: { id: userId } } } }, { acceptorId: userId }],
           status: { not: 'DONE' },
+        },
+      }),
+      prisma.tasks.count({
+        where: {
+          status: 'DONE',
         },
       }),
       prisma.risks.count({
@@ -67,6 +73,7 @@ export async function GET(request: NextRequest) {
       activeProjects,
       completedProjects,
       myTasksCount,
+      completedTasksCount,
       highRisksCount,
       taskStatusDistribution: taskStatusDistribution.map((item) => ({
         name: item.status,
