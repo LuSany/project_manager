@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
-import { success, error } from '@/lib/api/response'
+import { prisma } from '@/lib/prisma'
+import { ApiResponder } from '@/lib/api/response'
 import { z } from 'zod'
 
 // 辅助函数：获取认证用户并检查管理员权限
@@ -8,13 +8,12 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
 }
 
-// 添加成员验证Schema
 const addMemberSchema = z.object({
   userId: z.string().min(1, '用户ID不能为空'),
   role: z.enum(['PROJECT_OWNER', 'PROJECT_ADMIN', 'PROJECT_MEMBER', 'PROJECT_DIRECTOR']),
@@ -25,36 +24,35 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   const { id: projectId } = await params
 
   try {
-    // 检查管理员权限
     const admin = await checkAdmin(req)
     if (!admin) {
-      return error('FORBIDDEN', '无权限访问', undefined, 403)
+      const userId = req.cookies.get('user-id')?.value
+      if (!userId) {
+        return ApiResponder.unauthorized('请先登录')
+      }
+      return ApiResponder.forbidden('只有管理员可以管理项目成员')
     }
 
-    // 检查项目是否存在
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
     })
 
     if (!project) {
-      return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404)
+      return ApiResponder.notFound('项目不存在')
     }
 
-    // 验证请求体
     const body = await req.json()
     const validatedData = addMemberSchema.parse(body)
 
-    // 验证用户是否存在
-    const user = await db.users.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: validatedData.userId },
     })
 
     if (!user) {
-      return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
+      return ApiResponder.notFound('用户不存在')
     }
 
-    // 检查用户是否已经是成员
-    const existingMember = await db.project_members.findUnique({
+    const existingMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId,
@@ -64,11 +62,10 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     })
 
     if (existingMember) {
-      return error('ALREADY_MEMBER', '该用户已经是项目成员', undefined, 400)
+      return ApiResponder.error('ALREADY_MEMBER', '该用户已经是项目成员', undefined, 400)
     }
 
-    // 添加成员
-    const member = await db.project_members.create({
+    const member = await prisma.project_members.create({
       data: {
         projectId,
         userId: validatedData.userId,
@@ -86,13 +83,13 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
-    return success(member, '成员添加成功')
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return error('VALIDATION_ERROR', '数据验证失败', err.issues as any, 400)
+    return ApiResponder.success(member, '成员添加成功')
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return ApiResponder.error('VALIDATION_ERROR', '数据验证失败', error.issues as any, 400)
     }
-    console.error('添加成员失败:', err)
-    return error('ADD_MEMBER_ERROR', '添加成员失败', undefined, 500)
+    console.error('添加成员失败:', error)
+    return ApiResponder.serverError('添加成员失败')
   }
 }
 
@@ -101,40 +98,40 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id: projectId } = await params
 
   try {
-    // 检查管理员权限
     const admin = await checkAdmin(req)
     if (!admin) {
-      return error('FORBIDDEN', '无权限访问', undefined, 403)
+      const userId = req.cookies.get('user-id')?.value
+      if (!userId) {
+        return ApiResponder.unauthorized('请先登录')
+      }
+      return ApiResponder.forbidden('只有管理员可以管理项目成员')
     }
 
-    // 检查项目是否存在
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
     })
 
     if (!project) {
-      return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404)
+      return ApiResponder.notFound('项目不存在')
     }
 
-    // 获取查询参数
     const { searchParams } = new URL(req.url)
     const userId = searchParams.get('userId')
 
     if (!userId) {
-      return error('MISSING_USER_ID', '缺少用户ID参数', undefined, 400)
+      return ApiResponder.error('MISSING_USER_ID', '缺少用户ID参数', undefined, 400)
     }
 
-    // 删除成员
-    await db.project_members.deleteMany({
+    await prisma.project_members.deleteMany({
       where: {
         projectId,
         userId,
       },
     })
 
-    return success(null, '成员移除成功')
-  } catch (err) {
-    console.error('移除成员失败:', err)
-    return error('REMOVE_MEMBER_ERROR', '移除成员失败', undefined, 500)
+    return ApiResponder.success(null, '成员移除成功')
+  } catch (error) {
+    console.error('移除成员失败:', error)
+    return ApiResponder.serverError('移除成员失败')
   }
 }

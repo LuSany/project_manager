@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
-import { success, error } from '@/lib/api/response'
+import { prisma } from '@/lib/prisma'
+import { ApiResponder } from '@/lib/api/response'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
 
@@ -9,7 +9,7 @@ async function checkAdmin(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -24,15 +24,19 @@ const createProjectSchema = z.object({
   endDate: z.string().optional(),
 })
 
-// GET /api/v1/admin/projects - 获取项目列表
-export async function GET(request: NextRequest) {
-  const admin = await checkAdmin(request)
-  if (!admin) {
-    return error('FORBIDDEN', '无权限访问', undefined, 403)
-  }
-
+// GET /api/v1/admin/projects - 获取项目列表（含成员和任务计数）
+export async function GET(req: NextRequest) {
   try {
-    const projects = await db.projects.findMany({
+    const admin = await checkAdmin(req)
+    if (!admin) {
+      const userId = req.cookies.get('user-id')?.value
+      if (!userId) {
+        return ApiResponder.unauthorized('请先登录')
+      }
+      return ApiResponder.forbidden('只有管理员可以访问项目列表')
+    }
+
+    const projects = await prisma.projects.findMany({
       include: {
         users: {
           select: {
@@ -53,37 +57,41 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return success(projects)
-  } catch (err) {
-    console.error('获取项目列表失败:', err)
-    return error('GET_PROJECTS_ERROR', '获取项目列表失败', undefined, 500)
+    return ApiResponder.success(projects)
+  } catch (error) {
+    console.error('获取项目列表失败:', error)
+    return ApiResponder.serverError('获取项目列表失败')
   }
 }
 
 // POST /api/v1/admin/projects - 创建项目
-export async function POST(request: NextRequest) {
-  const admin = await checkAdmin(request)
-  if (!admin) {
-    return error('FORBIDDEN', '无权限访问', undefined, 403)
-  }
-
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json()
+    const admin = await checkAdmin(req)
+    if (!admin) {
+      const userId = req.cookies.get('user-id')?.value
+      if (!userId) {
+        return ApiResponder.unauthorized('请先登录')
+      }
+      return ApiResponder.forbidden('只有管理员可以创建项目')
+    }
+
+    const body = await req.json()
     const validatedData = createProjectSchema.parse(body)
 
     // 如果没有指定ownerId，默认为当前管理员
     const ownerId = validatedData.ownerId || admin.id
 
     // 验证owner是否存在
-    const owner = await db.users.findUnique({
+    const owner = await prisma.users.findUnique({
       where: { id: ownerId },
     })
 
     if (!owner) {
-      return error('OWNER_NOT_FOUND', '项目负责人不存在', undefined, 400)
+      return ApiResponder.error('OWNER_NOT_FOUND', '项目负责人不存在', undefined, 400)
     }
 
-    const project = await db.projects.create({
+    const project = await prisma.projects.create({
       data: {
         id: randomUUID(),
         name: validatedData.name,
@@ -111,12 +119,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return success(project, '项目创建成功')
-  } catch (err) {
-    if (err instanceof z.ZodError) {
-      return error('VALIDATION_ERROR', '数据验证失败', err.issues as any, 400)
+    return ApiResponder.success(project, '项目创建成功')
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return ApiResponder.error('VALIDATION_ERROR', '数据验证失败', error.issues as any, 400)
     }
-    console.error('创建项目失败:', err)
-    return error('CREATE_PROJECT_ERROR', '创建项目失败', undefined, 500)
+    console.error('创建项目失败:', error)
+    return ApiResponder.serverError('创建项目失败')
   }
 }
