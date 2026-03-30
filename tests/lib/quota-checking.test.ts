@@ -1,26 +1,70 @@
 import { describe, it, expect } from 'vitest'
+import { calculateRemainingHours, calculatePercentage, validateSubQuotas } from '@/lib/quota'
 
 describe('Quota Checking Logic', () => {
-  describe('Quota CRUD', () => {
-    it.todo('should create quota for a project')
-    it.todo('should update quota total hours')
-    it.todo('should allow optional sub-quotas per device type')
-    it.todo('should reject sub-quotas sum exceeding total')
+  describe('calculateRemainingHours', () => {
+    it('should calculate remaining hours correctly', () => {
+      expect(calculateRemainingHours(100, 30)).toBe(70)
+      expect(calculateRemainingHours(100, 0)).toBe(100)
+      expect(calculateRemainingHours(100, 100)).toBe(0)
+    })
+
+    it('should return 0 when usage exceeds quota', () => {
+      expect(calculateRemainingHours(100, 120)).toBe(0)
+    })
   })
 
-  describe('Usage Calculation', () => {
-    it.todo('should calculate actual usage from COMPLETED bookings')
-    it.todo('should calculate actual usage from IN_PROGRESS bookings')
-    it.todo('should not count CANCELLED bookings')
-    it.todo('should calculate hours as (endTime - startTime) in hours')
-    it.todo('should filter by current month period')
+  describe('calculatePercentage', () => {
+    it('should calculate percentage correctly', () => {
+      expect(calculatePercentage(50, 100)).toBe(50)
+      expect(calculatePercentage(80, 100)).toBe(80)
+      expect(calculatePercentage(0, 100)).toBe(0)
+    })
+
+    it('should return 0 when totalHours is 0', () => {
+      expect(calculatePercentage(10, 0)).toBe(0)
+    })
+
+    it('should return 100 when usage exceeds quota', () => {
+      expect(calculatePercentage(150, 100)).toBe(100)
+    })
+
+    it('should round to 1 decimal place', () => {
+      expect(calculatePercentage(33.33, 100)).toBe(33.3)
+    })
   })
 
-  describe('Warning Thresholds', () => {
-    it.todo('should trigger 50% notice')
-    it.todo('should trigger 80% warning')
-    it.todo('should trigger 100% exceeded alert')
-    it.todo('should not re-notify same threshold')
-    it.todo('should reset warning flags on new month')
+  describe('validateSubQuotas', () => {
+    it('should accept valid sub-quotas', () => {
+      const result = validateSubQuotas(100, [
+        { deviceTypeId: 'dt1', subHours: 30 },
+        { deviceTypeId: 'dt2', subHours: 40 },
+      ])
+      expect(result.valid).toBe(true)
+    })
+
+    it('should accept empty sub-quotas', () => {
+      const result = validateSubQuotas(100, [])
+      expect(result.valid).toBe(true)
+    })
+
+    it('should reject sub-quotas sum exceeding total', () => {
+      const result = validateSubQuotas(100, [
+        { deviceTypeId: 'dt1', subHours: 60 },
+        { deviceTypeId: 'dt2', subHours: 50 },
+      ])
+      expect(result.valid).toBe(false)
+      expect(result.error).toContain('不能超过')
+    })
+
+    it('should reject negative hours', () => {
+      const result = validateSubQuotas(100, [{ deviceTypeId: 'dt1', subHours: -10 }])
+      expect(result.valid).toBe(false)
+    })
+
+    it('should reject zero hours', () => {
+      const result = validateSubQuotas(100, [{ deviceTypeId: 'dt1', subHours: 0 }])
+      expect(result.valid).toBe(false)
+    })
   })
 })
