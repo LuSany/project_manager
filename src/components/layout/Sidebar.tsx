@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import {
   Folder,
   Calendar,
+  CalendarDays,
   Settings,
   Users,
   FileText,
@@ -67,6 +68,11 @@ const navItems: NavItem[] = [
     title: '设备管理',
     icon: Monitor,
     path: '/devices',
+  },
+  {
+    title: '我的预定',
+    icon: CalendarDays,
+    path: '/bookings',
   },
   {
     title: '用户管理',
