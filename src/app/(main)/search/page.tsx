@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, use } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -73,17 +73,18 @@ const statusLabels: Record<string, string> = {
 }
 
 interface SearchPageProps {
-  searchParams: {
+  searchParams: Promise<{
     q?: string
     page?: string
     types?: string
-  }
+  }>
 }
 
 function SearchResultsContent({ searchParams }: SearchPageProps) {
-  const query = searchParams.q || ''
-  const page = parseInt(searchParams.page || '1')
-  const typesParam = searchParams.types || ''
+  const resolvedParams = use(searchParams)
+  const query = resolvedParams.q || ''
+  const page = parseInt(resolvedParams.page || '1')
+  const typesParam = resolvedParams.types || ''
 
   const [loading, setLoading] = useState(true)
   const [searchResult, setSearchResult] = useState<SearchResult | null>(null)
