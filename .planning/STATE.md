@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: Executing Phase 08
-  stopped_at: Completed 08-03-SUMMARY.md
-  last_updated: '2026-03-30T09:45:00.000Z'
+  stopped_at: Completed 08-04-SUMMARY.md
+  last_updated: '2026-03-30T10:08:00.000Z'
   progress:
     total_phases: 10
     completed_phases: 6
     total_plans: 42
-    completed_plans: 35
+    completed_plans: 36
 ---
 
 # Project State
@@ -24,13 +24,13 @@ See: .planning/PROJECT.md (updated 2026-03-25)
 ## Current Position
 
 Phase: 08 (mvp) — EXECUTING
-Plan: 3 of 6
+Plan: 4 of 6
 
 ## Performance Metrics
 
 **Velocity:**
 
-- Total plans completed: 14
+- Total plans completed: 15
 - Average duration: ~12min/plan
 - Total execution time: ~3 hours
 
@@ -42,10 +42,11 @@ Plan: 3 of 6
 | 02-ui          | 2/2   | ~2h    | 60min    |
 | 03-kanban-list | 2/3   | ~54min | 18min    |
 | 04-calendar    | 5/6   | ~32min | 6.4min   |
+| 08-mvp         | 4/6   | ~47min | 11.75min |
 
 **Recent Trend:**
 
-- Last 5 plans: P02, P00, P01, P00, P01 (Phase 07-08)
+- Last 5 plans: P04, P02, P03, P03, P04 (Phase 07-08)
 - Trend: Stable velocity
 
 | Phase 01-ui P01 | 7min | 3 tasks | 4 files |
@@ -72,8 +73,70 @@ Plan: 3 of 6
 | Phase 08 P01 | 15min | 2 tasks | 5 files |
 | Phase 08 P02 | 12min | 2 tasks | 3 files |
 | Phase 08 P03 | 15min | 2 tasks | 5 files |
+| Phase 08 P04 | 8min | 2 tasks | 5 files |
 
 ## Accumulated Context
+
+### Decisions
+
+- [Phase 1]: 采用 shadcn/ui 组件库，与现有 Radix UI 兼容
+- [Phase 2]: 使用 Zustand 管理主题状态，无需 next-themes
+- [Phase 2]: 命令面板使用 cmdk 库，扩展 CommandItem 类型支持分组、收藏、最近访问
+- [Phase 2]: 命令面板分组顺序：收藏项目 → 最近访问 → 快捷操作 → AI 助手 → 导航 → 创建 → 设置 → 其他
+- [Phase 3]: 列表视图基于 TanStack Table
+- [Phase 5]: 甘特图使用自定义 SVG 实现
+- [Phase 01-ui]: uiStore 使用 persist 中间件仅持久化 sidebarCollapsed，不持久化 activeModal
+- [Phase 01-ui]: useMediaQuery 初始值设为 false 避免 SSR hydration 不匹配
+- [Phase 01-ui]: Sidebar 组件移除 controlled props 模式，完全由 uiStore 管理折叠状态
+- [Phase 01-ui]: SSR hydration 使用 mounted + \_hydrated 双重检查防止布局闪烁
+- [Phase 01-ui]: 移动端导航使用 Sheet 抽屉替代 Sidebar，更符合移动端交互习惯
+- [Phase 01-ui]: Header 响应式检测基于 md 断点（768px），与 Tailwind 配置一致
+- [Phase 03-kanban-list]: 使用 it.todo() 标记待实现测试，满足 Nyquist 规则要求
+- [Phase 03-kanban-list]: 列表视图使用 TanStack Table + Zustand 持久化
+- [Phase 03-kanban-list]: 内联编辑使用 Popover + Select 组合
+- [Phase 03]: 内联编辑使用 Popover + 自定义下拉组合
+- [Phase 03]: 列顺序按工作流优先级排列：待办 → 进行中 → 已完成 → 阻塞
+- [Phase 04-calendar]: Wave 0 test stubs pattern: Use it.todo() for all planned test cases to satisfy Nyquist rule
+- [Phase 04-calendar]: D-01: calendar as third view mode (list, kanban, calendar)
+- [Phase 04-calendar]: D-02: default month view with navigation
+- [Phase 04-calendar]: D-04: tasks grouped by dueDate
+- [Phase 04-calendar]: D-03: 单元格采用紧凑任务条 (h-6, 24px height) — 平衡信息量和可读性，适应日历单元格空间限制
+- [Phase 04-calendar]: D-05: 拖拽直接更新截止日期，无需确认 — 简化用户操作，提高效率
+- [Phase 04-calendar]: Use format(date, 'yyyy-MM-dd') instead of toISOString() for local date handling
+- [Phase 04-calendar]: Tailwind safelist required for dynamic class names in priority colors
+- [Phase 08-mvp]: 设备类型采用固定字段设计（名称、型号、位置、描述、负责人）
+- [Phase 08-mvp]: 日历拖拽方式预定设备
+- [Phase 08-mvp]: 精确匹配冲突检测策略
+- [Phase 08-mvp]: 表格视图展示设备列表
+- [Phase 08-mvp]: 完整设备状态机（可用 → 已预约 → 使用中 → 维护中 → 已停用）
+- [Phase 05-gantt]: Use date-fns differenceInDays and setHours for date arithmetic to avoid Date mutation
+- [Phase 05-gantt]: Replace manual edit/save workflow with debounced auto-save for better UX
+- [Phase 05-gantt]: Use 600ms debounce delay for auto-save (balance responsiveness and API calls)
+- [Phase 05-gantt]: Add visual feedback (spinner) during save operations
+- [Phase 06-dashboard]: Use Prisma enum types (TaskStatus, TaskPriority, MilestoneStatus) for type-safe color mapping
+- [Phase 06-dashboard]: ChartCard interface imported from shared types for consistency across chart components
+- [Phase 06-dashboard]: Value-based color mapping (hex colors for Recharts, Tailwind classes for UI)
+- [Phase 06-dashboard]: 使用本地 DistributionItem {name, value} 接口匹配 API 响应格式，而非 Prisma 类型接口
+- [Phase 06-dashboard]: ChartCard 及 dashboard 组件需显式 import React 以兼容 vitest jsdom 环境
+- [Phase 06-dashboard]: Use MILESTONE_DOT_COLORS (Tailwind bg-only classes) for status indicator dots, separate from MILESTONE_STATUS_COLORS (bg+text combined)
+- [Phase 06-dashboard]: MilestoneProgressItem.dueDate 类型改为 string|null（匹配 JSON 序列化行为）, 添加可选 projectName 字段
+- [Phase 06-dashboard]: ChartsGrid 为纯布局组件（无 'use client'），2x2 响应式网格，状态由子组件各自管理
+- [Phase 07-00]: Enhanced existing admin test scaffolds with conftest imports, beforeEach hooks, and nested describe blocks for better TDD structure
+- [Phase 07-01]: CSV 导入使用 PapaParse 解析 + Zod 验证，批量操作限制最多 100 个用户
+- [Phase 07-01]: Badge 颜色使用 CSS 变量模式适配暗色/浅色主题（D-25）
+- [Phase 07]: 统一项目API路由使用prisma+ApiResponder模式
+- [Phase 07]: 项目页面使用直接useReactTable+Dialog确认+toast通知（匹配用户管理页面模式）
+- [Phase 08-00]: 设备类型采用固定字段设计（名称、型号、位置、描述、负责人）
+- [Phase 08-00]: 完整设备状态机（AVAILABLE/RESERVED/IN_USE/MAINTENANCE/DISABLED）
+- [Phase 08-00]: Wave 0 test stubs pattern: Use it.todo() for all planned test cases to satisfy Nyquist rule
+- [Phase 08-01]: 使用 PATCH 而非 PUT 更新设备状态，遵循 REST 最佳实践
+- [Phase 08-01]: 禁止 IN_USE → AVAILABLE 直接状态转换，强制通过预定流程管理
+- [Phase 08-03]: 精确匹配冲突检测策略（interval overlap: A.start < B.end AND A.end > B.start）
+- [Phase 08-03]: 仅检查 RESERVED 和 IN_PROGRESS 状态的预定冲突，忽略 CANCELLED/COMPLETED
+- [Phase 08-03]: 设备状态自动同步：创建预定（AVAILABLE → RESERVED），取消预定（RESERVED → AVAILABLE）
+- [Phase 08-03]: 冲突返回 409 状态码并提供冲突预定详情
+- [Phase 08-04]: 日历拖拽选择支持 8:00-20:00 时间段，自动延长 1 小时覆盖完整时段
+- [Phase 08-04]: 预定历史显示最近 30 天，包含用户、项目、时间段、状态信息
 
 ### Decisions
 
@@ -145,6 +208,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-30T09:30:00.000Z
-Stopped at: Completed 08-03-SUMMARY.md
-Resume file: .planning/phases/08-mvp/08-03-SUMMARY.md
+Last session: 2026-03-30T10:08:00.000Z
+Stopped at: Completed 08-04-SUMMARY.md
+Resume file: .planning/phases/08-mvp/08-04-SUMMARY.md
