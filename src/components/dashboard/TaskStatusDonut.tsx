@@ -57,58 +57,57 @@ export function TaskStatusDonut() {
       empty={isEmpty}
       emptyMessage={EMPTY_TASK_MESSAGE}
     >
-      <div className="flex flex-col items-center">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={50}
-              outerRadius={80}
-              paddingAngle={2}
-              dataKey="value"
-              nameKey="name"
-            >
-              {data.map((entry) => (
-                <Cell
-                  key={entry.name}
-                  fill={TASK_STATUS_COLORS[entry.name as TaskStatus] || '#6b7280'}
-                  name={entry.name}
-                />
-              ))}
-              <Label value={total} position="center" />
-            </Pie>
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e2e8f0',
-                borderRadius: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              }}
-              formatter={(value: number, name: string) => [
-                `${value} 个任务`,
-                TASK_STATUS_LABELS[name as TaskStatus] || name,
-              ]}
-            />
-          </PieChart>
-        </ResponsiveContainer>
-
-        <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1">
-          {data.map((entry) => (
-            <div key={entry.name} className="flex items-center gap-1">
-              <div
-                className="h-2.5 w-2.5 rounded-full"
-                style={{
-                  backgroundColor: TASK_STATUS_COLORS[entry.name as TaskStatus] || '#6b7280',
-                }}
+      <ResponsiveContainer width="100%" height="100%">
+        <PieChart>
+          <Pie
+            data={data}
+            cx="50%"
+            cy="50%"
+            innerRadius={50}
+            outerRadius={80}
+            paddingAngle={2}
+            dataKey="value"
+            nameKey="name"
+          >
+            {data.map((entry) => (
+              <Cell
+                key={entry.name}
+                fill={TASK_STATUS_COLORS[entry.name as TaskStatus] || '#6b7280'}
+                name={entry.name}
               />
-              <span className="text-xs text-slate-600 dark:text-slate-400">
-                {TASK_STATUS_LABELS[entry.name as TaskStatus] || entry.name}
-              </span>
-            </div>
-          ))}
-        </div>
+            ))}
+            <Label value={total} position="center" />
+          </Pie>
+          <Tooltip
+            contentStyle={{
+              backgroundColor: 'white',
+              border: '1px solid #e2e8f0',
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+            }}
+            formatter={(value: number, name: string) => [
+              `${value} 个任务`,
+              TASK_STATUS_LABELS[name as TaskStatus] || name,
+            ]}
+          />
+        </PieChart>
+      </ResponsiveContainer>
+
+      {/* Legend */}
+      <div className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 pt-2">
+        {data.map((entry) => (
+          <div key={entry.name} className="flex items-center gap-1">
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{
+                backgroundColor: TASK_STATUS_COLORS[entry.name as TaskStatus] || '#6b7280',
+              }}
+            />
+            <span className="text-xs text-slate-600 dark:text-slate-400">
+              {TASK_STATUS_LABELS[entry.name as TaskStatus] || entry.name}
+            </span>
+          </div>
+        ))}
       </div>
     </ChartCard>
   )
