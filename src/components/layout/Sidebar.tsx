@@ -12,6 +12,7 @@ import {
   Clock,
   LayoutDashboard,
   Monitor,
+  ShieldCheck,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -73,6 +74,11 @@ const navItems: NavItem[] = [
     title: '我的预定',
     icon: CalendarDays,
     path: '/bookings',
+  },
+  {
+    title: '审批管理',
+    icon: ShieldCheck,
+    path: '/approvals',
   },
   {
     title: '用户管理',

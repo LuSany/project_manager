@@ -18,6 +18,7 @@ import { BookingCancelDialog } from '@/components/bookings/BookingCancelDialog'
 import { X } from 'lucide-react'
 
 const bookingStatusColors = {
+  PENDING_APPROVAL: 'bg-amber-100 text-amber-800',
   RESERVED: 'bg-blue-100 text-blue-800',
   IN_PROGRESS: 'bg-amber-100 text-amber-800',
   COMPLETED: 'bg-green-100 text-green-800',
@@ -25,6 +26,7 @@ const bookingStatusColors = {
 }
 
 const bookingStatusLabels = {
+  PENDING_APPROVAL: '待审批',
   RESERVED: '已预约',
   IN_PROGRESS: '使用中',
   COMPLETED: '已完成',
@@ -35,7 +37,7 @@ interface Booking {
   id: string
   startTime: string
   endTime: string
-  status: 'RESERVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+  status: 'PENDING_APPROVAL' | 'RESERVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   devices: {
     name: string
     device_types: {
@@ -72,7 +74,7 @@ export function MyBookingsTable() {
   }
 
   const canCancel = (booking: Booking) => {
-    return booking.status === 'RESERVED'
+    return booking.status === 'RESERVED' || booking.status === 'PENDING_APPROVAL'
   }
 
   if (isLoading) {
