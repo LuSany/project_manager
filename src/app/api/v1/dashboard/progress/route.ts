@@ -12,15 +12,28 @@ export async function GET(request: NextRequest) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401)
     }
 
+    const user = await prisma.users.findUnique({
+      where: { id: userId },
+      select: { role: true },
+    })
+
+    if (!user) {
+      return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
+    }
+
     const { searchParams } = new URL(request.url)
     const projectId = searchParams.get('projectId')
 
-    // 如果没有 projectId，返回用户参与的所有项目的全局里程碑
     if (!projectId) {
+      const where: any =
+        user.role === 'ADMIN'
+          ? {}
+          : {
+              OR: [{ ownerId: userId }, { project_members: { some: { users: { id: userId } } } }],
+            }
+
       const userProjects = await prisma.projects.findMany({
-        where: {
-          OR: [{ ownerId: userId }, { project_members: { some: { users: { id: userId } } } }],
-        },
+        where,
         select: { id: true },
       })
 
