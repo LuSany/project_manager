@@ -22,9 +22,9 @@
 
 ### UI-003: 仪表盘组件
 
-- [ ] **DASH-01**: 统计卡片组件，展示任务数、完成率、风险数
+- [x] **DASH-01**: 统计卡片组件，展示任务数、完成率、风险数
 - [x] **DASH-02**: 饼图/环形图组件，任务状态分布、优先级分布
-- [ ] **DASH-03**: 折线图组件，任务完成趋势、活动趋势
+- [x] **DASH-03**: 折线图组件，任务完成趋势、活动趋势
 - [x] **DASH-04**: 柱状图组件，项目对比、团队效率
 - [x] **DASH-05**: 里程碑进度组件，燃尽图/进度条
 
@@ -117,9 +117,9 @@ Which phases cover which requirements. Updated during roadmap creation.
 | TASK-05 | Phase 3 | Complete |
 | TASK-03 | Phase 4 | Complete |
 | TASK-04 | Phase 5 | Complete |
-| DASH-01 | Phase 6 | Pending |
+| DASH-01 | Phase 6 | Complete |
 | DASH-02 | Phase 6 | Complete |
-| DASH-03 | Phase 6 | Pending |
+| DASH-03 | Phase 6 | Complete |
 | DASH-04 | Phase 6 | Complete |
 | DASH-05 | Phase 6 | Complete |
 | ADMIN-01 | Phase 7 | Pending |
