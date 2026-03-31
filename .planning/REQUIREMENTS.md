@@ -74,8 +74,8 @@
 ### AI-002: AI 评审参与
 
 - [x] **AIREV-01**: AI 评审员角色，作为评审参与者投票
-- [ ] **AIREV-02**: 评审材料分析，AI 提取文档关键信息
-- [ ] **AIREV-03**: 问题自动识别，AI 发现材料中的问题
+- [x] **AIREV-02**: 评审材料分析，AI 提取文档关键信息
+- [x] **AIREV-03**: 问题自动识别，AI 发现材料中的问题
 - [x] **AIREV-04**: 决议草案生成，评审结束后自动生成结论
 
 ## v2 Requirements
@@ -148,8 +148,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | AIRISK-03 | Phase 10 | Complete |
 | AIRISK-04 | Phase 10 | Complete |
 | AIREV-01 | Phase 10 | Complete |
-| AIREV-02 | Phase 10 | Pending |
-| AIREV-03 | Phase 10 | Pending |
+| AIREV-02 | Phase 10 | Complete |
+| AIREV-03 | Phase 10 | Complete |
 | AIREV-04 | Phase 10 | Complete |
 
 **Coverage:**
