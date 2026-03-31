@@ -233,7 +233,13 @@ Plans:
 6. AI 分析评审材料并提取关键信息
 7. AI 识别评审材料中的问题
 8. 评审结束后 AI 自动生成决议草案
-   **Plans**: TBD
+   **Plans**: 3 plans in 2 waves
+
+Plans:
+
+- [ ] 10-01-PLAN.md — Backend: Prisma Schema 扩展 + AI 风险扫描 API + AI 评审员投票 + 决议草案 API
+- [ ] 10-02-PLAN.md — AI Risk UI: AIRiskAnalysis 组件 + RiskSuggestionCard + 定时扫描配置
+- [ ] 10-03-PLAN.md — AI Reviewer UI: ReviewAISidebar + ReviewResolutionDraft + ReviewVoting 扩展 + AI 分析页现代化
 
 ## Progress
 
@@ -251,4 +257,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 7. 管理后台       | 0/6            | Planned     | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
 | 9. 审批配额与统计 | 0/0            | Not started | -          |
-| 10. AI 增强功能   | 0/0            | Not started | -          |
+| 10. AI 增强功能   | 0/3            | Planned     | -          |
