@@ -1,30 +1,35 @@
-'use client';
+'use client'
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { RiskList } from '@/components/risks/RiskList';
-import { ArrowLeft, Home } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { RiskList } from '@/components/risks/RiskList'
+import { AIRiskAnalysis } from '@/components/risks/AIRiskAnalysis'
+import { ArrowLeft, Home } from 'lucide-react'
 
 export default function RisksPage({ params }: { params: Promise<{ id: string }> }) {
-  const [projectId, setProjectId] = useState<string>('');
+  const [projectId, setProjectId] = useState<string>('')
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
-    params.then(p => setProjectId(p.id));
-  }, [params]);
+    params.then((p) => setProjectId(p.id))
+  }, [params])
+
+  const handleRiskCreated = useCallback(() => {
+    setRefreshKey((prev) => prev + 1)
+  }, [])
 
   if (!projectId) {
     return (
       <div className="container mx-auto p-6">
-        <div className="text-center py-8 text-muted-foreground">加载中...</div>
+        <div className="text-muted-foreground py-8 text-center">加载中...</div>
       </div>
-    );
+    )
   }
 
   return (
     <div className="container mx-auto p-6">
-      {/* 返回导航 */}
-      <div className="flex items-center gap-2 mb-4">
+      <div className="mb-4 flex items-center gap-2">
         <Link href={`/projects/${projectId}`}>
           <Button variant="ghost" size="sm" className="gap-1">
             <ArrowLeft className="h-4 w-4" />
@@ -39,11 +44,12 @@ export default function RisksPage({ params }: { params: Promise<{ id: string }> 
         </Link>
       </div>
 
-      <div className="flex justify-between items-center mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">风险管理</h1>
+        <AIRiskAnalysis projectId={projectId} onRiskCreated={handleRiskCreated} />
       </div>
 
-      <RiskList projectId={projectId} />
+      <RiskList projectId={projectId} refreshKey={refreshKey} />
     </div>
-  );
+  )
 }

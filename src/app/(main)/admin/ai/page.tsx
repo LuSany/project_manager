@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { api } from '@/lib/api/client'
-import { Loader2, Plus, Brain, History, Database, Edit2, Trash2 } from 'lucide-react'
+import { Loader2, Plus, Brain, History, Database, Edit2, Trash2, Clock, Bot } from 'lucide-react'
 import { AIConfigDialog } from './components/AIConfigDialog'
+import { ScanConfigTab } from './components/ScanConfigTab'
+import { AIReviewerConfigPanel } from './components/AIReviewerConfigPanel'
 import { useToast } from '@/hooks/use-toast'
 
 interface AIConfig {
@@ -150,6 +152,10 @@ export default function AIAdminPage() {
               <Database className="h-4 w-4" />
               缓存管理
             </TabsTrigger>
+            <TabsTrigger value="scan" className="gap-2">
+              <Clock className="h-4 w-4" />
+              定时扫描
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="configs">
@@ -257,6 +263,10 @@ export default function AIAdminPage() {
                 )}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="scan">
+            <ScanConfigTab />
           </TabsContent>
         </Tabs>
         <AIConfigDialog
