@@ -919,6 +919,8 @@ enum AIServiceType {
   RISK_ANALYSIS
   REVIEW_AUDIT
   DOC_PARSE
+  RISK_SCAN
+  REVIEWER_VOTE
 }
 
 enum AIStatus {
@@ -1028,6 +1030,7 @@ enum NotificationType {
   APPROVAL_REJECTED
   QUOTA_WARNING
   QUOTA_EXCEEDED
+  AI_RISK_SCAN_RESULT
 }
 
 enum PreviewServiceType {
@@ -1076,6 +1079,7 @@ enum ReviewParticipantRole {
   OBSERVER
   SECRETARY
   MODERATOR
+  AI_REVIEWER
 }
 
 enum ReviewStatus {

@@ -5,6 +5,8 @@ import { randomUUID } from 'crypto'
 
 const prisma = new PrismaClient()
 
+const SYSTEM_AI_REVIEWER_ID = 'system-ai-reviewer'
+
 async function main() {
   console.log('开始填充种子数据...')
 
@@ -25,6 +27,22 @@ async function main() {
     },
   })
   console.log('✅ 创建系统管理员:', admin.email)
+
+  // 创建系统 AI 用户 (Phase 10) - 用于 AI 评审员角色
+  const aiUser = await prisma.users.upsert({
+    where: { email: 'ai-system@internal' },
+    update: {},
+    create: {
+      id: SYSTEM_AI_REVIEWER_ID,
+      email: 'ai-system@internal',
+      passwordHash: randomUUID(),
+      name: 'AI 评审员',
+      status: 'ACTIVE',
+      role: 'EMPLOYEE',
+      updatedAt: new Date(),
+    },
+  })
+  console.log('✅ 创建系统 AI 用户:', aiUser.email)
 
   // 创建测试用户
   const testUserId = randomUUID()

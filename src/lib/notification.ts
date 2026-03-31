@@ -18,6 +18,7 @@ export type NotificationType =
   | 'APPROVAL_REJECTED'
   | 'QUOTA_WARNING'
   | 'QUOTA_EXCEEDED'
+  | 'AI_RISK_SCAN_RESULT'
 
 // Notification channel types
 export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS'
@@ -436,6 +437,25 @@ export async function notifyQuotaWarning(
     title,
     content: `项目"${projectName}"配额使用 ${usedHours.toFixed(1)}/${totalHours.toFixed(1)} 小时（${percentage.toFixed(0)}%），剩余 ${remaining.toFixed(1)} 小时`,
     link: `/equipment/stats`,
+    projectId,
+  })
+}
+
+// AI 风险扫描结果通知 (Phase 10) per D-10, D-11
+
+export async function notifyAIRiskScanResult(
+  userId: string,
+  projectId: string,
+  projectName: string,
+  riskCount: number,
+  highRiskCount: number
+): Promise<void> {
+  await createNotification({
+    userId,
+    type: 'AI_RISK_SCAN_RESULT',
+    title: `AI 风险扫描完成 - 发现 ${riskCount} 个潜在风险`,
+    content: `项目"${projectName}"的 AI 自动扫描发现了 ${riskCount} 个潜在风险，其中 ${highRiskCount} 个高风险。请查看并处理。`,
+    link: `/projects/${projectId}/risks`,
     projectId,
   })
 }
