@@ -66,17 +66,17 @@
 
 ### AI-001: AI 风险判断
 
-- [ ] **AIRISK-01**: 自动风险识别，AI 分析项目数据发现潜在风险
-- [ ] **AIRISK-02**: 风险评级建议，AI 评估概率和影响程度
-- [ ] **AIRISK-03**: 应对方案生成，AI 生成风险应对策略
-- [ ] **AIRISK-04**: 定期风险扫描，定时任务自动扫描并通知
+- [x] **AIRISK-01**: 自动风险识别，AI 分析项目数据发现潜在风险
+- [x] **AIRISK-02**: 风险评级建议，AI 评估概率和影响程度
+- [x] **AIRISK-03**: 应对方案生成，AI 生成风险应对策略
+- [x] **AIRISK-04**: 定期风险扫描，定时任务自动扫描并通知
 
 ### AI-002: AI 评审参与
 
-- [ ] **AIREV-01**: AI 评审员角色，作为评审参与者投票
+- [x] **AIREV-01**: AI 评审员角色，作为评审参与者投票
 - [ ] **AIREV-02**: 评审材料分析，AI 提取文档关键信息
 - [ ] **AIREV-03**: 问题自动识别，AI 发现材料中的问题
-- [ ] **AIREV-04**: 决议草案生成，评审结束后自动生成结论
+- [x] **AIREV-04**: 决议草案生成，评审结束后自动生成结论
 
 ## v2 Requirements
 
@@ -143,14 +143,14 @@ Which phases cover which requirements. Updated during roadmap creation.
 | EQUIP-14 | Phase 9 | Pending |
 | EQUIP-15 | Phase 9 | Pending |
 | EQUIP-16 | Phase 9 | Pending |
-| AIRISK-01 | Phase 10 | Pending |
-| AIRISK-02 | Phase 10 | Pending |
-| AIRISK-03 | Phase 10 | Pending |
-| AIRISK-04 | Phase 10 | Pending |
-| AIREV-01 | Phase 10 | Pending |
+| AIRISK-01 | Phase 10 | Complete |
+| AIRISK-02 | Phase 10 | Complete |
+| AIRISK-03 | Phase 10 | Complete |
+| AIRISK-04 | Phase 10 | Complete |
+| AIREV-01 | Phase 10 | Complete |
 | AIREV-02 | Phase 10 | Pending |
 | AIREV-03 | Phase 10 | Pending |
-| AIREV-04 | Phase 10 | Pending |
+| AIREV-04 | Phase 10 | Complete |
 
 **Coverage:**
 - v1 requirements: 37 total
