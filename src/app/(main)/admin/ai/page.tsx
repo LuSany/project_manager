@@ -156,6 +156,10 @@ export default function AIAdminPage() {
               <Clock className="h-4 w-4" />
               定时扫描
             </TabsTrigger>
+            <TabsTrigger value="reviewer" className="gap-2">
+              <Bot className="h-4 w-4" />
+              AI 评审员
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="configs">
@@ -267,6 +271,10 @@ export default function AIAdminPage() {
 
           <TabsContent value="scan">
             <ScanConfigTab />
+          </TabsContent>
+
+          <TabsContent value="reviewer">
+            <AIReviewerConfigPanel />
           </TabsContent>
         </Tabs>
         <AIConfigDialog
