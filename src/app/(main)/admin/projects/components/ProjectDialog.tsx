@@ -201,7 +201,7 @@ export function ProjectDialog({ open, onOpenChange, project, onSuccess }: Projec
                 </div>
               ) : (
                 <Select
-                  value={form.watch('ownerId')}
+                  value={form.watch('ownerId') || ''}
                   onValueChange={(value) => form.setValue('ownerId', value)}
                   disabled={loading}
                 >
@@ -209,11 +209,17 @@ export function ProjectDialog({ open, onOpenChange, project, onSuccess }: Projec
                     <SelectValue placeholder="请选择项目负责人" />
                   </SelectTrigger>
                   <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </SelectItem>
-                    ))}
+                    {!users || users.length === 0 ? (
+                      <div className="text-muted-foreground py-4 text-center text-sm">
+                        暂无可用用户
+                      </div>
+                    ) : (
+                      users.map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.name} ({user.email})
+                        </SelectItem>
+                      ))
+                    )}
                   </SelectContent>
                 </Select>
               )}
