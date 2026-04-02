@@ -46,14 +46,14 @@ export async function GET(request: NextRequest) {
       const globalMilestones = await prisma.milestones.findMany({
         where: {
           projectId: { in: projectIds },
-          status: { in: ['NOT_STARTED', 'IN_PROGRESS'] },
+          status: { in: ['NOT_STARTED', 'IN_PROGRESS', 'COMPLETED'] },
         },
         include: {
           projects: {
             select: { name: true },
           },
         },
-        orderBy: { dueDate: 'asc' },
+        orderBy: [{ status: 'asc' }, { dueDate: 'asc' }],
         take: 6,
       })
 
