@@ -5,6 +5,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { PermissionTree } from './components/PermissionTree'
 import { PermissionEditor } from './components/PermissionEditor'
 import { api } from '@/lib/api/client'
+import { ShieldCheck } from 'lucide-react'
 
 interface Resource {
   id: string
@@ -81,17 +82,27 @@ export default function PermissionsPage() {
         <Card className="w-full shrink-0 md:w-64">
           <CardContent className="p-4">
             <h3 className="text-muted-foreground mb-3 text-sm font-medium">项目列表</h3>
-            <PermissionTree
-              resources={resources}
-              selectedId={selectedResourceId}
-              onSelect={setSelectedResourceId}
-            />
+            {!resources || resources.length === 0 ? (
+              <div className="text-muted-foreground py-8 text-center text-sm">暂无项目权限配置</div>
+            ) : (
+              <PermissionTree
+                resources={resources}
+                selectedId={selectedResourceId}
+                onSelect={setSelectedResourceId}
+              />
+            )}
           </CardContent>
         </Card>
 
         <Card className="min-w-0 flex-1">
           <CardContent className="p-6">
-            {selectedResourceId && selectedResource ? (
+            {!resources || resources.length === 0 ? (
+              <div className="text-muted-foreground flex min-h-[300px] flex-col items-center justify-center">
+                <ShieldCheck className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                <p>暂无项目权限配置</p>
+                <p className="mt-2 text-sm">请先创建项目后再配置权限</p>
+              </div>
+            ) : selectedResourceId && selectedResource ? (
               <PermissionEditor
                 resourceId={selectedResourceId}
                 resourceName={selectedResource.name}

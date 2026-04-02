@@ -236,10 +236,10 @@ export default function EmailAdminPage() {
 
           <TabsContent value="logs">
             <div className="divide-y rounded-lg border">
-              {logs.length === 0 ? (
+              {!logs || logs.length === 0 ? (
                 <div className="text-muted-foreground p-8 text-center">暂无发送记录</div>
               ) : (
-                logs.slice(0, 20).map((log) => (
+                (Array.isArray(logs) ? logs : []).slice(0, 20).map((log) => (
                   <div key={log.id} className="flex items-center justify-between p-4">
                     <div>
                       <p className="text-sm font-medium">{log.subject}</p>
