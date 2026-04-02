@@ -158,4 +158,57 @@ describe('PriorityDonut', () => {
       json: async () => ({ success: true, data: { priorityDistribution: [] } }),
     })
   })
+
+  it('shows percentage in legend for each priority', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { priorityDistribution: mockPriorityData },
+      }),
+    })
+
+    render(<PriorityDonut />)
+
+    await waitFor(() => {
+      // Total: 5 + 8 + 3 + 2 = 18
+      // LOW: (5/18) * 100 = 27.8%
+      // MEDIUM: (8/18) * 100 = 44.4%
+      // HIGH: (3/18) * 100 = 16.7%
+      // CRITICAL: (2/18) * 100 = 11.1%
+      expect(screen.getByText('低')).toBeInTheDocument()
+      expect(screen.getByText('(27.8%)')).toBeInTheDocument()
+      expect(screen.getByText('中')).toBeInTheDocument()
+      expect(screen.getByText('(44.4%)')).toBeInTheDocument()
+      expect(screen.getByText('高')).toBeInTheDocument()
+      expect(screen.getByText('(16.7%)')).toBeInTheDocument()
+      expect(screen.getByText('紧急')).toBeInTheDocument()
+      expect(screen.getByText('(11.1%)')).toBeInTheDocument()
+    })
+  })
+
+  it('shows 0.0% percentage when total is zero', async () => {
+    const zeroData = [
+      { name: 'LOW', value: 0 },
+      { name: 'MEDIUM', value: 0 },
+      { name: 'HIGH', value: 0 },
+      { name: 'CRITICAL', value: 0 },
+    ]
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { priorityDistribution: zeroData },
+      }),
+    })
+
+    render(<PriorityDonut />)
+
+    await waitFor(() => {
+      // All items should show 0.0% when total is zero
+      const percentages = screen.getAllByText('(0.0%)')
+      expect(percentages.length).toBeGreaterThanOrEqual(1)
+    })
+  })
 })

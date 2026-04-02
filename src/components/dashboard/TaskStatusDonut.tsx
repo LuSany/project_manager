@@ -106,6 +106,9 @@ export function TaskStatusDonut() {
             <span className="text-xs text-slate-600 dark:text-slate-400">
               {TASK_STATUS_LABELS[entry.name as TaskStatus] || entry.name}
             </span>
+            <span className="ml-1 text-xs text-slate-500 dark:text-slate-500">
+              ({((entry.value / (total || 1)) * 100).toFixed(1)}%)
+            </span>
           </div>
         ))}
       </div>

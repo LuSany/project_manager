@@ -184,4 +184,53 @@ describe('TaskStatusDonut', () => {
       )
     })
   })
+
+  it('shows percentage in legend for each status', async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { taskStatusDistribution: mockStatusData },
+      }),
+    })
+
+    render(<TaskStatusDonut />)
+
+    await waitFor(() => {
+      // Total: 10 + 5 + 8 = 23
+      // TODO: (10/23) * 100 = 43.5%
+      // IN_PROGRESS: (5/23) * 100 = 21.7%
+      // DONE: (8/23) * 100 = 34.8%
+      expect(screen.getByText('待办')).toBeInTheDocument()
+      expect(screen.getByText('(43.5%)')).toBeInTheDocument()
+      expect(screen.getByText('进行中')).toBeInTheDocument()
+      expect(screen.getByText('(21.7%)')).toBeInTheDocument()
+      expect(screen.getByText('已完成')).toBeInTheDocument()
+      expect(screen.getByText('(34.8%)')).toBeInTheDocument()
+    })
+  })
+
+  it('shows 0.0% percentage when total is zero', async () => {
+    const zeroData = [
+      { name: 'TODO', value: 0 },
+      { name: 'IN_PROGRESS', value: 0 },
+      { name: 'DONE', value: 0 },
+    ]
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        success: true,
+        data: { taskStatusDistribution: zeroData },
+      }),
+    })
+
+    render(<TaskStatusDonut />)
+
+    await waitFor(() => {
+      // All items should show 0.0% when total is zero
+      const percentages = screen.getAllByText('(0.0%)')
+      expect(percentages.length).toBeGreaterThanOrEqual(1)
+    })
+  })
 })
