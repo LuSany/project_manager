@@ -440,6 +440,11 @@ export default function UsersAdminPage() {
       if (!result.success) {
         throw new Error(result.error?.message || '批量更新失败')
       }
+
+      // 更新本地状态
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (selectedIds.includes(user.id) ? { ...user, status } : user))
+      )
     } catch (error) {
       throw error
     }
@@ -459,6 +464,11 @@ export default function UsersAdminPage() {
       if (!result.success) {
         throw new Error(result.error?.message || '批量更新失败')
       }
+
+      // 更新本地状态
+      setUsers((prevUsers) =>
+        prevUsers.map((user) => (selectedIds.includes(user.id) ? { ...user, role } : user))
+      )
     } catch (error) {
       throw error
     }

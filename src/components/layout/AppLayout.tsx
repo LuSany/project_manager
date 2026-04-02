@@ -6,6 +6,7 @@ import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 import { useAuth } from '@/hooks/useAuth'
 import { useUIStore } from '@/stores/uiStore'
+import { cn } from '@/lib/utils'
 
 export interface AppLayoutProps {
   children: React.ReactNode
@@ -29,7 +30,11 @@ export function AppLayout({ children }: AppLayoutProps) {
     return (
       <div className="bg-background flex h-screen items-center justify-center">
         <div className="text-center">
-          <div className="border-primary mx-auto h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" />
+          <div
+            className={cn(
+              'border-primary mx-auto h-8 w-8 animate-spin rounded-full border-4 border-t-transparent'
+            )}
+          />
           <p className="text-muted-foreground mt-4">加载中...</p>
         </div>
       </div>
