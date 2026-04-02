@@ -25,74 +25,9 @@ interface NavItem {
   title: string
   icon: React.ComponentType<{ className?: string }>
   path: string
-  badge?: number
+  badge?: number | null
   adminOnly?: boolean
 }
-
-const navItems: NavItem[] = [
-  {
-    title: '工作台',
-    icon: LayoutDashboard,
-    path: '/dashboard',
-  },
-  {
-    title: '我的任务',
-    icon: CheckSquare,
-    path: '/tasks',
-    badge: 5,
-  },
-  {
-    title: '项目',
-    icon: Folder,
-    path: '/projects',
-  },
-  {
-    title: '里程碑',
-    icon: Calendar,
-    path: '/milestones',
-  },
-  {
-    title: '需求',
-    icon: FileText,
-    path: '/requirements',
-  },
-  {
-    title: '问题',
-    icon: AlertCircle,
-    path: '/issues',
-  },
-  {
-    title: '机时管理',
-    icon: Clock,
-    path: '/timesheet',
-  },
-  {
-    title: '设备管理',
-    icon: Monitor,
-    path: '/devices',
-  },
-  {
-    title: '设备统计',
-    icon: BarChart3,
-    path: '/equipment/stats',
-  },
-  {
-    title: '我的预定',
-    icon: CalendarDays,
-    path: '/bookings',
-  },
-  {
-    title: '审批管理',
-    icon: ShieldCheck,
-    path: '/approvals',
-  },
-  {
-    title: '用户管理',
-    icon: Users,
-    path: '/admin/users',
-    adminOnly: true,
-  },
-]
 
 export interface SidebarProps {
   className?: string
@@ -107,18 +42,19 @@ export function Sidebar({ className }: SidebarProps) {
   // 用于 SSR hydration 检测
   const [mounted, setMounted] = useState(false)
   const [userRole, setUserRole] = useState<string | null>(null)
+  const [myTasksCount, setMyTasksCount] = useState<number | null>(null)
   const pathname = usePathname()
 
-  // 获取当前用户角色
+  // 获取当前用户角色和任务数
   useEffect(() => {
     setMounted(true)
+
     const fetchUserRole = async () => {
       try {
         const response = await fetch('/api/v1/users/me', {
           credentials: 'include',
         })
         if (!response.ok) {
-          // 未授权或错误响应，不尝试解析 JSON
           return
         }
         const data = await response.json()
@@ -129,10 +65,94 @@ export function Sidebar({ className }: SidebarProps) {
         console.error('获取用户信息失败:', error)
       }
     }
+
+    const fetchMyTasksCount = async () => {
+      try {
+        const response = await fetch('/api/v1/dashboard/stats', {
+          credentials: 'include',
+        })
+        if (!response.ok) {
+          return
+        }
+        const data = await response.json()
+        if (data.success && typeof data.data?.myTasksCount === 'number') {
+          setMyTasksCount(data.data.myTasksCount)
+        }
+      } catch (error) {
+        console.error('获取我的任务数失败:', error)
+      }
+    }
+
     fetchUserRole()
+    fetchMyTasksCount()
   }, [])
 
   const isAdmin = userRole === 'ADMIN'
+
+  const navItems: NavItem[] = [
+    {
+      title: '工作台',
+      icon: LayoutDashboard,
+      path: '/dashboard',
+    },
+    {
+      title: '我的任务',
+      icon: CheckSquare,
+      path: '/tasks',
+      badge: myTasksCount,
+    },
+    {
+      title: '项目',
+      icon: Folder,
+      path: '/projects',
+    },
+    {
+      title: '里程碑',
+      icon: Calendar,
+      path: '/milestones',
+    },
+    {
+      title: '需求',
+      icon: FileText,
+      path: '/requirements',
+    },
+    {
+      title: '问题',
+      icon: AlertCircle,
+      path: '/issues',
+    },
+    {
+      title: '机时管理',
+      icon: Clock,
+      path: '/timesheet',
+    },
+    {
+      title: '设备管理',
+      icon: Monitor,
+      path: '/devices',
+    },
+    {
+      title: '设备统计',
+      icon: BarChart3,
+      path: '/equipment/stats',
+    },
+    {
+      title: '我的预定',
+      icon: CalendarDays,
+      path: '/bookings',
+    },
+    {
+      title: '审批管理',
+      icon: ShieldCheck,
+      path: '/approvals',
+    },
+    {
+      title: '用户管理',
+      icon: Users,
+      path: '/admin/users',
+      adminOnly: true,
+    },
+  ]
 
   const isActive = (path: string) => {
     if (path === '/dashboard') {
@@ -210,11 +230,14 @@ export function Sidebar({ className }: SidebarProps) {
                   >
                     <item.icon className="h-5 w-5 flex-shrink-0" />
                     <span className={sidebarCollapsed ? 'hidden' : 'block'}>{item.title}</span>
-                    {item.badge && !sidebarCollapsed && (
-                      <span className="bg-destructive ml-auto rounded-full px-2 py-0.5 text-xs text-white">
-                        {item.badge}
-                      </span>
-                    )}
+                    {item.badge !== null &&
+                      item.badge !== undefined &&
+                      item.badge > 0 &&
+                      !sidebarCollapsed && (
+                        <span className="bg-destructive ml-auto rounded-full px-2 py-0.5 text-xs text-white">
+                          {item.badge > 99 ? '99+' : item.badge}
+                        </span>
+                      )}
                   </Link>
                 </TooltipTrigger>
                 {sidebarCollapsed && <TooltipContent side="right">{item.title}</TooltipContent>}

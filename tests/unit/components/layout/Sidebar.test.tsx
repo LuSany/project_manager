@@ -3,6 +3,29 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, waitFor } from '@testing-library/react'
 import { Sidebar } from '@/components/layout/Sidebar'
 
+// Mock localStorage
+const localStorageMock = {
+  clear: vi.fn(),
+  getItem: vi.fn(),
+  setItem: vi.fn(),
+  removeItem: vi.fn(),
+  length: 0,
+  key: vi.fn(),
+}
+Object.defineProperty(global, 'localStorage', { value: localStorageMock })
+
+// Mock uiStore
+vi.mock('@/stores/uiStore', () => ({
+  useUIStore: vi.fn((selector) => {
+    const state = {
+      sidebarCollapsed: false,
+      toggleSidebar: vi.fn(),
+      _hydrated: true,
+    }
+    return selector(state)
+  }),
+}))
+
 // Mock next/navigation
 vi.mock('next/navigation', () => ({
   usePathname: () => '/dashboard',
@@ -26,7 +49,7 @@ global.fetch = vi.fn(() =>
 describe('Sidebar', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    localStorage.clear()
+    localStorageMock.clear.mockClear()
   })
 
   describe('组件渲染', () => {
@@ -68,6 +91,83 @@ describe('Sidebar', () => {
     it('组件正确导出', async () => {
       const sidebarModule = await import('@/components/layout/Sidebar')
       expect(typeof sidebarModule.Sidebar).toBe('function')
+    })
+  })
+
+  describe('我的任务动态徽章', () => {
+    it('从 API 获取任务数并显示徽章', async () => {
+      ;(global.fetch as vi.Mock).mockImplementation((url: string) => {
+        if (url.includes('/api/v1/dashboard/stats')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                success: true,
+                data: { myTasksCount: 7 },
+              }),
+          })
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { role: 'USER' } }),
+        })
+      })
+
+      render(<Sidebar />)
+
+      await waitFor(() => {
+        expect(screen.getByText('7')).toBeInTheDocument()
+      })
+    })
+
+    it('任务数为 0 时隐藏徽章', async () => {
+      ;(global.fetch as vi.Mock).mockImplementation((url: string) => {
+        if (url.includes('/api/v1/dashboard/stats')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                success: true,
+                data: { myTasksCount: 0 },
+              }),
+          })
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { role: 'USER' } }),
+        })
+      })
+
+      render(<Sidebar />)
+
+      await waitFor(() => {
+        expect(screen.queryByText('0')).not.toBeInTheDocument()
+      })
+    })
+
+    it('任务数超过 99 显示 99+', async () => {
+      ;(global.fetch as vi.Mock).mockImplementation((url: string) => {
+        if (url.includes('/api/v1/dashboard/stats')) {
+          return Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                success: true,
+                data: { myTasksCount: 150 },
+              }),
+          })
+        }
+        return Promise.resolve({
+          ok: true,
+          json: () => Promise.resolve({ success: true, data: { role: 'USER' } }),
+        })
+      })
+
+      render(<Sidebar />)
+
+      await waitFor(() => {
+        expect(screen.getByText('99+')).toBeInTheDocument()
+      })
     })
   })
 })
