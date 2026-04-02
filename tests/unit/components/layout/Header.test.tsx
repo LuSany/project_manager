@@ -1,6 +1,6 @@
 import React from 'react'
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, waitFor } from '@testing-library/react'
 import { Header } from '@/components/layout/Header'
 
 // Mock next/navigation
@@ -13,7 +13,15 @@ vi.mock('next/navigation', () => ({
 
 // Mock next/link
 vi.mock('next/link', () => ({
-  default: ({ children, href, onClick }: { children: React.ReactNode; href: string; onClick?: () => void }) => (
+  default: ({
+    children,
+    href,
+    onClick,
+  }: {
+    children: React.ReactNode
+    href: string
+    onClick?: () => void
+  }) => (
     <a href={href} onClick={onClick}>
       {children}
     </a>
@@ -40,9 +48,7 @@ vi.mock('@/hooks/useAuth', () => ({
 
 // Mock useBreadcrumbs hook
 vi.mock('@/hooks/useBreadcrumbs', () => ({
-  useBreadcrumbs: () => [
-    { label: '工作台', href: '/dashboard' },
-  ],
+  useBreadcrumbs: () => [{ label: '工作台', href: '/dashboard' }],
 }))
 
 // Mock useMediaQuery hook - 默认返回 true (桌面端)
@@ -81,7 +87,9 @@ describe('Header', () => {
       render(<Header />)
 
       // 通知链接存在 - 通过 href 查找
-      const notificationLinks = screen.getAllByRole('link').filter(link => link.getAttribute('href') === '/notifications')
+      const notificationLinks = screen
+        .getAllByRole('link')
+        .filter((link) => link.getAttribute('href') === '/notifications')
       expect(notificationLinks.length).toBeGreaterThan(0)
     })
 
@@ -128,6 +136,75 @@ describe('Header', () => {
       const header = screen.getByRole('banner')
       expect(header).toHaveClass('sticky')
       expect(header).toHaveClass('top-0')
+    })
+  })
+
+  describe('通知徽章', () => {
+    beforeEach(() => {
+      mockIsDesktop = true
+    })
+
+    it('有未读通知时显示徽章', async () => {
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              data: [
+                { id: '1', title: '通知1' },
+                { id: '2', title: '通知2' },
+                { id: '3', title: '通知3' },
+              ],
+            }),
+        })
+      )
+      global.fetch = mockFetch as any
+
+      render(<Header />)
+
+      await waitFor(() => {
+        expect(screen.getByText('3')).toBeInTheDocument()
+      })
+    })
+
+    it('无未读通知时隐藏徽章', async () => {
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              data: [],
+            }),
+        })
+      )
+      global.fetch = mockFetch as any
+
+      render(<Header />)
+
+      await new Promise((resolve) => setTimeout(resolve, 100))
+      expect(screen.queryByText('0')).not.toBeInTheDocument()
+    })
+
+    it('未读通知超过 9 个显示 9+', async () => {
+      const mockFetch = vi.fn(() =>
+        Promise.resolve({
+          ok: true,
+          json: () =>
+            Promise.resolve({
+              success: true,
+              data: Array.from({ length: 15 }, (_, i) => ({ id: String(i), title: `通知${i}` })),
+            }),
+        })
+      )
+      global.fetch = mockFetch as any
+
+      render(<Header />)
+
+      await waitFor(() => {
+        expect(screen.getByText('9+')).toBeInTheDocument()
+      })
     })
   })
 })

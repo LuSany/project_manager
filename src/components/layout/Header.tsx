@@ -18,10 +18,35 @@ export function Header() {
   const router = useRouter()
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [unreadCount, setUnreadCount] = useState(0)
   const userMenuRef = useRef<HTMLDivElement>(null)
 
   // 响应式检测
   const isDesktop = useMediaQuery('md') // >= 768px
+
+  // 获取未读通知数量
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      try {
+        const response = await fetch('/api/v1/notifications?unread=true', {
+          credentials: 'include',
+        })
+        if (!response.ok) {
+          return
+        }
+        const data = await response.json()
+        if (data.success) {
+          setUnreadCount(data.data?.length || 0)
+        }
+      } catch (e) {
+        console.error('获取通知失败:', e)
+      }
+    }
+
+    if (isDesktop) {
+      fetchUnreadCount()
+    }
+  }, [isDesktop])
 
   // 点击外部关闭菜单
   useEffect(() => {
@@ -102,7 +127,11 @@ export function Header() {
               className="hover:bg-accent relative rounded-md p-2 transition-colors"
             >
               <Bell className="text-muted-foreground h-5 w-5" />
-              <span className="bg-destructive absolute top-1 right-1 h-2 w-2 rounded-full"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-500 text-xs text-white">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </Link>
           )}
 
