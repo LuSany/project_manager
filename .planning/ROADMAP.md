@@ -145,8 +145,17 @@ Plans:
 3. 折线图展示任务完成趋势
 4. 柱状图展示项目对比
 5. 里程碑进度条/燃尽图
-   **Plans**: TBD
-   **UI hint**: yes
+   **Plans**: 5 plans in 2 waves
+
+Plans:
+
+- [x] 06-01-PLAN.md — Wave 0: Test stubs + shared types + ChartCard wrapper
+- [x] 06-02-PLAN.md — Wave 1: TaskStatusDonut + PriorityDonut donut charts
+- [x] 06-03-PLAN.md — Wave 1: ProjectComparisonChart + MilestoneProgressList
+- [x] 06-04-PLAN.md — Wave 1: ChartsGrid + Dashboard page integration
+- [ ] 06-05-PLAN.md — Gap Closure: Fix UAT-diagnosed issues (legend percentages, milestone query, scroll, badges)
+
+**UI hint**: yes
 
 ### Phase 7: 管理后台
 
@@ -253,8 +262,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. 列表与看板视图 | 3/3            | Complete    | 2026-03-28 |
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
 | 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
-| 6. 仪表盘         | 0/0            | Not started | -          |
+| 6. 仪表盘         | 4/5            | In Progress | -          |
 | 7. 管理后台       | 0/6            | Planned     | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
 | 9. 审批配额与统计 | 0/0            | Not started | -          |
-| 10. AI 增强功能   | 3/3 | Complete   | 2026-03-31 |
+| 10. AI 增强功能   | 3/3            | Complete    | 2026-03-31 |
