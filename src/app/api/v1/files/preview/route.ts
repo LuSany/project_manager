@@ -38,8 +38,12 @@ export async function GET(request: NextRequest) {
       return error('文件不存在_ERROR', '文件不存在', undefined, 404)
     }
 
-    const isOfficeFile = isSupportedFileType(file.fileName)
     const mimeType = file.mimeType.toLowerCase()
+    const fileExtension = file.fileName.split('.').pop()?.toLowerCase() || ''
+
+    // OnlyOffice 支持的文档格式（标准 Office + WPS 格式）
+    const onlyOfficeExtensions = ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'wps', 'et', 'dps']
+    const isOnlyOfficeFile = onlyOfficeExtensions.includes(fileExtension)
 
     // 判断文件类型
     const isImage = mimeType.startsWith('image/')
@@ -56,12 +60,12 @@ export async function GET(request: NextRequest) {
         // 图片和PDF：浏览器原生预览
         previewUrl = `/api/v1/files/${fileId}`
         previewType = 'native'
-      } else if (isOfficeFile) {
-        // Office文档：打开预览页面
+      } else if (isOnlyOfficeFile) {
+        // 标准Office文档：OnlyOffice预览
         previewUrl = `/files/${fileId}/preview`
         previewType = 'onlyoffice'
       } else if (isText) {
-        // 文本文件：浏览器原生预览
+        // 文本文件（含CSV）：浏览器原生预览
         previewUrl = `/api/v1/files/${fileId}`
         previewType = 'native'
       } else {
@@ -73,7 +77,7 @@ export async function GET(request: NextRequest) {
       // 根据指定服务生成URL
       switch (service) {
         case 'onlyoffice':
-          if (!isOfficeFile) {
+          if (!isOnlyOfficeFile) {
             return error(
               'UNSUPPORTED_FILE_TYPE',
               '此文件类型不支持OnlyOffice预览',
@@ -104,7 +108,7 @@ export async function GET(request: NextRequest) {
       previewType,
       fileName: file.fileName,
       fileType: file.mimeType,
-      isOfficeFile,
+      isOfficeFile: isOnlyOfficeFile,
       isImage,
       isPdf,
     })

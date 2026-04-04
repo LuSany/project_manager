@@ -49,6 +49,20 @@ export default function FilePreviewPage({ params }: { params: Promise<{ id: stri
         editorConfig.token = config.token
       }
 
+      // 注销 OnlyOffice 的 Service Worker，避免缓存资源导致下载失败
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            if (
+              registration.scope.includes(onlyOfficeUrl) ||
+              registration.scope.includes('localhost:8082')
+            ) {
+              registration.unregister()
+            }
+          }
+        })
+      }
+
       if (existingScript) {
         if ((window as any).DocsAPI) {
           new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)

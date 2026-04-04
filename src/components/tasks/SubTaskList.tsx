@@ -81,11 +81,19 @@ async function fetchSubTasks(taskId: string): Promise<SubTask[]> {
 
 async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> {
   const response = await fetch(`/api/v1/projects/${projectId}/members`)
-  const data: ApiResponse<ProjectMember[]> = await response.json()
+  const data: ApiResponse<Array<{ userId: string; userName: string; userEmail: string }>> =
+    await response.json()
   if (!data.success || !data.data) {
     throw new Error(data.error || '获取项目成员失败')
   }
-  return data.data
+  return data.data.map((m) => ({
+    userId: m.userId,
+    user: {
+      id: m.userId,
+      name: m.userName,
+      avatar: null,
+    },
+  }))
 }
 
 async function createSubTask(taskId: string, data: CreateSubTaskData): Promise<SubTask> {

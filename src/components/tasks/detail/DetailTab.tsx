@@ -120,9 +120,14 @@ async function updateTask(taskId: string, updates: Partial<Task>): Promise<Task>
 
 async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> {
   const response = await fetch(`/api/v1/projects/${projectId}/members`)
-  const data: ApiResponse<ProjectMember[]> = await response.json()
+  const data: ApiResponse<Array<{ userId: string; userName: string; userEmail: string }>> =
+    await response.json()
   if (!data.success) return []
-  return data.data || []
+  return (data.data || []).map((m) => ({
+    id: m.userId,
+    name: m.userName,
+    email: m.userEmail,
+  }))
 }
 
 export function DetailTab({ taskId, onUpdate }: DetailTabProps) {

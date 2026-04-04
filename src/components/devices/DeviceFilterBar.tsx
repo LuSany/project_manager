@@ -34,16 +34,16 @@ export function DeviceFilterBar() {
         className="w-[200px]"
       />
       <Select
-        value={filters.status || ''}
+        value={filters.status || 'all'}
         onValueChange={(value) =>
-          setFilters({ ...filters, status: (value as DeviceStatus) || undefined })
+          setFilters({ ...filters, status: value === 'all' ? undefined : (value as DeviceStatus) })
         }
       >
         <SelectTrigger className="w-[150px]">
           <SelectValue placeholder="状态筛选" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">全部状态</SelectItem>
+          <SelectItem value="all">全部状态</SelectItem>
           <SelectItem value="AVAILABLE">可用</SelectItem>
           <SelectItem value="RESERVED">已预约</SelectItem>
           <SelectItem value="IN_USE">使用中</SelectItem>
@@ -52,14 +52,16 @@ export function DeviceFilterBar() {
         </SelectContent>
       </Select>
       <Select
-        value={filters.typeId || ''}
-        onValueChange={(value) => setFilters({ ...filters, typeId: value || undefined })}
+        value={filters.typeId || 'all'}
+        onValueChange={(value) =>
+          setFilters({ ...filters, typeId: value === 'all' ? undefined : value })
+        }
       >
         <SelectTrigger className="w-[150px]">
           <SelectValue placeholder="类型筛选" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="">全部类型</SelectItem>
+          <SelectItem value="all">全部类型</SelectItem>
           {deviceTypes?.map((type: any) => (
             <SelectItem key={type.id} value={type.id}>
               {type.name}

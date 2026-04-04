@@ -1,24 +1,8 @@
 import { prisma } from '@/lib/prisma'
 import { sendEmail } from '@/lib/email'
+import type { NotificationType as PrismaNotificationType } from '@prisma/client'
 
-export type NotificationType =
-  | 'RISK_ALERT'
-  | 'REVIEW_INVITE'
-  | 'URGENT_TASK'
-  | 'TASK_DUE_REMINDER'
-  | 'TASK_ASSIGNED'
-  | 'COMMENT_MENTION'
-  | 'DAILY_DIGEST'
-  | 'REVIEW_COMMENT'
-  | 'COMMENT_REPLY'
-  | 'COMMENT_RESOLVED'
-  | 'REVIEW_ALL_AGREED'
-  | 'APPROVAL_REQUEST'
-  | 'APPROVAL_APPROVED'
-  | 'APPROVAL_REJECTED'
-  | 'QUOTA_WARNING'
-  | 'QUOTA_EXCEEDED'
-  | 'AI_RISK_SCAN_RESULT'
+export type NotificationType = PrismaNotificationType
 
 // Notification channel types
 export type NotificationChannel = 'IN_APP' | 'EMAIL' | 'SMS'

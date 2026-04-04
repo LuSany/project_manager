@@ -3,6 +3,23 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, cleanup } from '@testing-library/react'
 import { ChartsGrid } from '@/components/dashboard/ChartsGrid'
 
+// Mock fetch globally
+global.fetch = vi.fn(() =>
+  Promise.resolve({
+    ok: true,
+    json: () =>
+      Promise.resolve({
+        success: true,
+        data: {
+          taskStatusDistribution: [],
+          priorityDistribution: [],
+          milestones: [],
+          projectComparison: [],
+        },
+      }),
+  })
+) as any
+
 vi.mock('@/components/dashboard/TaskStatusDonut', () => ({
   TaskStatusDonut: () => <div data-testid="task-status-donut">TaskStatusDonut</div>,
 }))

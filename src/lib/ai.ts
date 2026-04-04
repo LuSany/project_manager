@@ -1,4 +1,5 @@
 import { prisma } from '@/lib/prisma'
+import type { AIServiceType } from '@prisma/client'
 
 export interface AIRequest {
   model?: string
@@ -64,7 +65,7 @@ function mapRiskScoreToLevel(score: number): 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITIC
 
 export async function callAI(
   prompt: string,
-  serviceType: 'RISK_ANALYSIS' | 'REVIEW_AUDIT' | 'DOC_PARSE',
+  serviceType: AIServiceType,
   userId?: string,
   projectId?: string
 ): Promise<{ success: boolean; response?: string; error?: string; logId?: string }> {

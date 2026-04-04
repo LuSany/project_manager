@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev --hostname 0.0.0.0 --turbopack",
     "dev:full": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d && npm run dev",
     "dev:services": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d",
     "dev:stop": "docker-compose -f docker-compose.onlyoffice.yml down && docker-compose down",

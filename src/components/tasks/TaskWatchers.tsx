@@ -1,57 +1,57 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
-import { Avatar } from "@/components/ui/avatar";
-import { AvatarFallback } from "@/components/ui/avatar";
-import { AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { useState } from 'react'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { Button } from '@/components/ui/button'
+import { Avatar } from '@/components/ui/avatar'
+import { AvatarFallback } from '@/components/ui/avatar'
+import { AvatarImage } from '@/components/ui/avatar'
+import { Badge } from '@/components/ui/badge'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog";
-import { Loader2, Eye, EyeOff, Plus, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
+} from '@/components/ui/dialog'
+import { Loader2, Eye, EyeOff, Plus, Users } from 'lucide-react'
+import { cn } from '@/lib/utils'
 
 // ============================================================================
 // 类型定义
 // ============================================================================
 
 interface TaskWatcher {
-  taskId: string;
-  userId: string;
-  createdAt: Date;
+  taskId: string
+  userId: string
+  createdAt: Date
   user: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
-  };
+    id: string
+    name: string
+    email: string
+    avatar?: string | null
+  }
 }
 
 interface ProjectMember {
-  userId: string;
+  userId: string
   user: {
-    id: string;
-    name: string;
-    email: string;
-    avatar?: string | null;
-  };
+    id: string
+    name: string
+    email: string
+    avatar?: string | null
+  }
 }
 
 interface ApiResponse<T> {
-  success: boolean;
-  data?: T;
-  error?: string;
+  success: boolean
+  data?: T
+  error?: string
 }
 
 interface TaskWatchersProps {
-  taskId: string;
-  projectId: string;
+  taskId: string
+  projectId: string
 }
 
 // ============================================================================
@@ -59,52 +59,61 @@ interface TaskWatchersProps {
 // ============================================================================
 
 async function fetchWatchers(taskId: string): Promise<TaskWatcher[]> {
-  const response = await fetch(`/api/v1/tasks/${taskId}/watchers`);
-  const data: ApiResponse<TaskWatcher[]> = await response.json();
+  const response = await fetch(`/api/v1/tasks/${taskId}/watchers`)
+  const data: ApiResponse<TaskWatcher[]> = await response.json()
 
   if (!data.success || !data.data) {
-    throw new Error(data.error || "获取关注者失败");
+    throw new Error(data.error || '获取关注者失败')
   }
 
-  return data.data;
+  return data.data
 }
 
 async function fetchProjectMembers(projectId: string): Promise<ProjectMember[]> {
-  const response = await fetch(`/api/v1/projects/${projectId}/members`);
-  const data: ApiResponse<ProjectMember[]> = await response.json();
+  const response = await fetch(`/api/v1/projects/${projectId}/members`)
+  const data: ApiResponse<Array<{ userId: string; userName: string; userEmail: string }>> =
+    await response.json()
 
   if (!data.success || !data.data) {
-    throw new Error(data.error || "获取项目成员失败");
+    throw new Error(data.error || '获取项目成员失败')
   }
 
-  return data.data;
+  return data.data.map((m) => ({
+    userId: m.userId,
+    user: {
+      id: m.userId,
+      name: m.userName,
+      email: m.userEmail,
+      avatar: null,
+    },
+  }))
 }
 
 async function addWatcher(taskId: string, userId: string): Promise<TaskWatcher> {
   const response = await fetch(`/api/v1/tasks/${taskId}/watchers`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ userId }),
-  });
+  })
 
-  const data: ApiResponse<TaskWatcher> = await response.json();
+  const data: ApiResponse<TaskWatcher> = await response.json()
 
   if (!data.success || !data.data) {
-    throw new Error(data.error || "添加关注者失败");
+    throw new Error(data.error || '添加关注者失败')
   }
 
-  return data.data;
+  return data.data
 }
 
 async function removeWatcher(taskId: string, userId: string): Promise<void> {
   const response = await fetch(`/api/v1/tasks/${taskId}/watchers/${userId}`, {
-    method: "DELETE",
-  });
+    method: 'DELETE',
+  })
 
-  const data: ApiResponse<void> = await response.json();
+  const data: ApiResponse<void> = await response.json()
 
   if (!data.success) {
-    throw new Error(data.error || "移除关注者失败");
+    throw new Error(data.error || '移除关注者失败')
   }
 }
 
@@ -113,44 +122,44 @@ async function removeWatcher(taskId: string, userId: string): Promise<void> {
 // ============================================================================
 
 export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
-  const queryClient = useQueryClient();
-  const [isOpen, setIsOpen] = useState(false);
+  const queryClient = useQueryClient()
+  const [isOpen, setIsOpen] = useState(false)
 
   // 查询关注者列表
   const { data: watchers = [], isLoading: isLoadingWatchers } = useQuery({
-    queryKey: ["taskWatchers", taskId],
+    queryKey: ['taskWatchers', taskId],
     queryFn: () => fetchWatchers(taskId),
     enabled: isOpen,
-  });
+  })
 
   // 查询项目成员
   const { data: members = [], isLoading: isLoadingMembers } = useQuery({
-    queryKey: ["projectMembers", projectId],
+    queryKey: ['projectMembers', projectId],
     queryFn: () => fetchProjectMembers(projectId),
     enabled: isOpen,
-  });
+  })
 
   // 添加关注者
   const addMutation = useMutation({
     mutationFn: (userId: string) => addWatcher(taskId, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["taskWatchers", taskId] });
+      queryClient.invalidateQueries({ queryKey: ['taskWatchers', taskId] })
     },
-  });
+  })
 
   // 移除关注者
   const removeMutation = useMutation({
     mutationFn: (userId: string) => removeWatcher(taskId, userId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["taskWatchers", taskId] });
+      queryClient.invalidateQueries({ queryKey: ['taskWatchers', taskId] })
     },
-  });
+  })
 
   // 获取未关注的成员
-  const watcherUserIds = new Set(watchers.map((w) => w.userId));
-  const availableMembers = members.filter((m) => !watcherUserIds.has(m.userId));
+  const watcherUserIds = new Set(watchers.map((w) => w.userId))
+  const availableMembers = members.filter((m) => !watcherUserIds.has(m.userId))
 
-  const isLoading = isLoadingWatchers || isLoadingMembers;
+  const isLoading = isLoadingWatchers || isLoadingMembers
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -173,11 +182,11 @@ export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4 mt-4">
+        <div className="mt-4 space-y-4">
           {/* 添加关注者 */}
           {availableMembers.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium mb-2">添加关注者</h4>
+              <h4 className="mb-2 text-sm font-medium">添加关注者</h4>
               <div className="flex flex-wrap gap-2">
                 {availableMembers.map((member) => (
                   <Button
@@ -199,16 +208,14 @@ export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
 
           {/* 关注者列表 */}
           <div>
-            <h4 className="text-sm font-medium mb-2">
-              当前关注者 ({watchers.length})
-            </h4>
+            <h4 className="mb-2 text-sm font-medium">当前关注者 ({watchers.length})</h4>
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                <Loader2 className="text-muted-foreground h-6 w-6 animate-spin" />
               </div>
             ) : watchers.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground text-sm">
-                <EyeOff className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <div className="text-muted-foreground py-8 text-center text-sm">
+                <EyeOff className="mx-auto mb-2 h-8 w-8 opacity-50" />
                 <p>暂无关注者</p>
               </div>
             ) : (
@@ -216,15 +223,13 @@ export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
                 {watchers.map((watcher) => (
                   <div
                     key={watcher.userId}
-                    className="flex items-center justify-between p-2 rounded-lg border bg-card"
+                    className="bg-card flex items-center justify-between rounded-lg border p-2"
                   >
                     <div className="flex items-center gap-3">
                       <UserAvatar user={watcher.user} />
                       <div>
                         <p className="text-sm font-medium">{watcher.user.name}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {watcher.user.email}
-                        </p>
+                        <p className="text-muted-foreground text-xs">{watcher.user.email}</p>
                       </div>
                     </div>
                     <Button
@@ -244,7 +249,7 @@ export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 // ============================================================================
@@ -253,24 +258,22 @@ export function TaskWatchers({ taskId, projectId }: TaskWatchersProps) {
 
 interface UserAvatarProps {
   user: {
-    name: string;
-    avatar?: string | null;
-  };
-  size?: "sm" | "md";
+    name: string
+    avatar?: string | null
+  }
+  size?: 'sm' | 'md'
 }
 
-function UserAvatar({ user, size = "md" }: UserAvatarProps) {
+function UserAvatar({ user, size = 'md' }: UserAvatarProps) {
   const sizeClasses = {
-    sm: "h-6 w-6 text-xs",
-    md: "h-8 w-8 text-sm",
-  };
+    sm: 'h-6 w-6 text-xs',
+    md: 'h-8 w-8 text-sm',
+  }
 
   return (
     <Avatar className={sizeClasses[size]}>
-      {user.avatar ? (
-        <AvatarImage src={user.avatar} alt={user.name} />
-      ) : null}
+      {user.avatar ? <AvatarImage src={user.avatar} alt={user.name} /> : null}
       <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
     </Avatar>
-  );
+  )
 }
