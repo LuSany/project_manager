@@ -9,15 +9,35 @@ import { faker } from '@faker-js/faker'
 import { testPrisma } from './test-db'
 import { createTestUser, createTestProject } from './test-data-factory'
 
-/**
- * 创建测试设备类型
- */
-export async function createTestDeviceType(overrides = {}) {
+type DeviceStatus = 'AVAILABLE' | 'RESERVED' | 'IN_USE' | 'MAINTENANCE' | 'DISABLED'
+type BookingStatus = 'PENDING_APPROVAL' | 'RESERVED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
+
+interface DeviceTypeOverrides {
+  name?: string
+  modelName?: string
+  location?: string
+  description?: string | null
+  owner?: string | null
+}
+
+interface DeviceOverrides {
+  name?: string
+  status?: DeviceStatus
+}
+
+interface BookingOverrides {
+  startTime?: Date
+  endTime?: Date
+  projectId?: string | null
+  status?: BookingStatus
+}
+
+export async function createTestDeviceType(overrides: DeviceTypeOverrides = {}) {
   return testPrisma.device_types.create({
     data: {
       id: faker.string.uuid(),
       name: overrides.name ?? `type-${faker.string.alphanumeric(8)}`,
-      modelName: overrides.modelName ?? faker.product.name(),
+      modelName: overrides.modelName ?? faker.commerce.productName(),
       location: overrides.location ?? faker.location.buildingNumber(),
       description: overrides.description,
       owner: overrides.owner,
@@ -26,10 +46,7 @@ export async function createTestDeviceType(overrides = {}) {
   })
 }
 
-/**
- * 创建测试设备
- */
-export async function createTestDevice(typeId: string, overrides = {}) {
+export async function createTestDevice(typeId: string, overrides: DeviceOverrides = {}) {
   return testPrisma.devices.create({
     data: {
       id: faker.string.uuid(),
@@ -41,10 +58,11 @@ export async function createTestDevice(typeId: string, overrides = {}) {
   })
 }
 
-/**
- * 创建测试预定
- */
-export async function createTestBooking(deviceId: string, userId: string, overrides = {}) {
+export async function createTestBooking(
+  deviceId: string,
+  userId: string,
+  overrides: BookingOverrides = {}
+) {
   const startTime = overrides.startTime ?? new Date()
   const endTime = overrides.endTime ?? new Date(Date.now() + 3600000)
 
