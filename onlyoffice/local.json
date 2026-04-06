@@ -4,7 +4,39 @@
       "request-filtering-agent": {
         "allowPrivateIPAddress": true,
         "allowMetaIPAddress": true
+      },
+      "secret": {
+        "browser": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "inbox": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "outbox": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "session": { "string": "3kvVrM37aHShAoDRwiow", "file": "" }
+      },
+      "token": {
+        "enable": {
+          "browser": false,
+          "request": {
+            "inbox": false,
+            "outbox": false
+          }
+        }
+      }
+    },
+    "converter": {
+      "downloadTimeout": {
+        "connectionAndInactivity": "5m",
+        "wholeCycle": "5m"
       }
     }
+  },
+  "storage": {
+    "fs": {
+      "secretString": "3kvVrM37aHShAoDRwiow"
+    }
+  },
+  "secret": {
+    "secretString": "3kvVrM37aHShAoDRwiow"
+  },
+  "aesEncrypt": {
+    "secret": "3kvVrM37aHShAoDRwiow"
   }
 }

@@ -316,3 +316,286 @@ OnlyOffice 编辑器配置缺少 `serverUrl`，导致跨域 Service Worker 无�
 2. 刷新评审详情页面
 3. 点击评审材料的「预览」按钮
 4. 确认Word文档正常显示
+
+---
+
+## 2026-04-04 更新：下载超时问题
+
+### 问题症状
+
+用户报告预览仍然失败，OnlyOffice日志显示：
+
+```
+error downloadFile:url=http://host.docker.internal:3000/api/v1/files/xxx/download
+code:ETIMEDOUT
+CanceledError: canceled
+```
+
+### 根因分析
+
+OnlyOffice 默认下载超时为 2 分钟：
+
+```json
+"downloadTimeout": {
+  "connectionAndInactivity": "2m",
+  "wholeCycle": "2m"
+}
+```
+
+在某些情况下（应用响应慢、网络波动），2分钟可能不足。
+
+### 修复方案
+
+更新 `local.json` 增加下载超时到 5 分钟：
+
+```json
+{
+  "services": {
+    "CoAuthoring": {
+      "request-filtering-agent": {
+        "allowPrivateIPAddress": true,
+        "allowMetaIPAddress": true
+      }
+    },
+    "converter": {
+      "downloadTimeout": {
+        "connectionAndInactivity": "5m",
+        "wholeCycle": "5m"
+      }
+    }
+  }
+}
+```
+
+### 应用修复
+
+```bash
+# 更新配置
+docker exec pm-onlyoffice sh -c 'cat > /etc/onlyoffice/documentserver/local.json << "EOF"
+{...配置内容...}
+EOF'
+
+# 重启服务
+docker exec pm-onlyoffice supervisorctl restart ds:docservice ds:converter
+```
+
+### 验证结果
+
+| 检查项               | 结果               |
+| -------------------- | ------------------ |
+| OnlyOffice健康检查   | ✅ 返回 "true"     |
+| 下载测试（从容器内） | ✅ HTTP 200, 0.28s |
+
+### 用户验证步骤
+
+1. 刷新评审详情页面
+2. 点击评审材料的「预览」按钮
+3. 确认文档正常显示
+
+---
+
+## 2026-04-04 更新：缓存 URL 403 Forbidden
+
+### 问题症状
+
+用户报告预览失败，浏览器错误：
+
+```
+The FetchEvent for "http://localhost:8082/.../web-apps/apps/spreadsheeteditor/main/index.html" resulted in a network error response
+Uncaught (in promise) TypeError: Failed to fetch at document_editor_service_worker.js
+Editor.bin?md5=xxx&expires=xxx:1 Failed to load resource: 403 (Forbidden)
+```
+
+### 根因分析
+
+**关键发现：** nginx 使用 `secure_link` 验证缓存 URL 签名，公式为：
+
+```
+md5(expires + uri + secret)
+```
+
+- nginx `secure_link_secret` = `3kvVrM37aHShAoDRwiow`（正确）
+- OnlyOffice 缓存 URL 的 md5 签名 = `rDa6jMVRPCcCKNgjy3j2Bw`（不匹配）
+- 预期签名 = `iC989k8nSzUxVYoT62l9Yw`
+
+**根本原因：** OnlyOffice 的 `default.json` 中有：
+
+```json
+"storage": {
+  "fs": {
+    "secretString": "verysecretstring"  // 默认密钥
+  }
+}
+```
+
+OnlyOffice 使用 `storage.fs.secretString` 生成缓存 URL 签名，但 `local.json` 只配置了 `services.CoAuthoring.secret`，没有覆盖 `storage.fs.secretString`。
+
+### 修复方案
+
+更新 `local.json` 添加 `storage.fs.secretString` 配置：
+
+```json
+{
+  "services": {
+    "CoAuthoring": {
+      "request-filtering-agent": {
+        "allowPrivateIPAddress": true,
+        "allowMetaIPAddress": true
+      },
+      "secret": {
+        "browser": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "inbox": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "outbox": { "string": "3kvVrM37aHShAoDRwiow", "file": "" },
+        "session": { "string": "3kvVrM37aHShAoDRwiow", "file": "" }
+      },
+      "token": {
+        "enable": {
+          "browser": false,
+          "request": {
+            "inbox": false,
+            "outbox": false
+          }
+        }
+      }
+    },
+    "converter": {
+      "downloadTimeout": {
+        "connectionAndInactivity": "5m",
+        "wholeCycle": "5m"
+      }
+    }
+  },
+  "storage": {
+    "fs": {
+      "secretString": "3kvVrM37aHShAoDRwiow"
+    }
+  },
+  "secret": {
+    "secretString": "3kvVrM37aHShAoDRwiow"
+  },
+  "aesEncrypt": {
+    "secret": "3kvVrM37aHShAoDRwiow"
+  }
+}
+```
+
+### 应用修复
+
+```bash
+# 更新容器内配置
+docker exec pm-onlyoffice sh -c 'cat > /etc/onlyoffice/documentserver/local.json << "EOF"
+{...配置内容...}
+EOF'
+
+# 重启服务
+docker exec pm-onlyoffice supervisorctl restart ds:docservice ds:converter
+
+# 清除旧缓存（旧签名不匹配）
+docker exec pm-onlyoffice rm -rf /var/lib/onlyoffice/documentserver/App_Data/cache/files/data/[hash]/
+```
+
+### 验证结果
+
+| 检查项                        | 结果                    |
+| ----------------------------- | ----------------------- |
+| OnlyOffice 健康检查           | ✅ 返回 "true"          |
+| 缓存 URL 签名测试（手动计算） | ✅ HTTP 200             |
+| 配置文件已更新                | ✅ storage.fs 已配置    |
+| 服务重启                      | ✅ docservice/converter |
+| 旧缓存已清除                  | ✅                      |
+
+### 用户验证步骤
+
+1. 刷新评审详情页面
+2. 点击评审材料的「预览」按钮
+3. 等待 OnlyOffice 重新下载并缓存文档（可能需要几秒）
+4. 确认文档正常显示
+
+## 2026-04-06 更新：容器重启后配置丢失
+
+### 问题症状
+
+OnlyOffice 容器重启后，评审材料预览失败，日志显示：
+
+```
+Error: DNS lookup 172.17.0.1 is not allowed. Because, It is private IP address.
+```
+
+### 根因分析
+
+容器重启后，`/etc/onlyoffice/documentserver/local.json` 被重置为默认配置，缺少 `request-filtering-agent` 配置。
+
+OnlyOffice 的配置位于容器内部文件系统，不随数据卷持久化。
+
+### 持久化修复方案
+
+#### 方案一：Docker Compose 挂载配置文件（已实施）
+
+修改 `docker-compose.onlyoffice.yml`，将配置文件挂载到数据目录：
+
+```yaml
+volumes:
+  # 持久化配置：挂载配置文件到数据目录
+  - ./onlyoffice/local.json:/var/www/onlyoffice/Data/local.json:ro
+```
+
+#### 方案二：手动应用配置（备用）
+
+使用 `onlyoffice/init-config.sh` 脚本：
+
+```bash
+# 应用配置
+./onlyoffice/init-config.sh
+
+# 验证配置
+./onlyoffice/init-config.sh --verify
+```
+
+### 验证结果
+
+| 检查项 | 结果 |
+|--------|------|
+| OnlyOffice 健康检查 | ✅ true |
+| 私有IP访问配置 | ✅ allowPrivateIPAddress: true |
+| 容器状态 | ✅ healthy |
+
+---
+
+## 技术说明
+
+### OnlyOffice 配置优先级
+
+1. `/etc/onlyoffice/documentserver/default.json` - 默认配置（不可修改）
+2. `/etc/onlyoffice/documentserver/local.json` - 本地覆盖配置
+
+### 关键配置项
+
+```json
+{
+  "services": {
+    "CoAuthoring": {
+      "request-filtering-agent": {
+        "allowPrivateIPAddress": true,  // 允许访问私有IP
+        "allowMetaIPAddress": true      // 允许访问元数据IP
+      }
+    }
+  },
+  "storage": {
+    "fs": {
+      "secretString": "3kvVrM37aHShAoDRwiow"  // 缓存URL签名密钥
+    }
+  }
+}
+```
+
+### 自动化建议
+
+可以在应用启动时检查 OnlyOffice 配置，如果配置不正确则自动应用：
+
+```typescript
+// src/lib/preview/onlyoffice-config-check.ts
+async function ensureOnlyOfficeConfig() {
+  const response = await fetch(`${ONLYOFFICE_URL}/healthcheck`);
+  // 如果配置不正确，调用初始化脚本
+}
+```
