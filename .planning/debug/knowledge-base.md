@@ -13,3 +13,13 @@ Resolved debug sessions. Used by `gsd-debugger` to surface known-pattern hypothe
 - **Files changed:** src/components/dashboard/QuickActions.tsx, src/types/milestone.ts, src/app/api/v1/projects/[id]/route.ts, src/app/api/v1/users/route.ts, src/app/api/v1/reviews/route.ts, src/middleware.ts
 
 ---
+
+## permission-control — API 缺少基于项目成员关系的权限过滤
+
+- **Date:** 2026-04-06T00:40:00.000Z
+- **Error patterns:** 权限, 所有员工, 看到不该看, 项目数据, 需求列表, 问题列表, 任务列表, 未过滤
+- **Root cause:** requirements, issues, tasks API 缺少基于项目成员关系的权限过滤，任何登录用户都能看到所有项目的数据，而不像 projects, reviews, risks API 那样正确过滤用户只能看到自己参与的项目数据
+- **Fix:** 为三个 API 路由添加 getUserProjectIds 辅助函数，在 GET 处理器中过滤用户可见项目数据，在 POST 处理器中验证用户项目权限
+- **Files changed:** src/app/api/v1/requirements/route.ts, src/app/api/v1/issues/route.ts, src/app/api/v1/tasks/route.ts
+
+---
