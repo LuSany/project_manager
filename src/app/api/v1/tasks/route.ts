@@ -10,6 +10,17 @@ async function getAuthUser(request: NextRequest) {
   return db.users.findUnique({ where: { id: userId } })
 }
 
+// 辅助函数：获取用户有权限访问的项目ID列表
+async function getUserProjectIds(userId: string) {
+  const userProjects = await db.projects.findMany({
+    where: {
+      OR: [{ ownerId: userId }, { project_members: { some: { userId: userId } } }],
+    },
+    select: { id: true },
+  })
+  return userProjects.map((p) => p.id)
+}
+
 // 任务创建验证 Schema
 const createTaskSchema = z.object({
   title: z.string().min(1, '任务标题不能为空'),
@@ -48,8 +59,37 @@ export async function GET(request: NextRequest) {
 
     const where: any = {}
 
-    if (projectId) {
-      where.projectId = projectId
+    // 权限过滤：非管理员只能看到自己有权限的项目任务
+    if (user.role !== 'ADMIN') {
+      const projectIds = await getUserProjectIds(user.id)
+
+      if (projectId) {
+        // 检查用户是否有权限访问该项目
+        if (!projectIds.includes(projectId)) {
+          return NextResponse.json({ success: false, error: '无权访问此项目' }, { status: 403 })
+        }
+        where.projectId = projectId
+      } else {
+        // 未指定项目时，只显示用户有权限的项目任务
+        if (projectIds.length === 0) {
+          return NextResponse.json({
+            success: true,
+            data: {
+              items: [],
+              total: 0,
+              page,
+              pageSize,
+              totalPages: 0,
+            },
+          })
+        }
+        where.projectId = { in: projectIds }
+      }
+    } else {
+      // 管理员可以看到所有任务
+      if (projectId) {
+        where.projectId = projectId
+      }
     }
 
     if (status) {
@@ -126,6 +166,14 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const validatedData = createTaskSchema.parse(body)
+
+    // 权限检查：验证用户是否有权限在该项目创建任务
+    if (user.role !== 'ADMIN') {
+      const projectIds = await getUserProjectIds(user.id)
+      if (!projectIds.includes(validatedData.projectId)) {
+        return NextResponse.json({ success: false, error: '无权在此项目创建任务' }, { status: 403 })
+      }
+    }
 
     const task = await db.tasks.create({
       data: {
