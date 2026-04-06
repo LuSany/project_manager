@@ -264,26 +264,27 @@ model project_members {
 }
 
 model projects {
-  id                   String                 @id
-  name                 String
-  description          String?
-  status               ProjectStatus          @default(PLANNING)
-  startDate            DateTime?
-  endDate              DateTime?
-  ownerId              String
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime
-  bookings             bookings[]
-  issues               issues[]
-  milestones           milestones[]
-  notification_ignores notification_ignores[]
-  project_members      project_members[]
-  users                users                  @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  requirements         requirements[]
-  reviews              reviews[]
-  risks                risks[]
-  tasks                tasks[]
-  quota                quotas?
+  id                        String                    @id
+  name                      String
+  description               String?
+  status                    ProjectStatus             @default(PLANNING)
+  startDate                 DateTime?
+  endDate                   DateTime?
+  ownerId                   String
+  createdAt                 DateTime                  @default(now())
+  updatedAt                 DateTime
+  bookings                  bookings[]
+  issues                    issues[]
+  milestones                milestones[]
+  notification_ignores      notification_ignores[]
+  project_members           project_members[]
+  users                     users                     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  requirements              requirements[]
+  reviews                   reviews[]
+  risks                     risks[]
+  tasks                     tasks[]
+  quota                     quotas?
+  requirement_board_configs requirement_board_configs?
 
   @@index([ownerId])
   @@index([status])
@@ -402,6 +403,19 @@ model requirements {
   @@index([projectId])
   @@index([reviewedBy])
   @@index([status])
+}
+
+// 需求看板配置表
+model requirement_board_configs {
+  id        String   @id
+  projectId String   @unique
+  columns   Json     // [{id, title, status, color, wipLimit, order}]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projects  projects  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
 }
 
 model review_ai_analysis {

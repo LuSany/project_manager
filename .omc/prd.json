@@ -84,6 +84,58 @@
       ],
       "priority": 6,
       "passes": true
+    },
+    {
+      "id": "US-007",
+      "title": "P2.1 看板配置表",
+      "description": "创建 requirement_board_configs 表存储项目级看板配置",
+      "acceptanceCriteria": [
+        "prisma/schema.prisma 包含 requirement_board_configs 模型",
+        "包含 id, projectId, columns(JSON), createdAt, updatedAt 字段",
+        "projects 表关联 requirement_board_configs",
+        "npx prisma db push 成功"
+      ],
+      "priority": 7,
+      "passes": true
+    },
+    {
+      "id": "US-008",
+      "title": "P2.2 看板配置 API",
+      "description": "创建看板配置的 GET/PUT API",
+      "acceptanceCriteria": [
+        "GET /api/v1/projects/[id]/board-config 返回看板配置",
+        "PUT /api/v1/projects/[id]/board-config 更新看板配置",
+        "新项目自动创建默认看板配置",
+        "npm run build 成功"
+      ],
+      "priority": 8,
+      "passes": true
+    },
+    {
+      "id": "US-009",
+      "title": "P2.3 状态变更 API",
+      "description": "创建需求状态变更 API，支持看板拖拽",
+      "acceptanceCriteria": [
+        "POST /api/v1/requirements/[id]/change-status 接口存在",
+        "更新需求状态并记录历史",
+        "npm run build 成功"
+      ],
+      "priority": 9,
+      "passes": true
+    },
+    {
+      "id": "US-010",
+      "title": "P2.4 看板前端组件",
+      "description": "创建看板页面和拖拽组件",
+      "acceptanceCriteria": [
+        "/projects/[id]/requirements/board 路由存在",
+        "使用 @dnd-kit/core 实现拖拽",
+        "拖拽卡片可变更状态",
+        "看板显示各列需求卡片",
+        "npm run build 成功"
+      ],
+      "priority": 10,
+      "passes": true
     }
   ]
 }
