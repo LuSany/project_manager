@@ -1,28 +1,36 @@
-version: '3.8'
-
 services:
   onlyoffice:
     image: onlyoffice/documentserver:latest
     container_name: pm-onlyoffice
     ports:
-      - '8082:80'
+      - "8082:80"
     environment:
       - JWT_ENABLED=false
+      # 确保服务在容器重启后正确初始化
+      - ONLYOFFICE_DATA_CONTAINER=false
     volumes:
       - onlyoffice_data:/var/www/onlyoffice/Data
       - onlyoffice_logs:/var/log/onlyoffice
       - onlyoffice_db:/var/lib/postgresql
+      - onlyoffice_lib:/var/lib/onlyoffice
+      - onlyoffice_rabbitmq:/var/lib/rabbitmq
+      - onlyoffice_redis:/var/lib/redis
     networks:
       - pm-network
-    restart: unless-stopped
+    restart: always
+    # 使用 tini 作为 init 进程，更好地处理信号和子进程
+    init: true
     healthcheck:
-      test: ['CMD-SHELL', 'curl -f http://localhost/healthcheck || exit 1']
+      # 检查多个关键服务状态，确保完整健康
+      test: ["CMD-SHELL", "curl -f http://localhost/healthcheck && pg_isready -h localhost || exit 1"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 120s
+      timeout: 15s
+      retries: 5
+      start_period: 180s
     extra_hosts:
-      - 'host.docker.internal:host-gateway'
+      - "host.docker.internal:host-gateway"
+    # 确保服务按正确顺序启动
+    stop_grace_period: 60s
 
 networks:
   pm-network:
@@ -33,3 +41,6 @@ volumes:
   onlyoffice_data:
   onlyoffice_logs:
   onlyoffice_db:
+  onlyoffice_lib:
+  onlyoffice_rabbitmq:
+  onlyoffice_redis:
