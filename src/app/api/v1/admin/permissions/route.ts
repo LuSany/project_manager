@@ -26,6 +26,18 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // 获取所有项目
+    const projects = await db.projects.findMany({
+      select: {
+        id: true,
+        name: true,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    })
+
+    // 获取所有权限配置
     const permissions = await db.project_members.findMany({
       include: {
         users: {
@@ -48,7 +60,8 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    return success(permissions)
+    // 返回项目和权限配置
+    return success({ projects, permissions })
   } catch (err) {
     console.error('获取权限列表失败:', err)
     return error('GET_PERMISSIONS_ERROR', '获取权限列表失败', undefined, 500)

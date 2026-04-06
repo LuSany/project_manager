@@ -10,6 +10,84 @@ import { Loader2, Plus, FileText, CheckSquare, Edit2, Trash2, Upload, Download }
 import { TemplateDialog } from './components/TemplateDialog'
 import { useToast } from '@/hooks/use-toast'
 
+// CSV解析函数
+function parseCSV(text: string): Record<string, unknown>[] {
+  const lines = text.trim().split('\n')
+  if (lines.length < 2) {
+    throw new Error('CSV文件至少需要包含标题行和一行数据')
+  }
+
+  // 解析标题行，处理可能的逗号分隔和引号包裹
+  const parseCSVLine = (line: string): string[] => {
+    const result: string[] = []
+    let current = ''
+    let inQuotes = false
+
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i]
+      if (char === '"') {
+        inQuotes = !inQuotes
+      } else if (char === ',' && !inQuotes) {
+        result.push(current.trim())
+        current = ''
+      } else {
+        current += char
+      }
+    }
+    result.push(current.trim())
+    return result
+  }
+
+  const headers = parseCSVLine(lines[0])
+  const data: Record<string, unknown>[] = []
+
+  for (let i = 1; i < lines.length; i++) {
+    const values = parseCSVLine(lines[i])
+    const row: Record<string, unknown> = {}
+
+    headers.forEach((header, index) => {
+      const value = values[index] || ''
+      // 尝试解析数字和布尔值
+      if (value === 'true') row[header] = true
+      else if (value === 'false') row[header] = false
+      else if (!isNaN(Number(value)) && value !== '') row[header] = Number(value)
+      else row[header] = value
+    })
+
+    data.push(row)
+  }
+
+  return data
+}
+
+// 根据文件类型解析数据
+async function parseTemplateFile(file: File): Promise<Record<string, unknown>[] | null> {
+  const text = await file.text()
+  const fileName = file.name.toLowerCase()
+
+  if (fileName.endsWith('.json')) {
+    try {
+      const data = JSON.parse(text)
+      if (!Array.isArray(data)) {
+        throw new Error('JSON文件需要包含数组格式数据')
+      }
+      return data
+    } catch {
+      throw new Error('无法解析JSON文件')
+    }
+  }
+
+  if (fileName.endsWith('.csv')) {
+    try {
+      return parseCSV(text)
+    } catch (error) {
+      throw new Error(error instanceof Error ? error.message : '无法解析CSV文件')
+    }
+  }
+
+  throw new Error('不支持的文件格式，请使用JSON或CSV文件')
+}
+
 interface TaskTemplate {
   id: string
   title: string
@@ -24,6 +102,7 @@ interface ReviewTemplate {
   name: string
   description?: string
   isActive: boolean
+  typeId?: string
   type: {
     name: string
     displayName: string
@@ -40,6 +119,7 @@ export default function TemplatesAdminPage() {
   const [editingTemplate, setEditingTemplate] = useState<TaskTemplate | ReviewTemplate | null>(null)
   const [dialogType, setDialogType] = useState<'task' | 'review'>('task')
   const importFileRef = useRef<HTMLInputElement>(null)
+  const reviewImportFileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchTemplates()
@@ -105,13 +185,12 @@ export default function TemplatesAdminPage() {
     if (!file) return
 
     try {
-      const text = await file.text()
-      const data = JSON.parse(text)
+      const data = await parseTemplateFile(file)
 
-      if (!Array.isArray(data)) {
+      if (!data || data.length === 0) {
         toast({
           title: '导入失败',
-          description: '文件格式不正确，需要 JSON 数组',
+          description: '文件没有包含有效的模板数据',
           variant: 'destructive',
         })
         return
@@ -135,8 +214,12 @@ export default function TemplatesAdminPage() {
         variant: imported > 0 ? 'success' : 'destructive',
       })
       fetchTemplates()
-    } catch {
-      toast({ title: '导入失败', description: '无法解析 JSON 文件', variant: 'destructive' })
+    } catch (error) {
+      toast({
+        title: '导入失败',
+        description: error instanceof Error ? error.message : '无法解析文件',
+        variant: 'destructive',
+      })
     }
 
     if (importFileRef.current) {
@@ -167,6 +250,97 @@ export default function TemplatesAdminPage() {
       toast({ title: '导出成功', variant: 'success' })
     } catch {
       toast({ title: '导出失败', variant: 'destructive' })
+    }
+  }
+
+  const handleReviewImport = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+
+    try {
+      const data = await parseTemplateFile(file)
+
+      if (!data || data.length === 0) {
+        toast({
+          title: '导入失败',
+          description: '文件没有包含有效的模板数据',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      // 获取评审类型列表用于验证
+      const typesResponse = await api.get('/review-types')
+      const reviewTypes = (typesResponse as { data?: { id: string; name: string }[] }).data || []
+
+      if (reviewTypes.length === 0) {
+        toast({
+          title: '导入失败',
+          description: '请先创建评审类型',
+          variant: 'destructive',
+        })
+        return
+      }
+
+      let imported = 0
+      let failed = 0
+      const errors: string[] = []
+
+      for (const item of data) {
+        try {
+          // 验证必填字段
+          if (!item.name) {
+            errors.push(`缺少模板名称`)
+            failed++
+            continue
+          }
+
+          // 如果没有 typeId，使用第一个评审类型
+          let typeId = item.typeId as string
+          if (!typeId) {
+            // 尝试通过类型名称匹配
+            if (item.typeName) {
+              const matchedType = reviewTypes.find(
+                (t: { id: string; name: string }) => t.name === item.typeName
+              )
+              typeId = matchedType?.id
+            }
+            if (!typeId) {
+              typeId = reviewTypes[0].id
+            }
+          }
+
+          const templateData = {
+            name: item.name,
+            description: item.description as string | undefined,
+            typeId,
+            isActive: item.isActive !== false,
+          }
+
+          await api.post('/review-templates', templateData)
+          imported++
+        } catch (err) {
+          console.error('导入模板失败:', err)
+          failed++
+        }
+      }
+
+      toast({
+        title: '导入完成',
+        description: `成功导入 ${imported} 个评审模板${failed > 0 ? `，${failed} 个失败` : ''}${errors.length > 0 ? `\n${errors.slice(0, 3).join('; ')}` : ''}`,
+        variant: imported > 0 ? 'success' : 'destructive',
+      })
+      fetchTemplates()
+    } catch (error) {
+      toast({
+        title: '导入失败',
+        description: error instanceof Error ? error.message : '无法解析文件',
+        variant: 'destructive',
+      })
+    }
+
+    if (reviewImportFileRef.current) {
+      reviewImportFileRef.current.value = ''
     }
   }
 
@@ -214,7 +388,7 @@ export default function TemplatesAdminPage() {
                 <input
                   ref={importFileRef}
                   type="file"
-                  accept=".json"
+                  accept=".json,.csv"
                   onChange={handlePageImport}
                   className="hidden"
                 />
@@ -270,10 +444,21 @@ export default function TemplatesAdminPage() {
                   <Plus className="mr-2 h-4 w-4" />
                   新建模板
                 </Button>
+                <Button size="sm" variant="outline" onClick={() => reviewImportFileRef.current?.click()}>
+                  <Upload className="mr-2 h-4 w-4" />
+                  导入
+                </Button>
                 <Button size="sm" variant="outline" onClick={() => handlePageExport('review')}>
                   <Download className="mr-2 h-4 w-4" />
                   导出
                 </Button>
+                <input
+                  ref={reviewImportFileRef}
+                  type="file"
+                  accept=".json,.csv"
+                  onChange={handleReviewImport}
+                  className="hidden"
+                />
               </div>
 
               <div className="divide-y rounded-lg border">

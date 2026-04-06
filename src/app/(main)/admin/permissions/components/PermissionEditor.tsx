@@ -235,20 +235,20 @@ export function PermissionEditor({
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
+                <TableRow key="loading">
                   <TableCell colSpan={4} className="py-8 text-center">
                     加载中...
                   </TableCell>
                 </TableRow>
               ) : members.length === 0 ? (
-                <TableRow>
+                <TableRow key="empty">
                   <TableCell colSpan={4} className="text-muted-foreground py-8 text-center">
                     暂无成员
                   </TableCell>
                 </TableRow>
               ) : (
                 members.map((member) => (
-                  <TableRow key={member.id}>
+                  <TableRow key={member.userId || `member-${members.indexOf(member)}`}>
                     <TableCell>
                       <div className="flex items-center gap-3">
                         <Avatar>

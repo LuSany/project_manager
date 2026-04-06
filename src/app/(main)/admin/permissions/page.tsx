@@ -25,30 +25,30 @@ export default function PermissionsPage() {
   const fetchResources = async () => {
     setLoading(true)
     try {
-      const response = await api.get<any[]>('/admin/permissions')
+      // 获取权限数据（包含项目和权限列表）
+      const response = await api.get('/admin/permissions')
       if ((response as { success?: boolean }).success) {
-        const permissions = (response as { data?: any[] }).data || []
+        const data = (response as { data?: { projects?: any[]; permissions?: any[] } }).data
+        const projects = data?.projects || []
+        const permissions = data?.permissions || []
 
-        const projectsMap = new Map<string, Resource>()
-
+        // 创建成员计数映射
+        const memberCountMap = new Map<string, number>()
         for (const perm of permissions) {
           const projectId = perm.project?.id || perm.projectId
-          const projectName = perm.project?.name || ''
-
-          if (projectId && projectName) {
-            if (!projectsMap.has(projectId)) {
-              projectsMap.set(projectId, {
-                id: projectId,
-                name: projectName,
-                memberCount: 0,
-              })
-            }
-            const resource = projectsMap.get(projectId)!
-            resource.memberCount += 1
+          if (projectId) {
+            memberCountMap.set(projectId, (memberCountMap.get(projectId) || 0) + 1)
           }
         }
 
-        setResources(Array.from(projectsMap.values()))
+        // 构建资源列表，包含所有项目
+        const resourceList: Resource[] = projects.map((project) => ({
+          id: project.id,
+          name: project.name,
+          memberCount: memberCountMap.get(project.id) || 0,
+        }))
+
+        setResources(resourceList)
       }
     } catch (error) {
       console.error('获取资源列表失败:', error)
