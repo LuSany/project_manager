@@ -15,7 +15,7 @@ const createReviewSchema = z.object({
     .array(
       z.object({
         userId: z.string(),
-        role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']),
+        role: z.enum(['MODERATOR', 'REVIEWER', 'AUTHOR']),
       })
     )
     .optional(),

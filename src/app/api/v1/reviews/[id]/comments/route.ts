@@ -64,7 +64,26 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       orderBy: { createdAt: 'desc' },
     })
 
-    return ApiResponder.success(comments)
+    // 映射字段名以匹配前端期望的结构
+    const mappedComments = comments.map((c) => ({
+      id: c.id,
+      content: c.content,
+      status: c.status,
+      author: c.users,
+      material: c.review_materials,
+      item: c.review_items,
+      replies: c.other_review_comments.map((r) => ({
+        id: r.id,
+        content: r.content,
+        author: r.users,
+        createdAt: r.createdAt,
+        updatedAt: r.updatedAt,
+      })),
+      createdAt: c.createdAt,
+      updatedAt: c.updatedAt,
+    }))
+
+    return ApiResponder.success(mappedComments)
   } catch (error) {
     console.error('Get comments failed:', error)
     return ApiResponder.serverError('Get comments failed')
@@ -147,6 +166,19 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       },
     })
 
+    // 映射字段名以匹配前端期望的结构
+    const mappedComment = {
+      id: comment.id,
+      content: comment.content,
+      status: comment.status,
+      author: comment.users,
+      material: comment.review_materials,
+      item: comment.review_items,
+      replies: [],
+      createdAt: comment.createdAt,
+      updatedAt: comment.updatedAt,
+    }
+
     // 发送通知
     try {
       if (validatedData.parentId) {
@@ -178,7 +210,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       console.error('Failed to send notification:', notifyError)
     }
 
-    return ApiResponder.success(comment, 'Comment created')
+    return ApiResponder.success(mappedComment, 'Comment created')
   } catch (error) {
     if (error instanceof z.ZodError) {
       const issues = error.issues.reduce(

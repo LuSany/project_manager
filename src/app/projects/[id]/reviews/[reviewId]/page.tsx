@@ -180,12 +180,12 @@ export default function ReviewDetailPage({
 
   const getParticipantRoleLabel = (role: string) => {
     switch (role) {
+      case 'MODERATOR':
+        return '主持人'
       case 'REVIEWER':
         return '评审人'
-      case 'OBSERVER':
-        return '观察者'
-      case 'SECRETARY':
-        return '记录员'
+      case 'AUTHOR':
+        return '作者'
       default:
         return role
     }
@@ -251,6 +251,11 @@ export default function ReviewDetailPage({
     )
   }
 
+  // 计算当前用户是否可以编辑评审
+  const canEditReview = review && (
+    review.participants.some((p) => p.user.id === currentUserId && p.role === 'MODERATOR')
+  )
+
   return (
     <div className="space-y-6">
       {/* 返回导航 */}
@@ -276,10 +281,12 @@ export default function ReviewDetailPage({
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
-          <Button onClick={() => setEditDialogOpen(true)}>
-            <Edit className="mr-2 h-4 w-4" />
-            编辑评审
-          </Button>
+          {canEditReview && (
+            <Button onClick={() => setEditDialogOpen(true)}>
+              <Edit className="mr-2 h-4 w-4" />
+              编辑评审
+            </Button>
+          )}
           <div className="text-muted-foreground text-right text-sm">
             {review.scheduledAt && (
               <div className="mb-1 flex items-center gap-1">
@@ -440,14 +447,18 @@ export default function ReviewDetailPage({
         </CardContent>
       </Card>
 
-      {/* 投票面板 - 仅评审中状态显示 */}
-      {review.status === 'IN_PROGRESS' && (
+      {/* 投票面板 - 评审待启动或进行中状态显示 */}
+      {(review.status === 'PENDING' || review.status === 'IN_PROGRESS') && (
         <ReviewVoting
           reviewId={reviewId}
           currentUserId={currentUserId}
           isReviewer={review.participants.some(
             (p) => p.user.id === currentUserId && p.role === 'REVIEWER'
           )}
+          isModerator={review.participants.some(
+            (p) => p.user.id === currentUserId && p.role === 'MODERATOR'
+          )}
+          status={review.status as 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'}
           onComplete={fetchReview}
         />
       )}

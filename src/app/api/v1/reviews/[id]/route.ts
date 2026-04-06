@@ -81,19 +81,26 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const existing = await prisma.reviews.findUnique({
       where: { id },
-      include: { projects: { include: { project_members: true } } },
+      include: {
+        projects: { include: { project_members: true } },
+        review_participants: true,
+      },
     })
 
     if (!existing) {
       return ApiResponder.notFound('评审不存在')
     }
 
+    // 检查编辑权限：只有项目管理员或评审主持人可以编辑评审
     const isOwner = existing.projects.ownerId === user.id
-    const isMember = existing.projects.project_members.some((m) => m.userId === user.id)
     const isAdmin = user.role === 'ADMIN'
 
-    if (!isOwner && !isMember && !isAdmin) {
-      return ApiResponder.forbidden('只有项目所有者、成员或管理员可以更新评审')
+    // 检查是否为评审参与者中的 MODERATOR
+    const participant = existing.review_participants.find(p => p.userId === user.id)
+    const isModerator = participant?.role === 'MODERATOR'
+
+    if (!isOwner && !isAdmin && !isModerator) {
+      return ApiResponder.forbidden('只有项目管理员或评审主持人可以更新评审')
     }
 
     const review = await prisma.reviews.update({

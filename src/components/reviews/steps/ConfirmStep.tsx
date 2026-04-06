@@ -103,17 +103,17 @@ export function ConfirmStep({ data, onEditStep }: ConfirmStepProps) {
               </div>
             </div>
           )}
-          {data.observers.length > 0 && (
+          {data.authors && data.authors.length > 0 && (
             <div>
-              <div className="text-muted-foreground text-sm mb-1">观察者:</div>
+              <div className="text-muted-foreground text-sm mb-1">作者:</div>
               <div className="flex flex-wrap gap-1">
-                {data.observers.map((id) => (
-                  <Badge key={id} variant="outline">{data.userNames[id] || id}</Badge>
+                {data.authors.map((id) => (
+                  <Badge key={id} variant="default" className="bg-blue-600">{data.userNames[id] || id}</Badge>
                 ))}
               </div>
             </div>
           )}
-          {!data.moderatorId && data.reviewers.length === 0 && data.observers.length === 0 && (
+          {!data.moderatorId && data.reviewers.length === 0 && (!data.authors || data.authors.length === 0) && (
             <div className="text-muted-foreground text-sm">未选择参与人员</div>
           )}
         </CardContent>

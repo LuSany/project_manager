@@ -10,9 +10,10 @@ import { X, Plus, Search, User, Users } from 'lucide-react'
 import type { WizardData } from '../ReviewWizard'
 
 interface ParticipantsStepProps {
-  data: Pick<WizardData, 'moderatorId' | 'reviewers' | 'observers' | 'userNames'>
+  data: Pick<WizardData, 'moderatorId' | 'reviewers' | 'authors' | 'userNames'>
   onChange: (data: Partial<WizardData>) => void
   projectId: string
+  creatorId?: string // 创建者ID，自动成为作者
 }
 
 interface Member {
@@ -46,7 +47,7 @@ interface ReviewGroup {
   }>
 }
 
-export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStepProps) {
+export function ParticipantsStep({ data, onChange, projectId, creatorId }: ParticipantsStepProps) {
   const [tab, setTab] = useState<'project' | 'system' | 'group'>('project')
   const [projectMembers, setProjectMembers] = useState<Member[]>([])
   const [systemUsers, setSystemUsers] = useState<SystemUser[]>([])
@@ -128,7 +129,28 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
     onChange({ moderatorId: newModeratorId, userNames: newUserNames })
   }
 
+  const handleToggleAuthor = (userId: string, userName?: string) => {
+    // 作者不能同时为评审人
+    if (!data.authors?.includes(userId) && data.reviewers.includes(userId)) {
+      alert('作者不能同时为评审人')
+      return
+    }
+    const newAuthors = data.authors?.includes(userId)
+      ? data.authors.filter((id) => id !== userId)
+      : [...(data.authors || []), userId]
+    const newUserNames = { ...data.userNames }
+    if (userName) {
+      newUserNames[userId] = userName
+    }
+    onChange({ authors: newAuthors, userNames: newUserNames })
+  }
+
   const handleToggleReviewer = (userId: string, userName?: string) => {
+    // 评审人不能同时为作者
+    if (!data.reviewers.includes(userId) && data.authors?.includes(userId)) {
+      alert('评审人不能同时为作者')
+      return
+    }
     const newReviewers = data.reviewers.includes(userId)
       ? data.reviewers.filter((id) => id !== userId)
       : [...data.reviewers, userId]
@@ -139,21 +161,10 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
     onChange({ reviewers: newReviewers, userNames: newUserNames })
   }
 
-  const handleToggleObserver = (userId: string, userName?: string) => {
-    const newObservers = data.observers.includes(userId)
-      ? data.observers.filter((id) => id !== userId)
-      : [...data.observers, userId]
-    const newUserNames = { ...data.userNames }
-    if (userName) {
-      newUserNames[userId] = userName
-    }
-    onChange({ observers: newObservers, userNames: newUserNames })
-  }
-
   const handleAddReviewGroup = (group: ReviewGroup) => {
     const newModeratorId = group.members.find((m) => m.role === 'MODERATOR')?.userId || data.moderatorId
     const newReviewers = [...new Set([...data.reviewers, ...group.members.filter((m) => m.role === 'REVIEWER').map((m) => m.userId)])]
-    const newObservers = [...new Set([...data.observers, ...group.members.filter((m) => m.role === 'OBSERVER').map((m) => m.userId)])]
+    const newAuthors = [...new Set([...(data.authors || []), ...group.members.filter((m) => m.role === 'AUTHOR').map((m) => m.userId)])]
     const newUserNames = { ...data.userNames }
     group.members.forEach((m) => {
       newUserNames[m.userId] = m.user.name
@@ -162,7 +173,7 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
     onChange({
       moderatorId: newModeratorId,
       reviewers: newReviewers,
-      observers: newObservers,
+      authors: newAuthors,
       userNames: newUserNames,
     })
   }
@@ -173,7 +184,7 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
     return member?.userName || user?.name || userId
   }
 
-  const renderUserItem = (user: { userId?: string; id?: string; userName?: string; name?: string; email?: string; userEmail?: string }, type: 'moderator' | 'reviewer' | 'observer') => {
+  const renderUserItem = (user: { userId?: string; id?: string; userName?: string; name?: string; email?: string; userEmail?: string }, type: 'moderator' | 'reviewer' | 'author') => {
     const id = user.userId || user.id || ''
     const name = user.userName || user.name || ''
     const email = user.userEmail || user.email || ''
@@ -181,7 +192,7 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
       ? data.moderatorId === id
       : type === 'reviewer'
         ? data.reviewers.includes(id)
-        : data.observers.includes(id)
+        : data.authors?.includes(id)
 
     return (
       <div
@@ -192,7 +203,7 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
         onClick={() => {
           if (type === 'moderator') handleSelectModerator(id, name)
           else if (type === 'reviewer') handleToggleReviewer(id, name)
-          else handleToggleObserver(id, name)
+          else handleToggleAuthor(id, name)
         }}
       >
         <div className="flex items-center gap-3">
@@ -293,16 +304,17 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
         </Tabs>
       </div>
 
-      {/* 观察者选择 */}
+      {/* 作者选择 */}
       <div className="space-y-2">
-        <Label>观察者（多选，可选）</Label>
+        <Label>作者（多选，必填）</Label>
+        <div className="text-sm text-muted-foreground mb-2">作者负责回答评审人提出的问题，创建者自动成为作者</div>
         <div className="max-h-32 overflow-y-auto space-y-2">
-          {projectMembers.map((member) => renderUserItem(member, 'observer'))}
+          {projectMembers.map((member) => renderUserItem(member, 'author'))}
         </div>
       </div>
 
       {/* 已选人员汇总 */}
-      {(data.moderatorId || data.reviewers.length > 0 || data.observers.length > 0) && (
+      {(data.moderatorId || data.reviewers.length > 0 || (data.authors && data.authors.length > 0)) && (
         <div className="space-y-2 p-3 bg-muted/50 rounded-lg">
           <Label>已选择的人员</Label>
           <div className="flex flex-wrap gap-2">
@@ -312,16 +324,16 @@ export function ParticipantsStep({ data, onChange, projectId }: ParticipantsStep
                 <X className="h-3 w-3 cursor-pointer" onClick={() => onChange({ moderatorId: null })} />
               </Badge>
             )}
+            {data.authors?.map((id) => (
+              <Badge key={id} variant="default" className="gap-1 bg-blue-600">
+                作者: {getSelectedUserName(id)}
+                <X className="h-3 w-3 cursor-pointer" onClick={() => handleToggleAuthor(id)} />
+              </Badge>
+            ))}
             {data.reviewers.map((id) => (
               <Badge key={id} variant="secondary" className="gap-1">
                 评审人: {getSelectedUserName(id)}
                 <X className="h-3 w-3 cursor-pointer" onClick={() => handleToggleReviewer(id)} />
-              </Badge>
-            ))}
-            {data.observers.map((id) => (
-              <Badge key={id} variant="outline" className="gap-1">
-                观察者: {getSelectedUserName(id)}
-                <X className="h-3 w-3 cursor-pointer" onClick={() => handleToggleObserver(id)} />
               </Badge>
             ))}
           </div>

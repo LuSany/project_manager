@@ -25,7 +25,7 @@ export interface WizardData {
   // 步骤2: 参与者
   moderatorId: string | null
   reviewers: string[]
-  observers: string[]
+  authors: string[]
   // 用户姓名映射
   userNames: Record<string, string>
   // 步骤3: 材料
@@ -46,7 +46,7 @@ const initialData: WizardData = {
   scheduledAt: '',
   moderatorId: null,
   reviewers: [],
-  observers: [],
+  authors: [],
   userNames: {},
   materials: [],
 }
@@ -94,14 +94,14 @@ export function ReviewWizard({ projectId, open, onOpenChange, onSuccess }: Revie
           description: wizardData.description || undefined,
           typeId: wizardData.typeId,
           scheduledAt: wizardData.scheduledAt ? new Date(wizardData.scheduledAt).toISOString() : undefined,
-          // 构建参与者数组，按优先级去重：MODERATOR > REVIEWER > OBSERVER
+          // 构建参与者数组，按优先级去重：MODERATOR > AUTHOR > REVIEWER
           // 避免同一用户被分配多个角色导致唯一约束冲突
           participants: (() => {
-            const userRoles = new Map<string, 'MODERATOR' | 'REVIEWER' | 'OBSERVER'>()
-            // 先添加观察者（最低优先级）
-            wizardData.observers.forEach((userId) => userRoles.set(userId, 'OBSERVER'))
-            // 再添加评审人（覆盖观察者）
+            const userRoles = new Map<string, 'MODERATOR' | 'REVIEWER' | 'AUTHOR'>()
+            // 先添加评审人（最低优先级）
             wizardData.reviewers.forEach((userId) => userRoles.set(userId, 'REVIEWER'))
+            // 再添加作者（覆盖评审人）
+            wizardData.authors.forEach((userId) => userRoles.set(userId, 'AUTHOR'))
             // 最后添加主持人（最高优先级，覆盖其他角色）
             if (wizardData.moderatorId) {
               userRoles.set(wizardData.moderatorId, 'MODERATOR')
@@ -172,7 +172,7 @@ export function ReviewWizard({ projectId, open, onOpenChange, onSuccess }: Revie
             data={{
               moderatorId: wizardData.moderatorId,
               reviewers: wizardData.reviewers,
-              observers: wizardData.observers,
+              authors: wizardData.authors,
               userNames: wizardData.userNames,
             }}
             onChange={updateData}

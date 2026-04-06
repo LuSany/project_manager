@@ -12,7 +12,7 @@ const createReviewGroupSchema = z.object({
     .array(
       z.object({
         userId: z.string(),
-        role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']).default('REVIEWER'),
+        role: z.enum(['MODERATOR', 'REVIEWER', 'AUTHOR']).default('REVIEWER'),
       })
     )
     .optional(),

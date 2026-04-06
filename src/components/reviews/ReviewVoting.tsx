@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Progress } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { Bot, Loader2, Sparkles } from 'lucide-react'
+import { Bot, CheckCircle2, Loader2, Sparkles } from 'lucide-react'
 
 interface Voter {
   user: {
@@ -30,6 +30,7 @@ interface ReviewVotingProps {
   currentUserId?: string
   isReviewer?: boolean
   isModerator?: boolean
+  status?: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED'
   onComplete?: () => void
   className?: string
 }
@@ -41,6 +42,7 @@ export function ReviewVoting({
   currentUserId,
   isReviewer = false,
   isModerator = false,
+  status = 'PENDING',
   onComplete,
   className,
 }: ReviewVotingProps) {
@@ -55,6 +57,7 @@ export function ReviewVoting({
   const [isSubmitting, setIsSubmitting] = React.useState(false)
   const [currentUserVote, setCurrentUserVote] = React.useState<boolean | null>(null)
   const [isRequestingAIVote, setIsRequestingAIVote] = React.useState(false)
+  const [isStarting, setIsStarting] = React.useState(false)
 
   const fetchVotes = React.useCallback(async () => {
     try {
@@ -78,6 +81,31 @@ export function ReviewVoting({
   React.useEffect(() => {
     fetchVotes()
   }, [fetchVotes])
+
+  const handleStartReview = async () => {
+    if (!confirm('确定要启动评审吗？')) return
+
+    setIsStarting(true)
+    try {
+      const res = await fetch(`/api/v1/reviews/${reviewId}/start`, {
+        method: 'POST',
+      })
+      const data = await res.json()
+
+      if (data.success) {
+        alert('评审已启动，现在可以开始投票了')
+        // 重新加载数据或通知父组件
+        window.location.reload()
+      } else {
+        alert(data.error || '启动评审失败')
+      }
+    } catch (error) {
+      console.error('Failed to start review:', error)
+      alert('启动评审失败')
+    } finally {
+      setIsStarting(false)
+    }
+  }
 
   const handleVote = async (agreed: boolean) => {
     setIsSubmitting(true)
@@ -237,6 +265,28 @@ export function ReviewVoting({
         </Button>
       )}
 
+      {/* 启动评审按钮（评审进行中状态不显示） */}
+      {status === 'PENDING' && isModerator && (
+        <Button
+          variant="default"
+          className="w-full gap-2 bg-blue-600 hover:bg-blue-700"
+          onClick={handleStartReview}
+          disabled={isStarting}
+        >
+          {isStarting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              启动中...
+            </>
+          ) : (
+            <>
+              <CheckCircle2 className="h-4 w-4" />
+              启动评审
+            </>
+          )}
+        </Button>
+      )}
+
       {/* 人工评审员列表 */}
       <div className="space-y-2">
         {humanVoters.map((voter) => (
@@ -289,8 +339,8 @@ export function ReviewVoting({
         </div>
       )}
 
-      {/* 结束评审按钮（全员同意后显示） */}
-      {summary.allAgreed && onComplete && (
+      {/* 结束评审按钮（全员同意后，仅主持人可见） */}
+      {summary.allAgreed && isModerator && onComplete && (
         <div className="border-t pt-4">
           <Button onClick={handleComplete} disabled={isSubmitting} className="w-full">
             结束评审

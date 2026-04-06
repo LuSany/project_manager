@@ -1076,8 +1076,7 @@ enum RequirementStatus {
 
 enum ReviewParticipantRole {
   REVIEWER
-  OBSERVER
-  SECRETARY
+  AUTHOR
   MODERATOR
   AI_REVIEWER
 }

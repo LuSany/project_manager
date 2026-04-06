@@ -6,7 +6,7 @@ import { ApiResponder } from '@/lib/api/response'
 
 const addParticipantSchema = z.object({
   userId: z.string().min(1, '用户ID不能为空'),
-  role: z.enum(['REVIEWER', 'OBSERVER', 'SECRETARY']),
+  role: z.enum(['REVIEWER', 'AUTHOR', 'MODERATOR']),
 })
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

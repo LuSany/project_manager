@@ -284,10 +284,8 @@ export function ReviewEditDialog({
         return '主持人'
       case 'REVIEWER':
         return '评审人'
-      case 'OBSERVER':
-        return '观察者'
-      case 'SECRETARY':
-        return '记录员'
+      case 'AUTHOR':
+        return '作者'
       default:
         return role
     }
@@ -375,8 +373,7 @@ export function ReviewEditDialog({
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="REVIEWER">评审人</SelectItem>
-                      <SelectItem value="OBSERVER">观察者</SelectItem>
-                      <SelectItem value="SECRETARY">记录员</SelectItem>
+                      <SelectItem value="AUTHOR">作者</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -7,7 +7,7 @@ import { ApiResponder } from '@/lib/api/response'
 // 添加成员验证Schema
 const addMemberSchema = z.object({
   userId: z.string().min(1, '用户ID不能为空'),
-  role: z.enum(['MODERATOR', 'REVIEWER', 'OBSERVER', 'SECRETARY']).default('REVIEWER'),
+  role: z.enum(['MODERATOR', 'REVIEWER', 'AUTHOR']).default('REVIEWER'),
 })
 
 // POST /api/v1/review-groups/[id]/members - 添加成员
