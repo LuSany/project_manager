@@ -38,6 +38,7 @@ interface Comment {
 interface CommentThreadProps {
   comment: Comment;
   currentUserId?: string;
+  isReviewAuthor?: boolean; // 是否为评审作者（只有作者可以回复评论）
   onReply: (commentId: string, content: string) => Promise<void>;
   onResolve?: (commentId: string) => Promise<void>;
   onReopen?: (commentId: string) => Promise<void>;
@@ -52,6 +53,7 @@ interface CommentThreadProps {
 export function CommentThread({
   comment,
   currentUserId,
+  isReviewAuthor,
   onReply,
   onResolve,
   onReopen,
@@ -160,7 +162,7 @@ export function CommentThread({
 
       {/* 操作按钮 */}
       <div className="flex items-center gap-2">
-        {onStartReply && (
+        {isReviewAuthor && onStartReply && (
           <Button
             size="sm"
             variant="ghost"

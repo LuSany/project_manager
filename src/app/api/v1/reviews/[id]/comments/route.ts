@@ -181,6 +181,18 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     // 发送通知
     try {
+      // 获取评审参与者信息
+      const reviewWithParticipants = await prisma.reviews.findUnique({
+        where: { id: reviewId },
+        include: {
+          review_participants: {
+            include: {
+              users: { select: { id: true, name: true } },
+            },
+          },
+        },
+      });
+
       if (validatedData.parentId) {
         // 回复通知：通知父评论作者
         const parentComment = await prisma.review_comments.findUnique({
@@ -196,14 +208,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           )
         }
       } else {
-        // 新评论通知：通知评审作者
-        if (review.authorId && review.authorId !== user.id) {
-          await notifyReviewComment(
-            review.authorId,
-            review.title,
-            review.projectId,
-            user.name
+        // 新评论通知：通知评审作者（AUTHOR 角色）
+        if (reviewWithParticipants) {
+          const authors = reviewWithParticipants.review_participants.filter(
+            (p) => p.role === 'AUTHOR'
           )
+          for (const author of authors) {
+            if (author.userId !== user.id) {
+              await notifyReviewComment(
+                author.userId,
+                review.title,
+                review.projectId,
+                user.name
+              )
+            }
+          }
         }
       }
     } catch (notifyError) {

@@ -22,9 +22,7 @@ export async function POST(
       where: { id: reviewId },
       include: {
         projects: { include: { project_members: true } },
-        review_participants: {
-          where: { role: "REVIEWER" },
-        },
+        review_participants: true, // 包含所有参与者，不过滤角色
         review_votes: true,
       },
     });

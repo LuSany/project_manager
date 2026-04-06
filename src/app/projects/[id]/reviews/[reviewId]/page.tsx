@@ -466,7 +466,13 @@ export default function ReviewDetailPage({
       {/* 评论区域 */}
       <Card>
         <CardContent className="pt-6">
-          <ReviewComments reviewId={reviewId} currentUserId={currentUserId} />
+          <ReviewComments
+            reviewId={reviewId}
+            currentUserId={currentUserId}
+            isReviewAuthor={review.participants.some(
+              (p) => p.user.id === currentUserId && p.role === 'AUTHOR'
+            )}
+          />
         </CardContent>
       </Card>
 

@@ -142,6 +142,28 @@ export async function POST(
       );
     }
 
+    // 投票同意时，检查该评审人是否有未解决的评论
+    if (agreed) {
+      const unresolvedComments = await prisma.review_comments.count({
+        where: {
+          reviewId,
+          authorId: user.id,
+          status: "OPEN",
+        },
+      });
+
+      if (unresolvedComments > 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "您有未解决的评论，请等待作者回复后再投票同意",
+            data: { unresolvedCount: unresolvedComments },
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // 创建或更新投票
     const vote = await prisma.review_votes.upsert({
       where: {

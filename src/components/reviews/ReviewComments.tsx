@@ -36,6 +36,7 @@ interface Comment {
 interface ReviewCommentsProps {
   reviewId: string;
   currentUserId?: string;
+  isReviewAuthor?: boolean; // 是否为评审作者
   className?: string;
 }
 
@@ -45,6 +46,7 @@ type SortType = "newest" | "oldest";
 export function ReviewComments({
   reviewId,
   currentUserId,
+  isReviewAuthor,
   className,
 }: ReviewCommentsProps) {
   const [comments, setComments] = React.useState<Comment[]>([]);
@@ -237,6 +239,7 @@ export function ReviewComments({
               key={comment.id}
               comment={comment}
               currentUserId={currentUserId}
+              isReviewAuthor={isReviewAuthor}
               onReply={handleReply}
               onResolve={handleResolve}
               onReopen={handleReopen}
