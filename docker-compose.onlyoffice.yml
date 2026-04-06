@@ -15,7 +15,7 @@ services:
       - onlyoffice_lib:/var/lib/onlyoffice
       - onlyoffice_rabbitmq:/var/lib/rabbitmq
       - onlyoffice_redis:/var/lib/redis
-      # 持久化配置：挂载配置文件到数据目录，由启动脚本自动应用
+      # 持久化配置：挂载配置文件到数据目录
       - ./onlyoffice/local.json:/var/www/onlyoffice/Data/local.json:ro
     networks:
       - pm-network

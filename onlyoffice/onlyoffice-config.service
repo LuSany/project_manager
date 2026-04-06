@@ -1,0 +1,18 @@
+[Unit]
+Description=OnlyOffice Configuration Service
+After=docker.service
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+# 等待容器健康
+ExecStartPre=/bin/bash -c 'for i in {1..30}; do docker ps --filter "name=pm-onlyoffice" --format "{{.Status}}" | grep -q "healthy" && break; sleep 10; done'
+# 应用配置
+ExecStart=/home/sany/projects/project_manager/onlyoffice/init-config.sh
+# 延迟 5 分钟后检查配置是否丢失（可选）
+# ExecStartPost=/bin/sleep 300
+# ExecStartPost=/home/sany/projects/project_manager/onlyoffice/init-config.sh --verify
+
+[Install]
+WantedBy=multi-user.target
