@@ -285,6 +285,8 @@ model projects {
   tasks                     tasks[]
   quota                     quotas?
   requirement_board_configs requirement_board_configs?
+  requirement_types         requirement_types[]
+  requirement_settings      requirement_settings?
 
   @@index([ownerId])
   @@index([status])
@@ -375,6 +377,7 @@ model requirements {
   projectId               String
   assigneeId              String?                   // 指派人
   reporterId              String?                   // 提出人（临时可选，迁移后改为必填）
+  typeId                  String?                   // 需求类型
   dueDate                 DateTime?                 // 截止日期
   estimateHours           Float?                    // 预估工时
   actualHours             Float?                    // 实际工时
@@ -391,9 +394,11 @@ model requirements {
   requirement_discussions requirement_discussions[]
   requirement_history     requirement_history[]
   requirement_impacts     requirement_impacts[]
+  requirement_changes     requirement_changes[]
   projects                projects                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   assignee                users?                    @relation("RequirementAssignee", fields: [assigneeId], references: [id])
   reporter                users?                    @relation("RequirementReporter", fields: [reporterId], references: [id])
+  type                    requirement_types?        @relation(fields: [typeId], references: [id])
   users                   users?                    @relation(fields: [reviewedBy], references: [id])
 
   @@index([assigneeId])
@@ -416,6 +421,82 @@ model requirement_board_configs {
   projects  projects  @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
   @@index([projectId])
+}
+
+// 需求类型表
+model requirement_types {
+  id            String              @id
+  projectId     String
+  name          String              // 类型名称
+  description   String?
+  reviewerRoles ProjectMemberRole[] // 可评审角色
+  isDefault     Boolean             @default(false)
+  isActive      Boolean             @default(true)
+  order         Int                 @default(0)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  projects      projects            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  requirements  requirements[]
+
+  @@unique([projectId, name])
+  @@index([projectId])
+}
+
+// 需求评审配置表
+model requirement_settings {
+  id                   String              @id
+  projectId            String              @unique
+  defaultReviewerRoles ProjectMemberRole[] // 默认评审角色
+  requireReviewerCount Int                 @default(1) // 需要几人评审通过
+  allowSelfApprove     Boolean             @default(false) // 是否允许自审
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  projects             projects            @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([projectId])
+}
+
+// 需求变更单表
+model requirement_changes {
+  id              String              @id
+  requirementId   String
+  changeType      RequirementChangeType
+  reason          String              // 变更原因
+  impact          String?             // 影响范围
+  proposedData    Json?               // 提议的新数据
+  status          ChangeRequestStatus @default(PENDING)
+  proposedById    String              // 申请人
+  reviewedById    String?             // 审批人
+  reviewedAt      DateTime?           // 审批时间
+  reviewComment   String?             // 审批意见
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  requirement     requirements        @relation(fields: [requirementId], references: [id], onDelete: Cascade)
+  proposedBy      users               @relation("ChangeProposedBy", fields: [proposedById], references: [id])
+  reviewedBy      users?              @relation("ChangeReviewedBy", fields: [reviewedById], references: [id])
+
+  @@index([requirementId])
+  @@index([status])
+  @@index([proposedById])
+}
+
+// 需求变更类型枚举
+enum RequirementChangeType {
+  SCOPE_CHANGE    // 范围变更
+  DATE_CHANGE     // 日期变更
+  PRIORITY_CHANGE // 优先级变更
+  STATUS_CHANGE   // 状态回退
+}
+
+// 变更单状态枚举
+enum ChangeRequestStatus {
+  PENDING   // 待审批
+  APPROVED  // 已批准
+  REJECTED  // 已拒绝
+  CANCELLED // 已取消
 }
 
 model review_ai_analysis {
@@ -883,6 +964,8 @@ model users {
   requirementAssignees                        requirements[]             @relation("RequirementAssignee")
   requirementReporters                        requirements[]             @relation("RequirementReporter")
   requirements                                requirements[]
+  requirement_changes_proposed               requirement_changes[]       @relation("ChangeProposedBy")
+  requirement_changes_reviewed               requirement_changes[]       @relation("ChangeReviewedBy")
   review_comments                             review_comments[]
   review_group_members                        review_group_members[]
   review_materials                            review_materials[]
@@ -1095,11 +1178,16 @@ enum RequirementPriority {
 }
 
 enum RequirementStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  IN_PROGRESS
-  COMPLETED
+  DRAFT        // 草稿
+  PENDING      // 待评审
+  APPROVED     // 已批准（待排期）
+  REJECTED     // 已拒绝
+  SCHEDULED    // 已排期
+  IN_PROGRESS  // 开发中
+  TESTING      // 测试中
+  ACCEPTANCE   // 待验收
+  COMPLETED    // 已完成
+  CANCELLED    // 已取消
 }
 
 enum ReviewParticipantRole {

@@ -1,0 +1,350 @@
+{
+  "version": "1.0.0",
+  "lastScanned": 1775462748545,
+  "projectRoot": "/home/sany/projects/project_manager",
+  "techStack": {
+    "languages": [
+      {
+        "name": "JavaScript/TypeScript",
+        "version": ">=20.0.0",
+        "confidence": "high",
+        "markers": [
+          "package.json"
+        ]
+      },
+      {
+        "name": "TypeScript",
+        "version": null,
+        "confidence": "high",
+        "markers": [
+          "tsconfig.json"
+        ]
+      }
+    ],
+    "frameworks": [
+      {
+        "name": "next",
+        "version": "15.1.0",
+        "category": "fullstack"
+      },
+      {
+        "name": "react",
+        "version": "18.3.1",
+        "category": "frontend"
+      },
+      {
+        "name": "react-dom",
+        "version": "18.3.1",
+        "category": "frontend"
+      },
+      {
+        "name": "@playwright/test",
+        "version": "1.58.2",
+        "category": "testing"
+      },
+      {
+        "name": "playwright",
+        "version": "1.49.1",
+        "category": "testing"
+      },
+      {
+        "name": "vitest",
+        "version": "3.2.4",
+        "category": "testing"
+      }
+    ],
+    "packageManager": "npm",
+    "runtime": "Node.js 20.0.0"
+  },
+  "build": {
+    "buildCommand": "npm run build",
+    "testCommand": null,
+    "lintCommand": "npm run lint",
+    "devCommand": "npm run dev",
+    "scripts": {
+      "dev": "next dev --hostname 0.0.0.0 --turbopack",
+      "dev:full": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d && npm run dev",
+      "dev:services": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d",
+      "dev:stop": "docker-compose -f docker-compose.onlyoffice.yml down && docker-compose down",
+      "build": "next build",
+      "start": "next start",
+      "lint": "next lint",
+      "test:unit": "vitest",
+      "test:unit:coverage": "vitest --coverage",
+      "test:e2e": "playwright test",
+      "test:e2e:ui": "playwright test --ui",
+      "db:generate": "prisma generate",
+      "db:migrate": "prisma migrate dev",
+      "db:seed": "tsx prisma/seed.ts",
+      "db:studio": "prisma studio",
+      "format": "prettier --write .",
+      "format:check": "prettier --check .",
+      "typecheck": "tsc --noEmit"
+    }
+  },
+  "conventions": {
+    "namingStyle": null,
+    "importStyle": null,
+    "testPattern": "*.test.ts",
+    "fileOrganization": "type-based"
+  },
+  "structure": {
+    "isMonorepo": false,
+    "workspaces": [],
+    "mainDirectories": [
+      "docs",
+      "public",
+      "scripts",
+      "src",
+      "tests"
+    ],
+    "gitBranches": {
+      "defaultBranch": "main",
+      "branchingStrategy": null
+    }
+  },
+  "customNotes": [],
+  "directoryMap": {
+    "backend": {
+      "path": "backend",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1775462748540,
+      "keyFiles": []
+    },
+    "docs": {
+      "path": "docs",
+      "purpose": "Documentation",
+      "fileCount": 2,
+      "lastAccessed": 1775462748540,
+      "keyFiles": [
+        "P0_P1_CHANGELOG.md",
+        "TECHNICAL_SPECIFICATION_V4.md"
+      ]
+    },
+    "frontend": {
+      "path": "frontend",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1775462748542,
+      "keyFiles": []
+    },
+    "infrastructure": {
+      "path": "infrastructure",
+      "purpose": null,
+      "fileCount": 0,
+      "lastAccessed": 1775462748543,
+      "keyFiles": []
+    },
+    "onlyoffice": {
+      "path": "onlyoffice",
+      "purpose": null,
+      "fileCount": 2,
+      "lastAccessed": 1775462748543,
+      "keyFiles": [
+        "init-config.sh",
+        "local.json"
+      ]
+    },
+    "playwright-report": {
+      "path": "playwright-report",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1775462748543,
+      "keyFiles": [
+        "index.html"
+      ]
+    },
+    "prisma": {
+      "path": "prisma",
+      "purpose": null,
+      "fileCount": 8,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "dev.db",
+        "password-reset-token.prisma",
+        "schema.prisma",
+        "schema.prisma.backup",
+        "schema.prisma.tmp"
+      ]
+    },
+    "public": {
+      "path": "public",
+      "purpose": "Public files",
+      "fileCount": 2,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "favicon.svg"
+      ]
+    },
+    "scripts": {
+      "path": "scripts",
+      "purpose": "Build/utility scripts",
+      "fileCount": 1,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "start-test-fix.sh"
+      ]
+    },
+    "src": {
+      "path": "src",
+      "purpose": "Source code",
+      "fileCount": 1,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "middleware.ts"
+      ]
+    },
+    "test-results": {
+      "path": "test-results",
+      "purpose": null,
+      "fileCount": 1,
+      "lastAccessed": 1775462748544,
+      "keyFiles": []
+    },
+    "tests": {
+      "path": "tests",
+      "purpose": "Test files",
+      "fileCount": 5,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "infrastructure.test.ts",
+        "mock-tools.test.ts",
+        "seed.ts",
+        "setup.mock.ts",
+        "setup.ts"
+      ]
+    },
+    "uploads": {
+      "path": "uploads",
+      "purpose": null,
+      "fileCount": 33,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "1bdd8890-a7de-43ce-9ce0-e00cdd57345a.xlsx",
+        "2de064f9-5ac0-41a5-856e-e8b42dcb58fc.png",
+        "48c310e8-88de-4dab-a7cc-27fc31607fb4.xlsx",
+        "526057d0-3c09-4f37-886a-4afead7e561c.doc",
+        "52f31d60-cf60-4995-9799-6d7ad93d5228.ppt"
+      ]
+    },
+    "frontend/node_modules": {
+      "path": "frontend/node_modules",
+      "purpose": "Dependencies",
+      "fileCount": 0,
+      "lastAccessed": 1775462748544,
+      "keyFiles": []
+    },
+    "playwright-report/data": {
+      "path": "playwright-report/data",
+      "purpose": "Data files",
+      "fileCount": 9,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "011fbe89540e903c613d5093d0383003d65594de.png",
+        "0ee665f1e58af6cc14ebbb286a06a4f7630fcfee.md",
+        "1490e4bc212bac31d7d848a8ca50d205f121c3f3.png"
+      ]
+    },
+    "prisma/migrations": {
+      "path": "prisma/migrations",
+      "purpose": "Database migrations",
+      "fileCount": 1,
+      "lastAccessed": 1775462748544,
+      "keyFiles": [
+        "migration_lock.toml"
+      ]
+    },
+    "src/app": {
+      "path": "src/app",
+      "purpose": "Application code",
+      "fileCount": 4,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "globals.css",
+        "layout.tsx",
+        "page.tsx"
+      ]
+    },
+    "src/components": {
+      "path": "src/components",
+      "purpose": "UI components",
+      "fileCount": 1,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "ErrorBoundary.tsx"
+      ]
+    },
+    "src/lib": {
+      "path": "src/lib",
+      "purpose": "Library code",
+      "fileCount": 23,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "ai-reviewer.ts",
+        "ai.ts",
+        "animations.ts"
+      ]
+    },
+    "src/types": {
+      "path": "src/types",
+      "purpose": "Type definitions",
+      "fileCount": 15,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "api.ts",
+        "command.ts",
+        "dashboard-charts.ts"
+      ]
+    },
+    "tests/components": {
+      "path": "tests/components",
+      "purpose": "UI components",
+      "fileCount": 0,
+      "lastAccessed": 1775462748545,
+      "keyFiles": []
+    },
+    "tests/data": {
+      "path": "tests/data",
+      "purpose": "Data files",
+      "fileCount": 1,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "test-db-manager.ts"
+      ]
+    },
+    "tests/fixtures": {
+      "path": "tests/fixtures",
+      "purpose": "Test fixtures",
+      "fileCount": 1,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "base-data.json"
+      ]
+    },
+    "tests/helpers": {
+      "path": "tests/helpers",
+      "purpose": "Helper functions",
+      "fileCount": 5,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "assertions.ts",
+        "device-test-factory.ts",
+        "task-factory.ts"
+      ]
+    },
+    "tests/lib": {
+      "path": "tests/lib",
+      "purpose": "Library code",
+      "fileCount": 4,
+      "lastAccessed": 1775462748545,
+      "keyFiles": [
+        "approval-flow.test.ts",
+        "booking-conflict.test.ts",
+        "equipment-stats.test.ts"
+      ]
+    }
+  },
+  "hotPaths": [],
+  "userDirectives": []
+}

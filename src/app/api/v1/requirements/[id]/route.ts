@@ -13,7 +13,7 @@ async function getAuthUser(request: NextRequest) {
 const updateRequirementSchema = z.object({
   title: z.string().min(1).optional(),
   description: z.string().optional(),
-  status: z.enum(["PENDING", "APPROVED", "REJECTED", "IN_PROGRESS", "COMPLETED"]).optional(),
+  status: z.enum(["DRAFT", "PENDING", "APPROVED", "REJECTED", "SCHEDULED", "IN_PROGRESS", "TESTING", "ACCEPTANCE", "COMPLETED", "CANCELLED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   // 新增字段
   assigneeId: z.string().nullable().optional(),

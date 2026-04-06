@@ -11,7 +11,7 @@ async function getAuthUser(request: NextRequest) {
 
 // 状态变更验证 Schema
 const changeStatusSchema = z.object({
-  toStatus: z.enum(["PENDING", "APPROVED", "REJECTED", "IN_PROGRESS", "COMPLETED"]),
+  toStatus: z.enum(["DRAFT", "PENDING", "APPROVED", "REJECTED", "SCHEDULED", "IN_PROGRESS", "TESTING", "ACCEPTANCE", "COMPLETED", "CANCELLED"]),
   comment: z.string().optional(),
 });
 

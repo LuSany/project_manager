@@ -38,49 +38,63 @@ export default function FilePreviewPage({ params }: { params: Promise<{ id: stri
 
   useEffect(() => {
     if (config && !loading) {
-      const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || 'http://localhost:8082'
+      const initEditor = async () => {
+        const onlyOfficeUrl = process.env.NEXT_PUBLIC_ONLYOFFICE_API_URL || 'http://localhost:8082'
 
-      const existingScript = document.querySelector(
-        `script[src="${onlyOfficeUrl}/web-apps/apps/api/documents/api.js"]`
-      )
+        const existingScript = document.querySelector(
+          `script[src="${onlyOfficeUrl}/web-apps/apps/api/documents/api.js"]`
+        )
 
-      const editorConfig = config.config
-      if (config.token) {
-        editorConfig.token = config.token
-      }
+        const editorConfig = config.config
+        if (config.token) {
+          editorConfig.token = config.token
+        }
 
-      // 注销 OnlyOffice 的 Service Worker，避免缓存资源导致下载失败
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then((registrations) => {
-          for (const registration of registrations) {
-            if (
-              registration.scope.includes(onlyOfficeUrl) ||
-              registration.scope.includes('localhost:8082')
-            ) {
-              registration.unregister()
+        // 注销所有 Service Worker，避免 OnlyOffice 缓存问题
+        // Service Worker 跨域会导致 403 错误，必须彻底清除
+        if ('serviceWorker' in navigator) {
+          try {
+            const registrations = await navigator.serviceWorker.getRegistrations()
+            for (const registration of registrations) {
+              console.log('[OnlyOffice] 注销 Service Worker:', registration.scope)
+              await registration.unregister()
             }
+            // 清除所有缓存
+            if ('caches' in window) {
+              const cacheNames = await caches.keys()
+              for (const cacheName of cacheNames) {
+                if (cacheName.includes('onlyoffice') || cacheName.includes('8082')) {
+                  console.log('[OnlyOffice] 清除缓存:', cacheName)
+                  await caches.delete(cacheName)
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('[OnlyOffice] Service Worker 清理失败:', e)
           }
-        })
+        }
+
+        if (existingScript) {
+          if ((window as any).DocsAPI) {
+            new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
+          }
+          return
+        }
+
+        const script = document.createElement('script')
+        script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
+        script.onload = () => {
+          if ((window as any).DocsAPI) {
+            new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
+          }
+        }
+        script.onerror = () => {
+          setError('OnlyOffice服务不可用，请检查服务是否已启动')
+        }
+        document.head.appendChild(script)
       }
 
-      if (existingScript) {
-        if ((window as any).DocsAPI) {
-          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
-        }
-        return
-      }
-
-      const script = document.createElement('script')
-      script.src = `${onlyOfficeUrl}/web-apps/apps/api/documents/api.js`
-      script.onload = () => {
-        if ((window as any).DocsAPI) {
-          new (window as any).DocsAPI.DocEditor('onlyoffice-editor', editorConfig)
-        }
-      }
-      script.onerror = () => {
-        setError('OnlyOffice服务不可用，请检查服务是否已启动')
-      }
-      document.head.appendChild(script)
+      initEditor()
     }
   }, [config, loading])
 

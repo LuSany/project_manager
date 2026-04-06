@@ -94,11 +94,13 @@ export function AIConfigDialog({ open, onOpenChange, config, onSuccess }: AIConf
   }, [config, form])
 
   const onSubmit = async (data: AIConfigFormData) => {
+    // OpenAI和Anthropic必须提供API Key
     if (provider !== 'CUSTOM' && !data.apiKey) {
       alert('请输入 API Key')
       return
     }
 
+    // 自定义服务商必须提供Base URL，API Key可选
     if (provider === 'CUSTOM' && !data.baseUrl) {
       alert('请输入 Base URL')
       return
@@ -207,6 +209,21 @@ export function AIConfigDialog({ open, onOpenChange, config, onSuccess }: AIConf
                     {form.formState.errors.baseUrl.message}
                   </p>
                 )}
+              </div>
+            )}
+
+            {provider === 'CUSTOM' && (
+              <div className="grid gap-2">
+                <Label htmlFor="customApiKey">
+                  API Key <span className="text-muted-foreground">(可选)</span>
+                </Label>
+                <Input
+                  id="customApiKey"
+                  type="password"
+                  {...form.register('apiKey')}
+                  placeholder="可选，部分自定义服务需要"
+                  disabled={loading}
+                />
               </div>
             )}
 

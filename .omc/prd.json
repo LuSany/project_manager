@@ -3,139 +3,51 @@
   "branchName": "feature/requirement-management-enhancement",
   "description": "需求管理功能改进：字段完善、看板视图、流程规范化",
   "userStories": [
+    {"id": "US-001", "title": "P1.1 数据库 Schema 变更", "priority": 1, "passes": true},
+    {"id": "US-002", "title": "P1.2 数据库迁移", "priority": 2, "passes": true},
+    {"id": "US-003", "title": "P1.3 API 扩展", "priority": 3, "passes": true},
+    {"id": "US-004", "title": "P1.4 前端新建表单改造", "priority": 4, "passes": true},
+    {"id": "US-005", "title": "P1.5 前端列表页筛选", "priority": 5, "passes": true},
+    {"id": "US-006", "title": "P1.6 前端详情页改造", "priority": 6, "passes": true},
+    {"id": "US-007", "title": "P2.1 看板配置表", "priority": 7, "passes": true},
+    {"id": "US-008", "title": "P2.2 看板配置 API", "priority": 8, "passes": true},
+    {"id": "US-009", "title": "P2.3 状态变更 API", "priority": 9, "passes": true},
+    {"id": "US-010", "title": "P2.4 看板前端组件", "priority": 10, "passes": true},
     {
-      "id": "US-001",
-      "title": "P1.1 数据库 Schema 变更",
-      "description": "扩展 requirements 表，新增 assigneeId, reporterId, dueDate, estimateHours, actualHours, businessLine, tags 字段",
+      "id": "US-011",
+      "title": "P3.1 状态枚举扩展",
+      "description": "扩展 RequirementStatus 枚举，新增 DRAFT, SCHEDULED, TESTING, ACCEPTANCE, CANCELLED",
       "acceptanceCriteria": [
-        "prisma/schema.prisma 中 requirements 表包含所有新字段",
-        "新增 assignee/reporter 关联关系到 users 表",
-        "新增索引：assigneeId, reporterId, businessLine",
-        "npx prisma validate 通过"
-      ],
-      "priority": 1,
-      "passes": true
-    },
-    {
-      "id": "US-002",
-      "title": "P1.2 数据库迁移",
-      "description": "运行数据库迁移，处理存量数据的 reporterId 默认值",
-      "acceptanceCriteria": [
-        "npx prisma db push 成功执行",
-        "存量 requirements 数据的 reporterId 已设置默认值",
-        "npx prisma generate 成功执行"
-      ],
-      "priority": 2,
-      "passes": true
-    },
-    {
-      "id": "US-003",
-      "title": "P1.3 API 扩展",
-      "description": "扩展创建/更新需求接口支持新字段，扩展列表查询支持新筛选参数",
-      "acceptanceCriteria": [
-        "POST /api/v1/requirements 支持 assigneeId, reporterId, dueDate, estimateHours, businessLine, tags 参数",
-        "GET /api/v1/requirements 支持 businessLine, tags, assigneeId, reporterId, dueDateFrom, dueDateTo 筛选",
-        "PUT /api/v1/requirements/[id] 支持更新新字段",
-        "GET /api/v1/requirements/[id] 返回 assignee/reporter 关联信息",
+        "RequirementStatus 枚举包含 10 个状态值",
+        "npx prisma db push 成功",
         "npm run build 成功"
       ],
-      "priority": 3,
-      "passes": true
+      "priority": 11,
+      "passes": false
     },
     {
-      "id": "US-004",
-      "title": "P1.4 前端新建表单改造",
-      "description": "新建需求表单添加新字段输入",
+      "id": "US-012",
+      "title": "P3.2 需求类型和评审配置表",
+      "description": "创建 requirement_types 和 requirement_settings 表",
       "acceptanceCriteria": [
-        "表单包含指派人选择器",
-        "表单包含截止日期选择器",
-        "表单包含预估工时输入",
-        "表单包含业务线输入",
-        "表单包含标签输入",
-        "提交时正确传递新字段到 API"
-      ],
-      "priority": 4,
-      "passes": true
-    },
-    {
-      "id": "US-005",
-      "title": "P1.5 前端列表页筛选",
-      "description": "需求列表页添加新字段筛选功能",
-      "acceptanceCriteria": [
-        "列表页支持业务线筛选",
-        "列表页支持指派人筛选",
-        "列表页显示新字段信息",
-        "筛选参数正确传递到 API"
-      ],
-      "priority": 5,
-      "passes": true
-    },
-    {
-      "id": "US-006",
-      "title": "P1.6 前端详情页改造",
-      "description": "需求详情页显示和编辑新字段",
-      "acceptanceCriteria": [
-        "详情页显示指派人信息",
-        "详情页显示截止日期",
-        "详情页显示预估工时",
-        "详情页显示业务线",
-        "详情页显示标签",
-        "编辑模式下可修改新字段"
-      ],
-      "priority": 6,
-      "passes": true
-    },
-    {
-      "id": "US-007",
-      "title": "P2.1 看板配置表",
-      "description": "创建 requirement_board_configs 表存储项目级看板配置",
-      "acceptanceCriteria": [
-        "prisma/schema.prisma 包含 requirement_board_configs 模型",
-        "包含 id, projectId, columns(JSON), createdAt, updatedAt 字段",
-        "projects 表关联 requirement_board_configs",
+        "requirement_types 表存在，包含 reviewerRoles 字段",
+        "requirement_settings 表存在，包含 defaultReviewerRoles 字段",
         "npx prisma db push 成功"
       ],
-      "priority": 7,
-      "passes": true
+      "priority": 12,
+      "passes": false
     },
     {
-      "id": "US-008",
-      "title": "P2.2 看板配置 API",
-      "description": "创建看板配置的 GET/PUT API",
+      "id": "US-013",
+      "title": "P3.3 变更单表",
+      "description": "创建 requirement_changes 表和相关枚举",
       "acceptanceCriteria": [
-        "GET /api/v1/projects/[id]/board-config 返回看板配置",
-        "PUT /api/v1/projects/[id]/board-config 更新看板配置",
-        "新项目自动创建默认看板配置",
-        "npm run build 成功"
+        "requirement_changes 表存在",
+        "RequirementChangeType 和 ChangeRequestStatus 枚举存在",
+        "npx prisma db push 成功"
       ],
-      "priority": 8,
-      "passes": true
-    },
-    {
-      "id": "US-009",
-      "title": "P2.3 状态变更 API",
-      "description": "创建需求状态变更 API，支持看板拖拽",
-      "acceptanceCriteria": [
-        "POST /api/v1/requirements/[id]/change-status 接口存在",
-        "更新需求状态并记录历史",
-        "npm run build 成功"
-      ],
-      "priority": 9,
-      "passes": true
-    },
-    {
-      "id": "US-010",
-      "title": "P2.4 看板前端组件",
-      "description": "创建看板页面和拖拽组件",
-      "acceptanceCriteria": [
-        "/projects/[id]/requirements/board 路由存在",
-        "使用 @dnd-kit/core 实现拖拽",
-        "拖拽卡片可变更状态",
-        "看板显示各列需求卡片",
-        "npm run build 成功"
-      ],
-      "priority": 10,
-      "passes": true
+      "priority": 13,
+      "passes": false
     }
   ]
 }
