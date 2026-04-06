@@ -15,6 +15,13 @@ const updateRequirementSchema = z.object({
   description: z.string().optional(),
   status: z.enum(["PENDING", "APPROVED", "REJECTED", "IN_PROGRESS", "COMPLETED"]).optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
+  // 新增字段
+  assigneeId: z.string().nullable().optional(),
+  dueDate: z.string().nullable().optional(),
+  estimateHours: z.number().nullable().optional(),
+  actualHours: z.number().nullable().optional(),
+  businessLine: z.string().nullable().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 // GET /api/v1/requirements/[id] - 获取需求详情
@@ -41,6 +48,20 @@ export async function GET(
           select: {
             id: true,
             name: true,
+          },
+        },
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        reporter: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
           },
         },
       },
@@ -118,15 +139,35 @@ export async function PUT(
       changes.newValue = validatedData.description;
     }
 
+    // 构建更新数据
+    const updateData: any = { ...validatedData };
+    if (validatedData.dueDate !== undefined) {
+      updateData.dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
+    }
+
     const [requirement] = await Promise.all([
       db.requirements.update({
         where: { id },
-        data: validatedData,
+        data: updateData,
         include: {
           projects: {
             select: {
               id: true,
               name: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          reporter: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
             },
           },
         },

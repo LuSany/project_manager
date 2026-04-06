@@ -26,6 +26,13 @@ const createRequirementSchema = z.object({
   description: z.string().optional(),
   priority: z.enum(["LOW", "MEDIUM", "HIGH"]).optional(),
   projectId: z.string(),
+  // 新增字段
+  assigneeId: z.string().optional(),
+  reporterId: z.string().optional(),
+  dueDate: z.string().optional(),
+  estimateHours: z.number().optional(),
+  businessLine: z.string().optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 // GET /api/v1/requirements - 获取需求列表
@@ -46,6 +53,13 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get("projectId");
     const status = searchParams.get("status");
     const priority = searchParams.get("priority");
+    // 新增筛选参数
+    const businessLine = searchParams.get("businessLine");
+    const tags = searchParams.get("tags");
+    const assigneeId = searchParams.get("assigneeId");
+    const reporterId = searchParams.get("reporterId");
+    const dueDateFrom = searchParams.get("dueDateFrom");
+    const dueDateTo = searchParams.get("dueDateTo");
 
     const skip = (page - 1) * pageSize;
 
@@ -95,6 +109,33 @@ export async function GET(request: NextRequest) {
       where.priority = priority;
     }
 
+    // 新增筛选条件
+    if (businessLine) {
+      where.businessLine = businessLine;
+    }
+
+    if (tags) {
+      where.tags = { hasSome: tags.split(",") };
+    }
+
+    if (assigneeId) {
+      where.assigneeId = assigneeId;
+    }
+
+    if (reporterId) {
+      where.reporterId = reporterId;
+    }
+
+    if (dueDateFrom || dueDateTo) {
+      where.dueDate = {};
+      if (dueDateFrom) {
+        where.dueDate.gte = new Date(dueDateFrom);
+      }
+      if (dueDateTo) {
+        where.dueDate.lte = new Date(dueDateTo);
+      }
+    }
+
     const [requirements, total] = await Promise.all([
       db.requirements.findMany({
         where,
@@ -105,6 +146,20 @@ export async function GET(request: NextRequest) {
             select: {
               id: true,
               name: true,
+            },
+          },
+          assignee: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
+            },
+          },
+          reporter: {
+            select: {
+              id: true,
+              name: true,
+              avatar: true,
             },
           },
         },
@@ -168,6 +223,13 @@ export async function POST(request: NextRequest) {
         status: "PENDING",
         priority: validatedData.priority || "MEDIUM",
         projects: { connect: { id: validatedData.projectId } },
+        // 新增字段 - 使用条件展开避免类型问题
+        ...(validatedData.assigneeId ? { assignee: { connect: { id: validatedData.assigneeId } } } : {}),
+        reporter: { connect: { id: validatedData.reporterId || user.id } },
+        dueDate: validatedData.dueDate ? new Date(validatedData.dueDate) : null,
+        estimateHours: validatedData.estimateHours ?? null,
+        businessLine: validatedData.businessLine ?? null,
+        tags: validatedData.tags ?? [],
         updatedAt: new Date(),
       },
       include: {
@@ -175,6 +237,20 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             name: true,
+          },
+        },
+        assignee: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+          },
+        },
+        reporter: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
           },
         },
       },

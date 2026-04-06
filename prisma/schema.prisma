@@ -372,6 +372,13 @@ model requirements {
   status                  RequirementStatus         @default(PENDING)
   priority                RequirementPriority       @default(MEDIUM)
   projectId               String
+  assigneeId              String?                   // 指派人
+  reporterId              String?                   // 提出人（临时可选，迁移后改为必填）
+  dueDate                 DateTime?                 // 截止日期
+  estimateHours           Float?                    // 预估工时
+  actualHours             Float?                    // 实际工时
+  businessLine            String?                   // 业务线
+  tags                    String[]                  // 标签
   reviewedBy              String?
   reviewedAt              DateTime?
   rejectReason            String?
@@ -384,8 +391,13 @@ model requirements {
   requirement_history     requirement_history[]
   requirement_impacts     requirement_impacts[]
   projects                projects                  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee                users?                    @relation("RequirementAssignee", fields: [assigneeId], references: [id])
+  reporter                users?                    @relation("RequirementReporter", fields: [reporterId], references: [id])
   users                   users?                    @relation(fields: [reviewedBy], references: [id])
 
+  @@index([assigneeId])
+  @@index([reporterId])
+  @@index([businessLine])
   @@index([priority])
   @@index([projectId])
   @@index([reviewedBy])
@@ -854,6 +866,8 @@ model users {
   proposals                                   proposals[]
   requirement_acceptances                     requirement_acceptances[]
   requirement_discussions                     requirement_discussions[]
+  requirementAssignees                        requirements[]             @relation("RequirementAssignee")
+  requirementReporters                        requirements[]             @relation("RequirementReporter")
   requirements                                requirements[]
   review_comments                             review_comments[]
   review_group_members                        review_group_members[]

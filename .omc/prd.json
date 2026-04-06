@@ -1,44 +1,88 @@
 {
   "project": "project_manager",
-  "branchName": "feature/admin-delete-project",
-  "description": "修复管理后台项目删除功能",
+  "branchName": "feature/requirement-management-enhancement",
+  "description": "需求管理功能改进：字段完善、看板视图、流程规范化",
   "userStories": [
     {
       "id": "US-001",
-      "title": "后端删除 API",
-      "description": "创建 /api/v1/admin/projects/[id]/route.ts DELETE 方法",
+      "title": "P1.1 数据库 Schema 变更",
+      "description": "扩展 requirements 表，新增 assigneeId, reporterId, dueDate, estimateHours, actualHours, businessLine, tags 字段",
       "acceptanceCriteria": [
-        "文件 /src/app/api/v1/admin/projects/[id]/route.ts 存在",
-        "DELETE 方法验证管理员权限",
-        "DELETE 方法删除项目并返回成功响应",
-        "非管理员访问返回 403 错误"
+        "prisma/schema.prisma 中 requirements 表包含所有新字段",
+        "新增 assignee/reporter 关联关系到 users 表",
+        "新增索引：assigneeId, reporterId, businessLine",
+        "npx prisma validate 通过"
       ],
       "priority": 1,
       "passes": true
     },
     {
       "id": "US-002",
-      "title": "前端删除按钮",
-      "description": "在 /admin/projects 页面添加删除按钮和功能",
+      "title": "P1.2 数据库迁移",
+      "description": "运行数据库迁移，处理存量数据的 reporterId 默认值",
       "acceptanceCriteria": [
-        "页面表格添加'操作'列",
-        "每行显示删除按钮",
-        "点击删除按钮弹出确认对话框",
-        "确认后调用 API 删除项目",
-        "删除成功后列表自动刷新"
+        "npx prisma db push 成功执行",
+        "存量 requirements 数据的 reporterId 已设置默认值",
+        "npx prisma generate 成功执行"
       ],
       "priority": 2,
       "passes": true
     },
     {
       "id": "US-003",
-      "title": "构建验证",
-      "description": "验证 TypeScript 编译成功",
+      "title": "P1.3 API 扩展",
+      "description": "扩展创建/更新需求接口支持新字段，扩展列表查询支持新筛选参数",
       "acceptanceCriteria": [
-        "npx tsc --noEmit 无错误",
-        "修改的文件无 TypeScript 错误"
+        "POST /api/v1/requirements 支持 assigneeId, reporterId, dueDate, estimateHours, businessLine, tags 参数",
+        "GET /api/v1/requirements 支持 businessLine, tags, assigneeId, reporterId, dueDateFrom, dueDateTo 筛选",
+        "PUT /api/v1/requirements/[id] 支持更新新字段",
+        "GET /api/v1/requirements/[id] 返回 assignee/reporter 关联信息",
+        "npm run build 成功"
       ],
       "priority": 3,
+      "passes": true
+    },
+    {
+      "id": "US-004",
+      "title": "P1.4 前端新建表单改造",
+      "description": "新建需求表单添加新字段输入",
+      "acceptanceCriteria": [
+        "表单包含指派人选择器",
+        "表单包含截止日期选择器",
+        "表单包含预估工时输入",
+        "表单包含业务线输入",
+        "表单包含标签输入",
+        "提交时正确传递新字段到 API"
+      ],
+      "priority": 4,
+      "passes": true
+    },
+    {
+      "id": "US-005",
+      "title": "P1.5 前端列表页筛选",
+      "description": "需求列表页添加新字段筛选功能",
+      "acceptanceCriteria": [
+        "列表页支持业务线筛选",
+        "列表页支持指派人筛选",
+        "列表页显示新字段信息",
+        "筛选参数正确传递到 API"
+      ],
+      "priority": 5,
+      "passes": true
+    },
+    {
+      "id": "US-006",
+      "title": "P1.6 前端详情页改造",
+      "description": "需求详情页显示和编辑新字段",
+      "acceptanceCriteria": [
+        "详情页显示指派人信息",
+        "详情页显示截止日期",
+        "详情页显示预估工时",
+        "详情页显示业务线",
+        "详情页显示标签",
+        "编辑模式下可修改新字段"
+      ],
+      "priority": 6,
       "passes": true
     }
   ]
