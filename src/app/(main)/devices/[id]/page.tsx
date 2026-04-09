@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { notFound } from 'next/navigation'
 import { DeviceDetailCard } from '@/components/devices/DeviceDetailCard'
+import { DeviceEditDialog } from '@/components/devices/DeviceEditDialog'
 import { DeviceBookingCalendar } from '@/components/devices/DeviceBookingCalendar'
 import { BookingHistoryList } from '@/components/devices/BookingHistoryList'
 
 export default function DeviceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const [resolvedParams, setResolvedParams] = useState<{ id: string } | null>(null)
+  const [editDialogOpen, setEditDialogOpen] = useState(false)
 
   useEffect(() => {
     params.then(setResolvedParams)
@@ -43,9 +45,14 @@ export default function DeviceDetailPage({ params }: { params: Promise<{ id: str
 
   return (
     <div className="space-y-6 p-6">
-      <DeviceDetailCard device={device} />
+      <DeviceDetailCard device={device} onEdit={() => setEditDialogOpen(true)} />
       <DeviceBookingCalendar deviceId={resolvedParams.id} deviceStatus={device.status} />
       <BookingHistoryList deviceId={resolvedParams.id} />
+      <DeviceEditDialog
+        device={device}
+        open={editDialogOpen}
+        onOpenChange={setEditDialogOpen}
+      />
     </div>
   )
 }

@@ -118,12 +118,16 @@ export function BookingCreatePopover({
                 <SelectValue placeholder="选择项目" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">不关联项目</SelectItem>
                 {projects?.map((p: any) => (
                   <SelectItem key={p.id} value={p.id}>
                     {p.name}
                   </SelectItem>
                 ))}
+                {projects?.length === 0 && (
+                  <div className="p-2 text-muted-foreground text-sm text-center">
+                    暂无可关联的项目
+                  </div>
+                )}
               </SelectContent>
             </Select>
           </div>
