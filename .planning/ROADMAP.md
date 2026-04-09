@@ -15,8 +15,8 @@
 - [x] **Phase 2: UI 功能组件** - 主题切换、命令面板
 - [x] **Phase 3: 列表与看板视图** - 任务列表、看板拖拽
 - [x] **Phase 4: 日历视图** - 日历展示、日期拖拽
-- [ ] **Phase 5: 甘特图视图** - 时间线、依赖关系可视化
-- [ ] **Phase 6: 仪表盘** - 统计卡片、图表组件
+- [x] **Phase 5: 甘特图视图** - 时间线、依赖关系可视化
+- [x] **Phase 6: 仪表盘** - 统计卡片、图表组件
 - [ ] **Phase 7: 管理后台** - 用户/项目/权限/AI 配置界面
 - [ ] **Phase 8: 设备管理 MVP** - 设备 CRUD、预定、冲突检测
 - [ ] **Phase 9: 审批配额与统计** - 审批流程、配额管理、机时报表
@@ -169,7 +169,7 @@ Plans:
 3. 管理员可以配置细粒度权限
 4. 管理员可以查看审计日志，按条件筛选
 5. 管理员可以配置 AI API Key、选择模型、测试连接
-   **Plans**: 6 plans in 4 waves
+   **Plans**: 9 plans in 4 waves
 
 Plans:
 
@@ -179,6 +179,9 @@ Plans:
 - [ ] 07-03-PLAN.md — Wave 1: AI/Email/Template CRUD + test connection
 - [ ] 07-04-PLAN.md — Wave 2: Permission system (RBAC + resource-based)
 - [ ] 07-05-PLAN.md — Wave 3: Project settings + integration verification
+- [ ] 07-07-PLAN.md — **Gap Closure (Wave 1)**: 修复 BLOCKER 级别问题（MembersPanel 空值、email logs 数组、权限页面、批量操作状态更新）
+- [ ] 07-08-PLAN.md — **Gap Closure (Wave 2)**: 修复 MAJOR 级别问题（负责人选择器、编辑归档按钮、AI 自定义 URL、暗色主题适配）
+- [ ] 07-09-PLAN.md — **Gap Closure (Wave 3)**: 修复 MINOR 级别问题和模板功能增强（多选添加成员、模板格式支持、预览面板、导入导出）
 
 **UI hint**: yes
 
@@ -263,7 +266,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
 | 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
 | 6. 仪表盘         | 5/5            | Complete    | 2026-04-09 |
-| 7. 管理后台       | 0/6            | Planned     | -          |
+| 7. 管理后台       | 3/9            | In Progress | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
 | 9. 审批配额与统计 | 0/0            | Not started | -          |
 | 10. AI 增强功能   | 3/3            | Complete    | 2026-03-31 |
