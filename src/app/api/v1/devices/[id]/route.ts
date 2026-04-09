@@ -11,6 +11,11 @@ async function getAuthUser(request: NextRequest) {
 const updateDeviceSchema = z.object({
   name: z.string().min(1).optional(),
   typeId: z.string().optional(),
+  modelName: z.string().nullable().optional(),
+  location: z.string().nullable().optional(),
+  owner: z.string().nullable().optional(),
+  description: z.string().nullable().optional(),
+  status: z.enum(['AVAILABLE', 'RESERVED', 'IN_USE', 'MAINTENANCE', 'DISABLED']).optional(),
 })
 
 // GET /api/v1/devices/[id] - Get single device

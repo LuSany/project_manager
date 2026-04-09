@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 import {
   Select,
   SelectContent,
@@ -34,6 +35,10 @@ interface DeviceEditDialogProps {
     name: string
     status: DeviceStatus
     typeId: string
+    modelName?: string | null
+    location?: string | null
+    owner?: string | null
+    description?: string | null
     device_types: {
       id: string
       name: string
@@ -50,6 +55,10 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
   const [name, setName] = useState(device.name)
   const [typeId, setTypeId] = useState(device.typeId)
   const [status, setStatus] = useState<DeviceStatus>(device.status)
+  const [modelName, setModelName] = useState(device.modelName || '')
+  const [location, setLocation] = useState(device.location || '')
+  const [owner, setOwner] = useState(device.owner || '')
+  const [description, setDescription] = useState(device.description || '')
   const { toast } = useToast()
   const queryClient = useQueryClient()
 
@@ -67,6 +76,10 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
     setName(device.name)
     setTypeId(device.typeId)
     setStatus(device.status)
+    setModelName(device.modelName || '')
+    setLocation(device.location || '')
+    setOwner(device.owner || '')
+    setDescription(device.description || '')
   }, [device])
 
   const updateMutation = useMutation({
@@ -74,7 +87,15 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
       const res = await fetch(`/api/v1/devices/${device.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, typeId, status }),
+        body: JSON.stringify({
+          name,
+          typeId,
+          status,
+          modelName: modelName || null,
+          location: location || null,
+          owner: owner || null,
+          description: description || null,
+        }),
       })
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
@@ -103,13 +124,13 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>编辑设备</DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div>
-            <label className="text-sm font-medium">设备名称</label>
+            <label className="text-sm font-medium">设备名称 *</label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -130,11 +151,44 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
                 ))}
               </SelectContent>
             </Select>
-            {selectedType && (
+            {selectedType && !modelName && !location && !owner && (
               <div className="mt-2 text-sm text-muted-foreground">
-                型号: {selectedType.modelName || '-'} | 位置: {selectedType.location || '-'}
+                类型默认: {selectedType.modelName || '-'} | {selectedType.location || '-'} | {selectedType.owner || '-'}
               </div>
             )}
+          </div>
+          <div>
+            <label className="text-sm font-medium">型号（可覆盖）</label>
+            <Input
+              value={modelName}
+              onChange={(e) => setModelName(e.target.value)}
+              placeholder={selectedType?.modelName || '留空使用类型默认'}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">位置（可覆盖）</label>
+            <Input
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
+              placeholder={selectedType?.location || '留空使用类型默认'}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">负责人（可覆盖）</label>
+            <Input
+              value={owner}
+              onChange={(e) => setOwner(e.target.value)}
+              placeholder={selectedType?.owner || '留空使用类型默认'}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium">描述</label>
+            <Textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="设备描述"
+              rows={2}
+            />
           </div>
           <div>
             <label className="text-sm font-medium">状态</label>
@@ -151,7 +205,7 @@ export function DeviceEditDialog({ device, open, onOpenChange }: DeviceEditDialo
               </SelectContent>
             </Select>
           </div>
-          <div className="flex justify-end gap-2">
+          <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               取消
             </Button>

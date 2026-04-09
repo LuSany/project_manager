@@ -27,6 +27,10 @@ interface DeviceDetailCardProps {
     id: string
     name: string
     status: DeviceStatus
+    modelName?: string | null
+    location?: string | null
+    owner?: string | null
+    description?: string | null
     device_types: {
       id: string
       name: string
@@ -41,6 +45,12 @@ interface DeviceDetailCardProps {
 }
 
 export function DeviceDetailCard({ device, onEdit, onStatusChange }: DeviceDetailCardProps) {
+  // Use device's own properties, fallback to type properties
+  const modelName = device.modelName || device.device_types.modelName
+  const location = device.location || device.device_types.location
+  const owner = device.owner || device.device_types.owner
+  const description = device.description || device.device_types.description
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -62,24 +72,24 @@ export function DeviceDetailCard({ device, onEdit, onStatusChange }: DeviceDetai
           </div>
           <div>
             <p className="text-muted-foreground text-sm">型号</p>
-            <p className="font-medium">{device.device_types.modelName || '-'}</p>
+            <p className="font-medium">{modelName || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">位置</p>
-            <p className="font-medium">{device.device_types.location || '-'}</p>
+            <p className="font-medium">{location || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">负责人</p>
-            <p className="font-medium">{device.device_types.owner || '-'}</p>
+            <p className="font-medium">{owner || '-'}</p>
           </div>
           <div>
             <p className="text-muted-foreground text-sm">状态</p>
             <Badge className={statusColors[device.status]}>{statusLabels[device.status]}</Badge>
           </div>
-          {device.device_types.description && (
+          {description && (
             <div className="col-span-2 md:col-span-3">
               <p className="text-muted-foreground text-sm">描述</p>
-              <p className="font-medium">{device.device_types.description}</p>
+              <p className="font-medium">{description}</p>
             </div>
           )}
         </div>

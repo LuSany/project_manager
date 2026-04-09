@@ -1287,14 +1287,18 @@ model device_types {
 }
 
 model devices {
-  id           String       @id
-  name         String
-  typeId       String
-  status       DeviceStatus @default(AVAILABLE)
-  createdAt    DateTime     @default(now())
-  updatedAt    DateTime     @updatedAt
+  id          String       @id
+  name        String
+  typeId      String
+  modelName   String?      // 设备独立型号，为空时使用设备类型的型号
+  location    String?      // 设备独立位置，为空时使用设备类型的位置
+  owner       String?      // 设备独立负责人，为空时使用设备类型的负责人
+  description String?      // 设备独立描述
+  status      DeviceStatus @default(AVAILABLE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   device_types device_types @relation(fields: [typeId], references: [id], onDelete: Cascade)
-  bookings     bookings[]
+  bookings    bookings[]
 
   @@index([typeId])
   @@index([status])

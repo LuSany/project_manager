@@ -35,6 +35,9 @@ interface Device {
   id: string
   name: string
   status: DeviceStatus
+  modelName?: string | null
+  location?: string | null
+  owner?: string | null
   device_types: {
     id: string
     name: string
@@ -81,32 +84,37 @@ export function DeviceTable() {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data?.items?.map((device: Device) => (
-          <TableRow key={device.id}>
-            <TableCell className="font-medium">{device.name}</TableCell>
-            <TableCell>{device.device_types.modelName || '-'}</TableCell>
-            <TableCell>{device.device_types.location || '-'}</TableCell>
-            <TableCell>
-              <Badge className={statusColors[device.status]}>{statusLabels[device.status]}</Badge>
-            </TableCell>
-            <TableCell>{device.device_types.owner || '-'}</TableCell>
-            <TableCell>
-              <div className="flex gap-1">
-                <Link href={`/devices/${device.id}`}>
-                  <Button variant="ghost" size="sm">
-                    <Eye className="h-4 w-4" />
-                  </Button>
-                </Link>
-                <Button variant="ghost" size="sm">
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="sm">
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
+        {data?.items?.map((device: Device) => {
+            const modelName = device.modelName || device.device_types.modelName
+            const location = device.location || device.device_types.location
+            const owner = device.owner || device.device_types.owner
+            return (
+              <TableRow key={device.id}>
+                <TableCell className="font-medium">{device.name}</TableCell>
+                <TableCell>{modelName || '-'}</TableCell>
+                <TableCell>{location || '-'}</TableCell>
+                <TableCell>
+                  <Badge className={statusColors[device.status]}>{statusLabels[device.status]}</Badge>
+                </TableCell>
+                <TableCell>{owner || '-'}</TableCell>
+                <TableCell>
+                  <div className="flex gap-1">
+                    <Link href={`/devices/${device.id}`}>
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                    </Link>
+                    <Button variant="ghost" size="sm">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="ghost" size="sm">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            )
+          })}
       </TableBody>
     </Table>
   )
