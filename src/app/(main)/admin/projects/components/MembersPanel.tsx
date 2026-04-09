@@ -21,8 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { api } from '@/lib/api/client'
-import { Users, Loader2, X, UserPlus } from 'lucide-react'
+import { Users, Loader2, X, UserPlus, Check } from 'lucide-react'
 
 interface Member {
   id: string
@@ -71,7 +72,7 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
   const [adding, setAdding] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [loadingUsers, setLoadingUsers] = useState(false)
-  const [selectedUserId, setSelectedUserId] = useState('')
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([])
   const [selectedRole, setSelectedRole] = useState('PROJECT_MEMBER')
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -95,24 +96,25 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
     }
   }
 
-  const handleAddMember = async () => {
-    if (!selectedUserId) {
-      alert('请选择用户')
+  const handleAddMembers = async () => {
+    if (selectedUserIds.length === 0) {
       return
     }
 
     setAdding(true)
     try {
-      const response = await api.post(`/admin/projects/${projectId}/members`, {
-        userId: selectedUserId,
-        role: selectedRole,
-      })
-
-      if ((response as { success?: boolean }).success) {
-        onMembersChange()
-        setSelectedUserId('')
-        setSelectedRole('PROJECT_MEMBER')
-      }
+      // 批量添加成员
+      await Promise.all(
+        selectedUserIds.map((userId) =>
+          api.post(`/admin/projects/${projectId}/members`, {
+            userId,
+            role: selectedRole,
+          })
+        )
+      )
+      onMembersChange()
+      setSelectedUserIds([])
+      setSelectedRole('PROJECT_MEMBER')
     } catch (error) {
       console.error('添加成员失败:', error)
       alert('添加成员失败，请重试')
@@ -147,6 +149,20 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
         user.email.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds((prev) =>
+      prev.includes(userId) ? prev.filter((id) => id !== userId) : [...prev, userId]
+    )
+  }
+
+  const selectAllFiltered = () => {
+    setSelectedUserIds(filteredUsers.map((u) => u.id))
+  }
+
+  const clearSelection = () => {
+    setSelectedUserIds([])
+  }
+
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
@@ -172,15 +188,34 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
                 onChange={(e) => setSearchQuery(e.target.value)}
                 disabled={loadingUsers}
               />
-              <Select
-                value={selectedUserId}
-                onValueChange={setSelectedUserId}
-                disabled={loadingUsers || adding}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="选择用户" />
-                </SelectTrigger>
-                <SelectContent>
+
+              {/* 用户多选列表 */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground text-sm">
+                    已选择 {selectedUserIds.length} 人
+                  </span>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={selectAllFiltered}
+                      disabled={loadingUsers || filteredUsers.length === 0}
+                    >
+                      全选
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearSelection}
+                      disabled={selectedUserIds.length === 0}
+                    >
+                      清除
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border p-2">
                   {loadingUsers ? (
                     <div className="flex items-center justify-center py-4">
                       <Loader2 className="h-4 w-4 animate-spin" />
@@ -191,13 +226,24 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
                     </div>
                   ) : (
                     filteredUsers.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.name} ({user.email})
-                      </SelectItem>
+                      <div
+                        key={user.id}
+                        className="flex cursor-pointer items-center gap-2 rounded-md p-2 hover:bg-accent"
+                        onClick={() => toggleUserSelection(user.id)}
+                      >
+                        <Checkbox
+                          checked={selectedUserIds.includes(user.id)}
+                          onCheckedChange={() => toggleUserSelection(user.id)}
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium">{user.name}</p>
+                          <p className="text-muted-foreground text-xs">{user.email}</p>
+                        </div>
+                      </div>
                     ))
                   )}
-                </SelectContent>
-              </Select>
+                </div>
+              </div>
 
               <Select value={selectedRole} onValueChange={setSelectedRole} disabled={adding}>
                 <SelectTrigger>
@@ -213,13 +259,13 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
               </Select>
 
               <Button
-                onClick={handleAddMember}
-                disabled={adding || !selectedUserId}
+                onClick={handleAddMembers}
+                disabled={adding || selectedUserIds.length === 0}
                 className="w-full"
               >
                 {adding && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <UserPlus className="mr-2 h-4 w-4" />
-                添加成员
+                添加成员 {selectedUserIds.length > 0 && `(${selectedUserIds.length}人)`}
               </Button>
             </div>
           </div>
