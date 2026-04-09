@@ -153,7 +153,7 @@ Plans:
 - [x] 06-02-PLAN.md — Wave 1: TaskStatusDonut + PriorityDonut donut charts
 - [x] 06-03-PLAN.md — Wave 1: ProjectComparisonChart + MilestoneProgressList
 - [x] 06-04-PLAN.md — Wave 1: ChartsGrid + Dashboard page integration
-- [ ] 06-05-PLAN.md — Gap Closure: Fix UAT-diagnosed issues (legend percentages, milestone query, scroll, badges)
+- [x] 06-05-PLAN.md — Gap Closure: Fix UAT-diagnosed issues (legend percentages, milestone query, scroll, badges)
 
 **UI hint**: yes
 
@@ -262,7 +262,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 3. 列表与看板视图 | 3/3            | Complete    | 2026-03-28 |
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
 | 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
-| 6. 仪表盘         | 4/5            | In Progress | -          |
+| 6. 仪表盘         | 5/5            | Complete    | 2026-04-09 |
 | 7. 管理后台       | 0/6            | Planned     | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
 | 9. 审批配额与统计 | 0/0            | Not started | -          |

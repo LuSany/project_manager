@@ -13,41 +13,8 @@
     {"id": "US-008", "title": "P2.2 看板配置 API", "priority": 8, "passes": true},
     {"id": "US-009", "title": "P2.3 状态变更 API", "priority": 9, "passes": true},
     {"id": "US-010", "title": "P2.4 看板前端组件", "priority": 10, "passes": true},
-    {
-      "id": "US-011",
-      "title": "P3.1 状态枚举扩展",
-      "description": "扩展 RequirementStatus 枚举，新增 DRAFT, SCHEDULED, TESTING, ACCEPTANCE, CANCELLED",
-      "acceptanceCriteria": [
-        "RequirementStatus 枚举包含 10 个状态值",
-        "npx prisma db push 成功",
-        "npm run build 成功"
-      ],
-      "priority": 11,
-      "passes": false
-    },
-    {
-      "id": "US-012",
-      "title": "P3.2 需求类型和评审配置表",
-      "description": "创建 requirement_types 和 requirement_settings 表",
-      "acceptanceCriteria": [
-        "requirement_types 表存在，包含 reviewerRoles 字段",
-        "requirement_settings 表存在，包含 defaultReviewerRoles 字段",
-        "npx prisma db push 成功"
-      ],
-      "priority": 12,
-      "passes": false
-    },
-    {
-      "id": "US-013",
-      "title": "P3.3 变更单表",
-      "description": "创建 requirement_changes 表和相关枚举",
-      "acceptanceCriteria": [
-        "requirement_changes 表存在",
-        "RequirementChangeType 和 ChangeRequestStatus 枚举存在",
-        "npx prisma db push 成功"
-      ],
-      "priority": 13,
-      "passes": false
-    }
+    {"id": "US-011", "title": "P3.1 状态枚举扩展", "priority": 11, "passes": true},
+    {"id": "US-012", "title": "P3.2 需求类型和评审配置表", "priority": 12, "passes": true},
+    {"id": "US-013", "title": "P3.3 变更单表", "priority": 13, "passes": true}
   ]
 }
