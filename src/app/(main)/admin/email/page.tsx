@@ -68,7 +68,8 @@ export default function EmailAdminPage() {
       ])
       setConfigs((configsRes as { data?: EmailConfig[] }).data || [])
       setTemplates((templatesRes as { data?: EmailTemplate[] }).data || [])
-      setLogs((logsRes as { data?: EmailLog[] }).data || [])
+      const logsData = (logsRes as { data?: EmailLog[] }).data
+      setLogs(Array.isArray(logsData) ? logsData : [])
     } catch (error) {
       console.error('获取邮件配置失败:', error)
     } finally {

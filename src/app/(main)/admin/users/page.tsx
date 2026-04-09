@@ -445,6 +445,9 @@ export default function UsersAdminPage() {
       setUsers((prevUsers) =>
         prevUsers.map((user) => (selectedIds.includes(user.id) ? { ...user, status } : user))
       )
+
+      // 清除选择状态
+      setRowSelection({})
     } catch (error) {
       throw error
     }
@@ -469,6 +472,9 @@ export default function UsersAdminPage() {
       setUsers((prevUsers) =>
         prevUsers.map((user) => (selectedIds.includes(user.id) ? { ...user, role } : user))
       )
+
+      // 清除选择状态
+      setRowSelection({})
     } catch (error) {
       throw error
     }

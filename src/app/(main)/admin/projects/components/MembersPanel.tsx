@@ -239,17 +239,17 @@ export function MembersPanel({ projectId, members, onMembersChange }: MembersPan
                     <div className="flex items-center gap-3">
                       <Avatar>
                         <AvatarImage
-                          src={member.users?.avatar || ''}
-                          alt={member.users?.name || 'Unknown User'}
+                          src={member.users?.avatar ?? ''}
+                          alt={member.users?.name ?? 'Unknown User'}
                         />
                         <AvatarFallback>
-                          {(member.users?.name || 'UN').slice(0, 2).toUpperCase()}
+                          {(member.users?.name ?? 'UN').slice(0, 2).toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{member.users?.name || 'Unknown User'}</p>
+                        <p className="font-medium">{member.users?.name ?? 'Unknown User'}</p>
                         <p className="text-muted-foreground text-sm">
-                          {member.users?.email || 'No email'}
+                          {member.users?.email ?? 'No email'}
                         </p>
                       </div>
                     </div>
