@@ -14,6 +14,7 @@ import {
   Monitor,
   ShieldCheck,
   BarChart3,
+  Wrench,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -130,6 +131,11 @@ export function Sidebar({ className }: SidebarProps) {
       title: '设备管理',
       icon: Monitor,
       path: '/devices',
+    },
+    {
+      title: '设备类型',
+      icon: Wrench,
+      path: '/admin/device-types',
     },
     {
       title: '设备统计',
