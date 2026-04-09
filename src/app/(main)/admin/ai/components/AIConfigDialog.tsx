@@ -173,7 +173,7 @@ export function AIConfigDialog({ open, onOpenChange, config, onSuccess }: AIConf
                 <SelectContent>
                   <SelectItem value="OPENAI">OpenAI</SelectItem>
                   <SelectItem value="ANTHROPIC">Anthropic</SelectItem>
-                  <SelectItem value="CUSTOM">自定义 (Ollama)</SelectItem>
+                  <SelectItem value="CUSTOM">自定义服务</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -201,9 +201,12 @@ export function AIConfigDialog({ open, onOpenChange, config, onSuccess }: AIConf
                 <Input
                   id="baseUrl"
                   {...form.register('baseUrl')}
-                  placeholder="http://localhost:11434"
+                  placeholder="https://api.example.com 或 http://localhost:11434"
                   disabled={loading}
                 />
+                <p className="text-muted-foreground text-xs">
+                  支持 OpenAI 兼容的 API 端点，如 Ollama、LocalAI、vLLM 等
+                </p>
                 {form.formState.errors.baseUrl && (
                   <p className="text-destructive text-sm">
                     {form.formState.errors.baseUrl.message}
