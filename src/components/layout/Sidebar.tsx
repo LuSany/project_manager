@@ -15,6 +15,7 @@ import {
   ShieldCheck,
   BarChart3,
   Wrench,
+  PieChart,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
@@ -151,6 +152,18 @@ export function Sidebar({ className }: SidebarProps) {
       title: '审批管理',
       icon: ShieldCheck,
       path: '/approvals',
+    },
+    {
+      title: '审批配置',
+      icon: ShieldCheck,
+      path: '/admin/approval-configs',
+      adminOnly: true,
+    },
+    {
+      title: '配额管理',
+      icon: PieChart,
+      path: '/admin/quotas',
+      adminOnly: true,
     },
     {
       title: '用户管理',
