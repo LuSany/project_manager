@@ -31,24 +31,36 @@ function calculateHours(startTime: Date, endTime: Date): number {
 }
 
 async function aggregateProjectHours(params: ProjectHoursParams): Promise<ProjectHoursItem[]> {
-  const { month, topN = 10 } = params
+  const { month, topN = 10, deviceTypeId } = params as any
   const { start, end } = getMonthDateRange(month)
 
+  const bookingWhere: any = {
+    startTime: { gte: start },
+    endTime: { lte: end },
+    status: { in: ['RESERVED', 'IN_PROGRESS', 'COMPLETED'] },
+    projectId: { not: null },
+  }
+
+  // 如果指定了设备类型，添加过滤条件
+  if (deviceTypeId) {
+    bookingWhere.devices = { typeId: deviceTypeId }
+  }
+
   const bookings = await prisma.bookings.findMany({
-    where: {
-      startTime: { gte: start },
-      endTime: { lte: end },
-      status: { in: ['RESERVED', 'IN_PROGRESS', 'COMPLETED'] },
-      projectId: { not: null },
-    },
+    where: bookingWhere,
     include: {
       projects: { select: { id: true, name: true } },
+      devices: {
+        include: {
+          device_types: { select: { id: true, name: true } },
+        },
+      },
     },
   })
 
   const projectMap = new Map<
     string,
-    { projectId: string; projectName: string; totalHours: number; bookingCount: number }
+    { projectId: string; projectName: string; totalHours: number; bookingCount: number; deviceTypeName?: string }
   >()
 
   for (const booking of bookings) {
@@ -66,6 +78,7 @@ async function aggregateProjectHours(params: ProjectHoursParams): Promise<Projec
         projectName: booking.projects.name,
         totalHours: hours,
         bookingCount: 1,
+        deviceTypeName: booking.devices?.device_types?.name,
       })
     }
   }

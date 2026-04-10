@@ -18,6 +18,7 @@ import type { DeviceUtilizationItem } from '@/types/equipment-stats'
 interface DeviceUtilizationChartProps {
   startDate?: string
   endDate?: string
+  deviceTypeId?: string
   loading?: boolean
 }
 
@@ -30,6 +31,7 @@ function getUtilizationColor(utilization: number) {
 export function DeviceUtilizationChart({
   startDate,
   endDate,
+  deviceTypeId,
   loading: externalLoading,
 }: DeviceUtilizationChartProps) {
   const [loading, setLoading] = useState(true)
@@ -42,6 +44,7 @@ export function DeviceUtilizationChart({
         const params = new URLSearchParams()
         if (startDate) params.set('startDate', startDate)
         if (endDate) params.set('endDate', endDate)
+        if (deviceTypeId) params.set('deviceTypeId', deviceTypeId)
         const queryString = params.toString()
         const response = await fetch(
           `/api/v1/equipment/stats/device-utilization${queryString ? `?${queryString}` : ''}`,
@@ -61,7 +64,7 @@ export function DeviceUtilizationChart({
     }
 
     fetchData()
-  }, [startDate, endDate])
+  }, [startDate, endDate, deviceTypeId])
 
   const loadingState = externalLoading ?? loading
 

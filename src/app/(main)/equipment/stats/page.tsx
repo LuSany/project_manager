@@ -1,10 +1,18 @@
 'use client'
 
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { zhCN } from 'date-fns/locale'
 import { BarChart3 } from 'lucide-react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { StatsOverview } from '@/components/equipment/StatsOverview'
 import { ProjectHoursChart } from '@/components/equipment/ProjectHoursChart'
 import {
@@ -23,12 +31,23 @@ export default function EquipmentStatsPage() {
     format(new Date(now.getFullYear(), now.getMonth(), 1), 'yyyy-MM-dd')
   )
   const [endDate, setEndDate] = useState(format(now, 'yyyy-MM-dd'))
+  const [deviceTypeId, setDeviceTypeId] = useState<string | undefined>(undefined)
+
+  const { data: deviceTypes } = useQuery({
+    queryKey: ['device-types'],
+    queryFn: async () => {
+      const res = await fetch('/api/v1/device-types?pageSize=100')
+      const json = await res.json()
+      if (!json.success) throw new Error(json.error)
+      return json.data.items as { id: string; name: string }[]
+    },
+  })
 
   const getExportParams = () => {
     if (activeTab === 'project-hours') {
-      return { month }
+      return { month, deviceTypeId }
     } else if (activeTab === 'device-utilization') {
-      return { startDate, endDate }
+      return { startDate, endDate, deviceTypeId }
     } else {
       return { startDate, endDate }
     }
@@ -80,6 +99,25 @@ export default function EquipmentStatsPage() {
             className="border-input bg-background rounded-md border px-3 py-1.5 text-sm"
           />
         </div>
+        <div className="flex items-center gap-2">
+          <label className="text-sm text-slate-600">设备类型:</label>
+          <Select
+            value={deviceTypeId || 'all'}
+            onValueChange={(v) => setDeviceTypeId(v === 'all' ? undefined : v)}
+          >
+            <SelectTrigger className="w-40">
+              <SelectValue placeholder="全部类型" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">全部类型</SelectItem>
+              {deviceTypes?.map((dt) => (
+                <SelectItem key={dt.id} value={dt.id}>
+                  {dt.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -92,7 +130,7 @@ export default function EquipmentStatsPage() {
         <TabsContent value="project-hours" className="mt-4">
           <Card>
             <CardContent className="pt-4">
-              <ProjectHoursChart month={month} />
+              <ProjectHoursChart month={month} deviceTypeId={deviceTypeId} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -100,7 +138,7 @@ export default function EquipmentStatsPage() {
         <TabsContent value="device-utilization" className="mt-4">
           <Card>
             <CardContent className="pt-4">
-              <DeviceUtilizationChart startDate={startDate} endDate={endDate} />
+              <DeviceUtilizationChart startDate={startDate} endDate={endDate} deviceTypeId={deviceTypeId} />
             </CardContent>
           </Card>
         </TabsContent>

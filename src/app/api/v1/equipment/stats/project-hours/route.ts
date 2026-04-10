@@ -19,8 +19,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const month = searchParams.get('month') || undefined
     const topN = parseInt(searchParams.get('topN') || '10')
+    const deviceTypeId = searchParams.get('deviceTypeId') || undefined
 
-    const result = await aggregateProjectHours({ month, topN })
+    const result = await aggregateProjectHours({ month, topN, deviceTypeId } as any)
     return success(result)
   } catch (err) {
     console.error('获取项目机时统计失败:', err)

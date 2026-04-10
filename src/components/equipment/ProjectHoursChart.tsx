@@ -17,6 +17,7 @@ import type { ProjectHoursItem } from '@/types/equipment-stats'
 
 interface ProjectHoursChartProps {
   month?: string
+  deviceTypeId?: string
   loading?: boolean
 }
 
@@ -26,7 +27,7 @@ function getBarColor(hours: number) {
   return '#ef4444'
 }
 
-export function ProjectHoursChart({ month, loading: externalLoading }: ProjectHoursChartProps) {
+export function ProjectHoursChart({ month, deviceTypeId, loading: externalLoading }: ProjectHoursChartProps) {
   const [loading, setLoading] = useState(true)
   const [data, setData] = useState<ProjectHoursItem[]>([])
 
@@ -34,10 +35,16 @@ export function ProjectHoursChart({ month, loading: externalLoading }: ProjectHo
     const fetchData = async () => {
       setLoading(true)
       try {
-        const queryParams = month ? `?month=${month}` : ''
-        const response = await fetch(`/api/v1/equipment/stats/project-hours${queryParams}`, {
-          credentials: 'include',
-        })
+        const params = new URLSearchParams()
+        if (month) params.set('month', month)
+        if (deviceTypeId) params.set('deviceTypeId', deviceTypeId)
+        const queryString = params.toString()
+        const response = await fetch(
+          `/api/v1/equipment/stats/project-hours${queryString ? `?${queryString}` : ''}`,
+          {
+            credentials: 'include',
+          }
+        )
         const result = await response.json()
         if (result.success) {
           setData(result.data || [])
@@ -50,7 +57,7 @@ export function ProjectHoursChart({ month, loading: externalLoading }: ProjectHo
     }
 
     fetchData()
-  }, [month])
+  }, [month, deviceTypeId])
 
   const loadingState = externalLoading ?? loading
 
@@ -90,7 +97,11 @@ export function ProjectHoursChart({ month, loading: externalLoading }: ProjectHo
               borderRadius: '8px',
               boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
             }}
-            formatter={(value: number) => [`${value} 小时`, '使用时长']}
+            formatter={(value: number, name: string) => {
+              if (name === 'totalHours') return [`${value} 小时`, '使用时长']
+              return [value, name]
+            }}
+            labelFormatter={(label) => `项目: ${label}`}
           />
           <Bar dataKey="totalHours" radius={[0, 4, 4, 0]} barSize={20}>
             {data.map((entry, index) => (
