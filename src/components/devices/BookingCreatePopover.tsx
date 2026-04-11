@@ -62,8 +62,13 @@ export function BookingCreatePopover({
       const json = await res.json()
       if (!json.success) {
         if (json.data?.conflictingBooking) {
+          const conflict = json.data.conflictingBooking
+          const start = format(new Date(conflict.startTime), 'MM-dd HH:mm')
+          const end = format(new Date(conflict.endTime), 'HH:mm')
+          const user = conflict.userName || '未知用户'
+          const project = conflict.projectName || '未关联项目'
           setError(
-            `与现有预定冲突: ${format(new Date(json.data.conflictingBooking.startTime), 'MM-dd HH:mm')}`
+            `时间段 ${start}-${end} 已被 ${user} 预定（项目: ${project}）`
           )
         } else {
           setError(json.error)
