@@ -100,18 +100,30 @@ export async function POST(request: NextRequest) {
 
     const existingBookings = await db.bookings.findMany({
       where: { deviceId: validatedData.deviceId },
-      select: { startTime: true, endTime: true, status: true },
+      select: {
+        startTime: true,
+        endTime: true,
+        status: true,
+        users: { select: { id: true, name: true } },
+        projects: { select: { id: true, name: true } },
+      },
     })
 
     const conflictResult = hasBookingConflict(existingBookings, startTime, endTime)
 
     if (conflictResult.hasConflict) {
+      const conflict = conflictResult.conflictingBooking
       return NextResponse.json(
         {
           success: false,
           error: '预定时间与现有预定冲突',
           data: {
-            conflictingBooking: conflictResult.conflictingBooking,
+            conflictingBooking: {
+              startTime: conflict?.startTime,
+              endTime: conflict?.endTime,
+              userName: (conflict as any)?.users?.name || '未知用户',
+              projectName: (conflict as any)?.projects?.name || '未关联项目',
+            },
           },
         },
         { status: 409 }
