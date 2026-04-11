@@ -2,6 +2,11 @@ export interface ExistingBooking {
   startTime: Date
   endTime: Date
   status: string
+  // Optional fields for enhanced conflict feedback
+  userId?: string
+  userName?: string
+  projectId?: string
+  projectName?: string
 }
 
 export interface ConflictResult {
