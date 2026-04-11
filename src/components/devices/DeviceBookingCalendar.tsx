@@ -223,21 +223,38 @@ export function DeviceBookingCalendar({ deviceId, deviceStatus }: DeviceBookingC
                 {HOUR_SLOTS.map((hour) => (
                   <div key={`${weekIndex}-${hour}`} className="grid grid-cols-8 gap-1">
                     <div className="text-muted-foreground w-12 pr-2 text-right text-sm">{hour}:00</div>
-                    {week.map((day) => (
-                      <div
-                        key={`${day.toISOString()}-${hour}`}
-                        className={cn(
-                          'h-8 rounded border transition-colors',
-                          !isCurrentMonthDay(day) && 'bg-gray-100 opacity-40 cursor-not-allowed pointer-events-none',
-                          isCurrentMonthDay(day) && !isSlotBooked(day, hour) && 'cursor-pointer hover:bg-accent',
-                          isSlotBooked(day, hour) && 'cursor-not-allowed bg-blue-200',
-                          isSlotInSelection(day, hour) && 'bg-primary/20 border-primary',
-                          isToday(day) && isCurrentMonthDay(day) && 'bg-muted/50'
-                        )}
-                        onMouseDown={() => isCurrentMonthDay(day) && handleMouseDown(day, hour)}
-                        onMouseMove={() => isCurrentMonthDay(day) && handleMouseMove(day, hour)}
-                      />
-                    ))}
+                    {week.map((day) => {
+                      const isCurrentMonth = isCurrentMonthDay(day)
+                      const isBooked = isSlotBooked(day, hour)
+                      const isInSelection = isSlotInSelection(day, hour)
+
+                      // 非当月日期：灰色、不可交互
+                      if (!isCurrentMonth) {
+                        return (
+                          <div
+                            key={`${day.toISOString()}-${hour}`}
+                            className="h-8 rounded border bg-gray-200 border-gray-300 cursor-not-allowed"
+                            style={{ opacity: 0.5 }}
+                          />
+                        )
+                      }
+
+                      // 当月日期
+                      return (
+                        <div
+                          key={`${day.toISOString()}-${hour}`}
+                          className={cn(
+                            'h-8 rounded border transition-colors cursor-pointer',
+                            isBooked && 'cursor-not-allowed bg-blue-200',
+                            isInSelection && 'bg-primary/20 border-primary',
+                            isToday(day) && 'bg-muted/50',
+                            !isBooked && !isInSelection && 'hover:bg-accent'
+                          )}
+                          onMouseDown={() => handleMouseDown(day, hour)}
+                          onMouseMove={() => handleMouseMove(day, hour)}
+                        />
+                      )
+                    })}
                   </div>
                 ))}
               </div>
