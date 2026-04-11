@@ -209,7 +209,9 @@ export function DeviceBookingCalendar({ deviceId, deviceStatus }: DeviceBookingC
                       key={day.toISOString()}
                       className={cn(
                         'text-center text-sm py-1',
-                        isCurrentMonthDay(day) ? 'font-medium' : 'text-muted-foreground'
+                        isCurrentMonthDay(day)
+                          ? 'font-medium text-foreground'
+                          : 'text-gray-400 opacity-50'
                       )}
                     >
                       {format(day, 'd')}
@@ -225,12 +227,12 @@ export function DeviceBookingCalendar({ deviceId, deviceStatus }: DeviceBookingC
                       <div
                         key={`${day.toISOString()}-${hour}`}
                         className={cn(
-                          'h-8 cursor-pointer rounded border transition-colors',
-                          !isCurrentMonthDay(day) && 'bg-muted/30 cursor-not-allowed',
+                          'h-8 rounded border transition-colors',
+                          !isCurrentMonthDay(day) && 'bg-gray-100 opacity-40 cursor-not-allowed pointer-events-none',
+                          isCurrentMonthDay(day) && !isSlotBooked(day, hour) && 'cursor-pointer hover:bg-accent',
                           isSlotBooked(day, hour) && 'cursor-not-allowed bg-blue-200',
                           isSlotInSelection(day, hour) && 'bg-primary/20 border-primary',
-                          isToday(day) && isCurrentMonthDay(day) && 'bg-muted/50',
-                          isCurrentMonthDay(day) && !isSlotBooked(day, hour) && 'hover:bg-accent'
+                          isToday(day) && isCurrentMonthDay(day) && 'bg-muted/50'
                         )}
                         onMouseDown={() => isCurrentMonthDay(day) && handleMouseDown(day, hour)}
                         onMouseMove={() => isCurrentMonthDay(day) && handleMouseMove(day, hour)}
