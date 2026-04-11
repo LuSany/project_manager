@@ -94,7 +94,7 @@ export default function QuotasPage() {
       const res = await fetch('/api/v1/projects?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items as Project[]
+      return (json.data?.items || json.data?.data || json.data) as Project[]
     },
   })
 
@@ -104,7 +104,7 @@ export default function QuotasPage() {
       const res = await fetch('/api/v1/device-types?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items as DeviceType[]
+      return (json.data?.items || json.data?.data || json.data) as DeviceType[]
     },
   })
 

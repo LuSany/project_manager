@@ -73,7 +73,7 @@ export default function ApprovalConfigsPage() {
       const res = await fetch('/api/v1/approval-configs?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items as ApprovalConfig[]
+      return (json.data?.items || json.data?.data || json.data) as ApprovalConfig[]
     },
   })
 
@@ -83,7 +83,7 @@ export default function ApprovalConfigsPage() {
       const res = await fetch('/api/v1/device-types?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items as DeviceType[]
+      return (json.data?.items || json.data?.data || json.data) as DeviceType[]
     },
   })
 
@@ -93,7 +93,7 @@ export default function ApprovalConfigsPage() {
       const res = await fetch('/api/v1/users?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items as User[]
+      return (json.data?.items || json.data?.data || json.data) as User[]
     },
   })
 
