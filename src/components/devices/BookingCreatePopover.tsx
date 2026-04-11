@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { useToast } from '@/hooks/use-toast'
 import {
@@ -43,7 +43,7 @@ export function BookingCreatePopover({
       const res = await fetch('/api/v1/projects?pageSize=100')
       const json = await res.json()
       if (!json.success) throw new Error(json.error)
-      return json.data.items
+      return (json.data?.items || json.data?.data || json.data) as any[]
     },
   })
 
@@ -102,13 +102,11 @@ export function BookingCreatePopover({
   })
 
   return (
-    <Popover open={open} onOpenChange={onOpenChange}>
-      <PopoverTrigger asChild>
-        <Button variant="outline" className="w-full">
-          创建预定
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-80">
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[400px]">
+        <DialogHeader>
+          <DialogTitle>创建预定</DialogTitle>
+        </DialogHeader>
         <div className="space-y-4">
           <div>
             <p className="font-medium">预定时间段</p>
@@ -150,7 +148,7 @@ export function BookingCreatePopover({
             {createMutation.isPending ? '创建中...' : '确认预定'}
           </Button>
         </div>
-      </PopoverContent>
-    </Popover>
+      </DialogContent>
+    </Dialog>
   )
 }
