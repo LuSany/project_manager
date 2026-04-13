@@ -102,7 +102,7 @@ Plans:
 
 Plans:
 
-- [x] 04-00-PLAN.md — Wave 0: 测试脚手架（5个测试文件占位符）
+- [x] 04-00-PLAN.md — Wave 0: 测试脚手架（5 个测试文件占位符）
 - [x] 04-01-PLAN.md — taskViewStore 扩展 + TaskCalendar 组件框架
 - [x] 04-02-PLAN.md — CalendarDayCell + CalendarTaskCard（任务显示和拖拽）
 - [x] 04-03-PLAN.md — UnscheduledTaskList + QuickCreatePopover
@@ -127,7 +127,7 @@ Plans:
 
 Plans:
 
-- [x] 05-01-PLAN.md — 甘特图基础框架：Store扩展 + 核心渲染组件（双栏布局 + SVG时间线 + 任务条）
+- [x] 05-01-PLAN.md — 甘特图基础框架：Store 扩展 + 核心渲染组件（双栏布局 + SVG 时间线 + 任务条）
 - [x] 05-02-PLAN.md — 依赖关系可视化：直角折线连线 + 关键路径算法 + 高亮
 - [x] 05-03-PLAN.md — 交互与页面集成：缩放平移 + 悬停详情 + 视图切换集成
 
@@ -227,8 +227,21 @@ Plans:
 5. 用户可以查看项目机时统计
 6. 用户可以查看设备使用率报表
 7. 用户可以按条件查询使用记录
-   **Plans**: TBD
+   **Plans**: 9 plans (8 complete + 1 gap closure)
    **UI hint**: yes
+
+Plans:
+
+- [x] 09-00-PLAN.md — Wave 0: 测试脚手架 + Prisma Schema 扩展
+- [x] 09-01-PLAN.md — Wave 1: 审批配置管理 API + UI
+- [x] 09-02-PLAN.md — Wave 1: 配额管理 API + UI
+- [x] 09-03-PLAN.md — Wave 2: 预订日历完整月份显示
+- [x] 09-04-PLAN.md — Wave 2: 审批记录查询
+- [x] 09-05-PLAN.md — Wave 3: 配额预警通知
+- [x] 09-06-PLAN.md — Wave 3: 设备统计页面
+- [x] 09-07-PLAN.md — Wave 4: 审批流程 + 配额预警增强
+- [x] 09-08-PLAN.md — Wave 4: 预订冲突提示增强
+- [ ] 09-09-PLAN.md — Wave 1: Gap Closure (审批记录查询、配额预警状态、Excel 完整报告导出)
 
 ### Phase 10: AI 增强功能
 
@@ -268,5 +281,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | 6. 仪表盘         | 5/5            | Complete    | 2026-04-09 |
 | 7. 管理后台       | 3/9            | In Progress | -          |
 | 8. 设备管理 MVP   | 0/6            | Planned     | -          |
-| 9. 审批配额与统计 | 0/0            | Not started | -          |
+| 9. 审批配额与统计 | 8/10           | In Progress | -          |
 | 10. AI 增强功能   | 3/3            | Complete    | 2026-03-31 |
