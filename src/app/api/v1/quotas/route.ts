@@ -109,9 +109,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    const userId = request.cookies.get('user-id')?.value
-    if (!userId) return error('UNAUTHORIZED', '未授权访问', undefined, 401)
-    return error('FORBIDDEN', '只有管理员可以创建配额', undefined, 403)
+    return error('UNAUTHORIZED', '未授权访问', undefined, 401)
+  }
+
+  // 只有管理员可以创建配额
+  if (user.role !== 'ADMIN') {
+    return error('FORBIDDEN', '此操作需要管理员权限', undefined, 403)
   }
 
   try {

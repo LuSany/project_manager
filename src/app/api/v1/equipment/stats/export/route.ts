@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { generateExcelBuffer } from '@/lib/equipment-stats'
 
@@ -12,6 +12,11 @@ export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
     return new Response('Unauthorized', { status: 401 })
+  }
+
+  // 只有管理员可以导出统计数据
+  if (user.role !== 'ADMIN') {
+    return new Response('此操作需要管理员权限', { status: 403 })
   }
 
   try {

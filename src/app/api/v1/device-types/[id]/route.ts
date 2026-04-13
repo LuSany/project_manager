@@ -53,6 +53,11 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
   }
 
+  // 只有管理员可以更新设备类型
+  if (user.role !== 'ADMIN') {
+    return NextResponse.json({ success: false, error: '此操作需要管理员权限' }, { status: 403 })
+  }
+
   try {
     const { id } = await params
     const body = await request.json()

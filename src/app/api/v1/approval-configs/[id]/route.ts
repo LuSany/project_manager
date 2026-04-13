@@ -72,6 +72,11 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return unauthorized('未授权，请先登录')
   }
 
+  // 只有管理员可以更新审批配置
+  if (user.role !== 'ADMIN') {
+    return forbidden('此操作需要管理员权限')
+  }
+
   try {
     const { id } = await params
 

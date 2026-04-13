@@ -1,4 +1,5 @@
 import { db } from '@/lib/db'
+import { NextRequest, NextResponse } from 'next/server'
 
 /**
  * 操作类型定义
@@ -9,6 +10,140 @@ export type Action = 'create' | 'read' | 'update' | 'delete' | 'list'
  * 资源类型定义
  */
 export type ResourceType = 'project' | 'task' | 'requirement' | 'risk' | 'review'
+
+/**
+ * 获取认证用户
+ */
+async function getAuthUser(request: NextRequest) {
+  const userId = request.cookies.get('user-id')?.value
+  if (!userId) return null
+  return db.users.findUnique({ where: { id: userId } })
+}
+
+/**
+ * 要求管理员权限 - 用于 API 路由中的权限守卫
+ *
+ * @param request - NextRequest
+ * @returns 用户对象或错误响应
+ */
+export async function requireAdmin(request: NextRequest): Promise<{
+  user: Awaited<ReturnType<typeof getAuthUser>>
+  error?: NextResponse
+}> {
+  const user = await getAuthUser(request)
+
+  if (!user) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { success: false, error: '未授权，请先登录' },
+        { status: 401 }
+      ),
+    }
+  }
+
+  if (user.role !== 'ADMIN') {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { success: false, error: '此操作需要管理员权限' },
+        { status: 403 }
+      ),
+    }
+  }
+
+  return { user }
+}
+
+/**
+ * 检查用户是否为某设备类型的审批人
+ *
+ * @param userId - 用户ID
+ * @param deviceTypeId - 设备类型ID
+ * @returns 是否有审批权限
+ */
+export async function isApprover(userId: string, deviceTypeId: string): Promise<boolean> {
+  const user = await db.users.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  })
+
+  // ADMIN 默认有审批权限
+  if (user?.role === 'ADMIN') return true
+
+  const config = await db.approval_configs.findUnique({
+    where: { deviceTypeId },
+    select: { approverIds: true },
+  })
+
+  if (!config) return false
+
+  const approverIds = JSON.parse(config.approverIds) as string[][]
+  const allApproverIds = approverIds.flat()
+  return allApproverIds.includes(userId)
+}
+
+/**
+ * 要求审批人权限 - 用于审批操作 API 的权限守卫
+ *
+ * @param request - NextRequest
+ * @param deviceTypeId - 设备类型ID
+ * @returns 用户对象或错误响应
+ */
+export async function requireApprover(
+  request: NextRequest,
+  deviceTypeId: string
+): Promise<{
+  user: Awaited<ReturnType<typeof getAuthUser>>
+  error?: NextResponse
+}> {
+  const user = await getAuthUser(request)
+
+  if (!user) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { success: false, error: '未授权，请先登录' },
+        { status: 401 }
+      ),
+    }
+  }
+
+  // ADMIN 有审批权限
+  if (user.role === 'ADMIN') {
+    return { user }
+  }
+
+  const config = await db.approval_configs.findUnique({
+    where: { deviceTypeId },
+    select: { approverIds: true },
+  })
+
+  if (!config) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { success: false, error: '该设备类型未配置审批流程' },
+        { status: 403 }
+      ),
+    }
+  }
+
+  const approverIds = JSON.parse(config.approverIds) as string[][]
+  const allApproverIds = approverIds.flat()
+
+  if (!allApproverIds.includes(user.id)) {
+    return {
+      user: null,
+      error: NextResponse.json(
+        { success: false, error: '您不是该设备类型的审批人' },
+        { status: 403 }
+      ),
+    }
+  }
+
+  return { user }
+}
 
 /**
  * 检查用户权限 - 混合 RBAC + 基于资源的权限控制

@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
-import { success, error, unauthorized, notFound, validationError } from '@/lib/api/response'
+import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
 import { notifyApprovalResult, notifyApprovalRequest } from '@/lib/notification'
 
 async function getAuthUser(request: NextRequest) {
@@ -56,7 +56,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return error('NO_CONFIG', '该设备类型未配置审批流程')
     }
 
+    // 验证用户是否为当前设备类型的审批人
     const approverIds = JSON.parse(config.approverIds) as string[][]
+    const allApproverIds = approverIds.flat()
+
+    // ADMIN 有审批权限
+    if (user.role !== 'ADMIN' && !allApproverIds.includes(user.id)) {
+      return forbidden('您不是该设备类型的审批人')
+    }
 
     const existingRecords = await db.approval_records.findMany({
       where: { bookingId },

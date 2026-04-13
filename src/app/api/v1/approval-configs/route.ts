@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
-import { success, error, unauthorized, notFound, validationError } from '@/lib/api/response'
+import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
 
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
@@ -82,6 +82,11 @@ export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
     return unauthorized('未授权，请先登录')
+  }
+
+  // 只有管理员可以创建审批配置
+  if (user.role !== 'ADMIN') {
+    return forbidden('此操作需要管理员权限')
   }
 
   try {

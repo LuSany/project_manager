@@ -132,16 +132,19 @@ export function Sidebar({ className }: SidebarProps) {
       title: '设备管理',
       icon: Monitor,
       path: '/devices',
+      adminOnly: true,
     },
     {
       title: '设备类型',
       icon: Wrench,
       path: '/admin/device-types',
+      adminOnly: true,
     },
     {
       title: '设备统计',
       icon: BarChart3,
       path: '/equipment/stats',
+      adminOnly: true,
     },
     {
       title: '我的预定',
