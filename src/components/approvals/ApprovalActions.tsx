@@ -47,7 +47,7 @@ export function ApprovalActions({ recordId, onActionComplete }: ApprovalActionsP
       const res = await fetch('/api/v1/users')
       const json = await res.json()
       if (!json.success) throw new Error('获取用户列表失败')
-      return json.data.users as User[]
+      return json.data.data as User[]
     },
     enabled: forwardOpen,
   })

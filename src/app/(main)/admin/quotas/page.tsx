@@ -473,16 +473,16 @@ export default function QuotasPage() {
                         )}
                         {/* Warning status badges */}
                         <div className="flex gap-1">
-                          {quota.warningSent50 && (
-                            <span className="bg-yellow-100 text-yellow-800 rounded px-1 text-xs">50%</span>
+                          {quota.warningLevel === 'critical-100' && (
+                            <span className="bg-red-100 text-red-800 rounded px-1 text-xs">超限</span>
                           )}
-                          {quota.warningSent80 && (
+                          {quota.warningLevel === 'warning-80' && (
                             <span className="bg-orange-100 text-orange-800 rounded px-1 text-xs">80%</span>
                           )}
-                          {quota.warningSent100 && (
-                            <span className="bg-red-100 text-red-800 rounded px-1 text-xs">100%</span>
+                          {quota.warningLevel === 'warning-50' && (
+                            <span className="bg-yellow-100 text-yellow-800 rounded px-1 text-xs">50%</span>
                           )}
-                          {!quota.warningSent50 && !quota.warningSent80 && !quota.warningSent100 && (
+                          {quota.warningLevel === 'normal' && (
                             <span className="text-muted-foreground text-xs">正常</span>
                           )}
                         </div>
