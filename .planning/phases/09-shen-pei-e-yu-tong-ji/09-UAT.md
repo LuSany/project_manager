@@ -1,22 +1,14 @@
 ---
-status: diagnosed
+status: complete
 phase: 09-shen-pei-e-yu-tong-ji
-source: [09-00-SUMMARY.md, 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md]
+source: [09-00-SUMMARY.md, 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md]
 started: 2026-04-10T22:30:00+08:00
-updated: 2026-04-10T23:15:00+08:00
+updated: 2026-04-13T21:00:00+08:00
 ---
 
 ## Current Test
 
-[testing complete - all tests evaluated]
-
-## Current Test
-
-number: 10
-name: 配额子项设置
-expected: |
-  为项目配额添加子配额（按设备类型分配），如GPU设备30小时、服务器设备50小时。子配额总和不超过总配额时成功保存。
-awaiting: user response
+[testing complete - 3 issues found]
 
 ## Tests
 
@@ -24,236 +16,125 @@ awaiting: user response
 expected: Kill any running server. Clear ephemeral state. Start application from scratch. Server boots without errors, Prisma migrations complete, and homepage loads showing the dashboard.
 result: pass
 
-### 2. 审批配置管理
-expected: 在管理后台中，可以为特定设备类型配置审批人。点击保存后，审批配置成功存储，刷新页面后配置仍然存在。
-result: issue
-reported: "无法为特定的设备类型配置审批人"
-severity: major
-
-### 3. 预定触发审批流程
-expected: 预定一台需要审批的设备后，预订状态显示为"待审批"(PENDING_APPROVAL)，审批人收到审批请求通知。
-result: issue
-reported: "1. 机时预订日期显示有问题，只显示了4月第一周的日期，无法调整日期；2. 不支持手动创建机时预订自由选择时间；3. 预订时间冲突无提醒；4. 设备管理页面具体设备操作功能不可用"
-severity: blocker
-
-### 4. 审批操作 - 通过
-expected: 审批人在审批管理页面点击"通过"按钮，预订状态变更为"已预定"(RESERVED)，申请人收到审批通过通知。
-result: blocked
-blocked_by: approval-functionality
-reason: "审批功能不可用"
-
-### 5. 审批操作 - 驳回
-expected: 审批人在审批管理页面点击"驳回"按钮并填写驳回理由，预订状态变更为"已取消"(CANCELLED)，申请人收到驳回通知。
-result: blocked
-blocked_by: approval-functionality
-reason: "审批功能不可用"
-
-### 6. 审批操作 - 转交
-expected: 审批人在审批管理页面点击"转交"按钮选择其他审批人，审批记录更新，新的审批人收到审批请求通知。
-result: blocked
-blocked_by: approval-functionality
-reason: "审批功能不可用"
-
-### 7. 审批管理页面导航
-expected: 侧边栏显示"审批管理"入口，点击后跳转到 /approvals 页面，页面展示待审批/已通过/已拒绝三个 Tab。
-result: issue
-reported: "审批管理页面可以访问，但无法看到需要审批的单据"
-severity: major
-
-### 8. 审批管理页面 Tab 切换
-expected: 在审批管理页面，点击"已通过"Tab，表格只显示已通过的审批记录；点击"已拒绝"Tab，表格只显示已拒绝的记录。
-result: blocked
-blocked_by: approval-data
-reason: "无法看到审批单据，无法测试Tab切换"
-
-### 9. 配额设置
-expected: 在管理后台为项目设置机时配额（如100小时），保存后配额成功存储，项目配额页面显示设置值。
-result: issue
-reported: "配额设置功能不可用"
-severity: major
-
-### 10. 配额子项设置
-expected: 为项目配额添加子配额（按设备类型分配），如GPU设备30小时、服务器设备50小时。子配额总和不超过总配额时成功保存。
-result: issue
-reported: "配额子项设置功能不可用"
-severity: major
-
-## Current Test
-
-number: 14
-name: 设备统计页面导航
+### 2. 审批配置管理（09-07 Task 1 修复）
 expected: |
-  侧边栏显示"设备统计"入口，点击后跳转到 /equipment/stats 页面。
-awaiting: user response
+  侧边栏显示"审批配置"入口，点击跳转到 /admin/approval-configs。
+  页面支持：设备类型选择、审批级数设置（1-10）、多级审批人配置、编辑删除现有配置。
+  配置保存后刷新仍存在。
+result: pass
 
-### 11. 配额预警 - 50%
-expected: 项目使用配额达到50%时，项目负责人和成员收到50%预警通知（站内通知）。
-result: blocked
-blocked_by: quota-setup
-reason: "配额设置功能不可用，无法测试预警"
+### 3. 预订日历完整月份（09-07 Task 3 修复）
+expected: |
+  机时预订日历显示完整的6周月份网格，从周一开始。
+  所有当月日期可点击，非当月日期灰色不可交互。
+  可自由选择日期和时间槽进行预订。
+result: pass
 
-### 12. 配额预警 - 80%
-expected: 项目使用配额达到80%时，项目负责人和成员收到80%警告通知。
-result: blocked
-blocked_by: quota-setup
-reason: "配额设置功能不可用，无法测试预警"
+### 4. 预订冲突提示（09-08 增强）
+expected: |
+  预订时间冲突时，显示完整提示：时间段、已被谁预定、所属项目。
+  格式："时间段 MM-dd HH:mm-HH:mm 已被 用户 预定（项目: 项目名）"
+  弹窗居中显示。
+result: pass
 
-### 13. 配额预警 - 100%
-expected: 项目使用配额达到100%时，项目负责人和成员收到超限警告通知。
-result: blocked
-blocked_by: quota-setup
-reason: "配额设置功能不可用，无法测试预警"
-
-### 14. 设备统计页面导航
-expected: 侧边栏显示"设备统计"入口，点击后跳转到 /equipment/stats 页面，统计图表正确区分不同设备类型。
+### 5. 审批记录查询（09-07 Task 4 修复）
+expected: |
+  审批管理页面 /approvals 显示待审批的预订记录。
+  审批人能看到自己负责的设备类型的待审批预订。
+  PENDING 状态的预订正确显示在待审批列表中。
 result: issue
-reported: "项目机时统计和设备使用率统计未区分不同设备类型"
+reported: "审批人无法看到自己负责的设备类型的待审批预订"
 severity: major
 
-### 20. Excel 导出
-expected: 点击"导出 Excel"按钮，浏览器下载 .xlsx 文件。打开文件包含正确的统计数据，表头为中文，包含所有机时使用数据。
+### 6. 配额管理页面（09-07 Task 2）
+expected: |
+  侧边栏显示"配额管理"入口，点击跳转到 /admin/quotas。
+  页面支持：项目选择、总配额设置、周期设置（月度/季度）、子配额配置。
+  子配额总和验证不超过总配额。
+result: pass
+
+### 7. 配额预警状态显示（09-07 Task 2）
+expected: |
+  配额管理页面显示项目使用进度条和预警状态（50%/80%/100%）。
 result: issue
-reported: "导出的统计数据内容较少，不完整，需要包含所有的机时使用数据"
+reported: "配额管理页面无法显示正确的预警状态"
 severity: major
 
-### 21. 预定成功提示（无需审批）
-expected: 预定一台不需要审批的设备后，显示"预定成功"提示，预订状态为"已预定"。
-result: blocked
-blocked_by: approval-config
-reason: "不支持选择不需要审批的设备，当前设备都不需要审批配置"
+### 8. 设备统计设备类型筛选（09-07 Task 5）
+expected: |
+  设备统计页面 /equipment/stats 有设备类型下拉选择器。
+  选择不同设备类型，图表数据按该类型筛选更新。
+  项目机时图表显示设备类型名称。
+result: pass
 
-### 22. 预定等待审批提示
-expected: 预定一台需要审批的设备后，显示"预定已提交，等待审批"提示，预订状态为"待审批"。
+### 9. Excel导出完整性（09-07 Task 6）
+expected: |
+  导出的Excel包含多sheet：汇总统计 + 详细记录。
+  项目机时：预定数量、平均/最大/最小单次时长、详细记录sheet。
+  设备使用率：预定次数、每日趋势sheet。
+  使用记录：预定ID用于追溯。
+result: issue
+reported: "导出的Excel只有使用记录，且少项目机时、设备使用率数据"
+severity: major
+
+### 10. 审批流程通过（原测试项）
+expected: 审批人点击"通过"，预订状态变为RESERVED，申请人收到通知。
 result: blocked
-blocked_by: approval-functionality
-reason: "不支持预定设备审批操作"
+blocked_by: approval-flow
+reason: "审批通过功能待验证"
+
+### 11. 审批流程驳回（原测试项）
+expected: 审批人点击"驳回"并填写理由，预订状态变为CANCELLED，申请人收到通知。
+result: blocked
+blocked_by: approval-flow
+reason: "审批驳回功能待验证"
+
+### 12. 审批流程转交（原测试项）
+expected: 审批人点击"转交"选择其他审批人，新审批人收到通知。
+result: blocked
+blocked_by: approval-flow
+reason: "审批转交功能待验证"
+
+### 13. 配额预警通知（原测试项）
+expected: 项目配额达到50%/80%/100%时发送站内通知。
+result: blocked
+blocked_by: quota-notification
+reason: "预警通知功能待验证"
 
 ## Summary
 
-total: 22
-passed: 5
-issues: 6
-pending: 0
-blocked: 11
-skipped: 0
-
-### 19. 统计日期筛选
-expected: 在设备统计页面选择月份或自定义日期范围，图表和表格数据更新为对应时间段的数据。
-result: pass
-
-### 18. 使用记录表格
-expected: 在"使用记录"Tab中，显示分页表格，包含设备名称、项目、用户、开始时间、结束时间、时长等列。支持按列排序。
-result: pass
-
-### 17. 设备使用率图表
-expected: 在"设备使用率"Tab中，显示折线图，展示设备使用率趋势。图表包含50%和80%参考线，鼠标悬停显示具体数值和日期。
-result: pass
-
-### 16. 项目机时图表
-expected: 在"项目机时"Tab中，显示横向条形图，展示各项目使用的机时数。图表按使用量降序排列，鼠标悬停显示具体数值。
-result: pass
-
-### 15. 设备统计概览
-expected: 设备统计页面顶部显示4个统计卡片：总设备数、月度机时、平均使用率、预定数。数值正确反映当月数据。
-result: pass
-
-### 16. 项目机时图表
-expected: 在"项目机时"Tab中，显示横向条形图，展示各项目使用的机时数。图表按使用量降序排列，鼠标悬停显示具体数值。
-result: [pending]
-
-### 17. 设备使用率图表
-expected: 在"设备使用率"Tab中，显示折线图，展示设备使用率趋势。图表包含50%和80%参考线，鼠标悬停显示具体数值和日期。
-result: [pending]
-
-### 18. 使用记录表格
-expected: 在"使用记录"Tab中，显示分页表格，包含设备名称、项目、用户、开始时间、结束时间、时长等列。支持按列排序。
-result: [pending]
-
-### 19. 统计日期筛选
-expected: 在设备统计页面选择月份或自定义日期范围，图表和表格数据更新为对应时间段的数据。
-result: [pending]
-
-### 20. Excel 导出
-expected: 点击"导出 Excel"按钮，浏览器下载 .xlsx 文件。打开文件包含正确的统计数据，表头为中文。
-result: [pending]
-
-### 21. 预定成功提示（无需审批）
-expected: 预定一台不需要审批的设备后，显示"预定成功"提示，预订状态为"已预定"。
-result: [pending]
-
-### 22. 预定等待审批提示
-expected: 预定一台需要审批的设备后，显示"预定已提交，等待审批"提示，预订状态为"待审批"。
-result: [pending]
-
-## Summary
-
-total: 22
-passed: 1
+total: 13
+passed: 6
 issues: 3
-pending: 14
+pending: 2
 blocked: 4
 skipped: 0
 
 ## Gaps
 
-### 审批相关
-
-- truth: "在管理后台中，可以为特定设备类型配置审批人。点击保存后，审批配置成功存储，刷新页面后配置仍然存在。"
+### Gap 1: 审批记录查询
+- truth: "审批人能看到自己负责的设备类型的待审批预订"
   status: failed
-  reason: "User reported: 无法为特定的设备类型配置审批人"
+  test: 5
+  reported: "审批人无法看到自己负责的设备类型的待审批预订"
   severity: major
-  test: 2
   artifacts: []
-  missing: [审批配置前端页面或管理后台入口]
+  missing: []
 
-- truth: "预定一台需要审批的设备后，预订状态显示为待审批(PENDING_APPROVAL)，审批人收到审批请求通知。"
+### Gap 2: 配额预警状态显示
+- truth: "配额管理页面显示项目使用进度条和预警状态"
   status: failed
-  reason: "User reported: 1. 机时预订日期显示有问题，只显示了4月第一周的日期，无法调整日期；2. 不支持手动创建机时预订自由选择时间；3. 预订时间冲突无提醒；4. 设备管理页面具体设备操作功能不可用"
-  severity: blocker
-  test: 3
-  artifacts: []
-  missing: [预订日期选择器修复, 预订创建自由时间选择, 冲突检测提醒, 设备操作功能修复]
-
-- truth: "审批管理页面可以访问，并能看到需要审批的单据列表。"
-  status: failed
-  reason: "User reported: 审批管理页面可以访问，但无法看到需要审批的单据"
-  severity: major
   test: 7
-  artifacts: []
-  missing: [审批单据数据查询或显示逻辑]
-
-### 配额相关
-
-- truth: "在管理后台为项目设置机时配额，保存后配额成功存储。"
-  status: failed
-  reason: "User reported: 配额设置功能不可用"
+  reported: "配额管理页面无法显示正确的预警状态"
   severity: major
+  artifacts: []
+  missing: []
+
+### Gap 3: Excel导出完整性
+- truth: "导出包含完整数据（项目机时、设备使用率、使用记录）"
+  status: failed
   test: 9
-  artifacts: []
-  missing: [配额设置前端页面或API]
-
-- truth: "为项目配额添加子配额（按设备类型分配），保存成功。"
-  status: failed
-  reason: "User reported: 配额子项设置功能不可用"
+  reported: "导出的Excel只有使用记录，且少项目机时、设备使用率数据"
   severity: major
-  test: 10
   artifacts: []
-  missing: [子配额设置功能]
-
-### 统计相关
-
-- truth: "设备统计页面按设备类型区分统计数据。"
-  status: failed
-  reason: "User reported: 项目机时统计和设备使用率统计未区分不同设备类型"
-  severity: major
-  test: 14
-  artifacts: []
-  missing: [按设备类型分组的统计逻辑]
-
-- truth: "Excel导出包含完整的机时使用数据。"
-  status: failed
-  reason: "User reported: 导出的统计数据内容较少，不完整，需要包含所有的机时使用数据"
-  severity: major
-  test: 20
-  artifacts: []
-  missing: [完整的Excel导出数据字段]
+  missing: []
