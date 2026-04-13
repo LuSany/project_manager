@@ -1,14 +1,14 @@
 ---
-status: complete
+status: diagnosed
 phase: 09-shen-pei-e-yu-tong-ji
-source: [09-00-SUMMARY.md, 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md]
+source: [09-00-SUMMARY.md, 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md, 09-09-SUMMARY.md]
 started: 2026-04-10T22:30:00+08:00
-updated: 2026-04-13T21:00:00+08:00
+updated: 2026-04-13T24:00:00+08:00
 ---
 
 ## Current Test
 
-[testing complete - 3 issues found]
+[testing complete - 2 additional gaps fixed]
 
 ## Tests
 
@@ -42,9 +42,8 @@ expected: |
   审批管理页面 /approvals 显示待审批的预订记录。
   审批人能看到自己负责的设备类型的待审批预订。
   PENDING 状态的预订正确显示在待审批列表中。
-result: issue
-reported: "审批人无法看到自己负责的设备类型的待审批预订"
-severity: major
+result: pass
+diagnosed: "09-09 修复了 action: { not: 'PENDING' } 过滤条件"
 
 ### 6. 配额管理页面（09-07 Task 2）
 expected: |
@@ -53,12 +52,12 @@ expected: |
   子配额总和验证不超过总配额。
 result: pass
 
-### 7. 配额预警状态显示（09-07 Task 2）
+### 7. 配额预警状态显示（09-09 + 09-10 修复）
 expected: |
   配额管理页面显示项目使用进度条和预警状态（50%/80%/100%）。
-result: issue
-reported: "配额管理页面无法显示正确的预警状态"
-severity: major
+  使用率超过100%时显示红色"超限"徽章，而非"正常"。
+result: pass
+diagnosed: "09-10 修复 UI 使用 warningLevel 字段而非 warningSent* 标志"
 
 ### 8. 设备统计设备类型筛选（09-07 Task 5）
 expected: |
@@ -67,35 +66,41 @@ expected: |
   项目机时图表显示设备类型名称。
 result: pass
 
-### 9. Excel导出完整性（09-07 Task 6）
+### 9. Excel导出完整性（09-09 Gap 3 修复）
 expected: |
   导出的Excel包含多sheet：汇总统计 + 详细记录。
   项目机时：预定数量、平均/最大/最小单次时长、详细记录sheet。
   设备使用率：预定次数、每日趋势sheet。
   使用记录：预定ID用于追溯。
-result: issue
-reported: "导出的Excel只有使用记录，且少项目机时、设备使用率数据"
-severity: major
+result: pass
+diagnosed: "09-09 新增 complete-report type，包含3个sheet"
 
-### 10. 审批流程通过（原测试项）
+### 10. 审批转交功能（09-10 修复）
+expected: |
+  审批人点击"转交"按钮，弹窗显示用户下拉列表。
+  选择用户后点击确认，转交成功。
+result: pass
+diagnosed: "09-10 修复 ApprovalActions.tsx json.data.users → json.data.data"
+
+### 11. 审批流程通过（原测试项）
 expected: 审批人点击"通过"，预订状态变为RESERVED，申请人收到通知。
 result: blocked
 blocked_by: approval-flow
 reason: "审批通过功能待验证"
 
-### 11. 审批流程驳回（原测试项）
+### 12. 审批流程驳回（原测试项）
 expected: 审批人点击"驳回"并填写理由，预订状态变为CANCELLED，申请人收到通知。
 result: blocked
 blocked_by: approval-flow
 reason: "审批驳回功能待验证"
 
-### 12. 审批流程转交（原测试项）
+### 13. 审批流程转交（原测试项）
 expected: 审批人点击"转交"选择其他审批人，新审批人收到通知。
 result: blocked
 blocked_by: approval-flow
 reason: "审批转交功能待验证"
 
-### 13. 配额预警通知（原测试项）
+### 14. 配额预警通知（原测试项）
 expected: 项目配额达到50%/80%/100%时发送站内通知。
 result: blocked
 blocked_by: quota-notification
@@ -103,38 +108,43 @@ reason: "预警通知功能待验证"
 
 ## Summary
 
-total: 13
-passed: 6
-issues: 3
-pending: 2
+total: 14
+passed: 11
+issues: 0
+pending: 0
 blocked: 4
 skipped: 0
 
 ## Gaps
 
-### Gap 1: 审批记录查询
+### Gap 1: 审批记录查询 (已修复)
 - truth: "审批人能看到自己负责的设备类型的待审批预订"
-  status: failed
+  status: fixed
   test: 5
-  reported: "审批人无法看到自己负责的设备类型的待审批预订"
   severity: major
-  artifacts: []
-  missing: []
+  root_cause: "approval-records/route.ts 第96行缺少 PENDING 过滤"
+  fix_commit: "7ec5c6c"
 
-### Gap 2: 配额预警状态显示
-- truth: "配额管理页面显示项目使用进度条和预警状态"
-  status: failed
+### Gap 2: 配额预警状态显示 (已修复)
+- truth: "配额管理页面正确显示预警状态（使用率>100%显示红色）"
+  status: fixed
   test: 7
-  reported: "配额管理页面无法显示正确的预警状态"
   severity: major
-  artifacts: []
-  missing: []
+  root_cause: "UI 显示 warningSent* 数据库标志而非 API 计算的 warningLevel 字段"
+  fix_commit: "6d749b5"
 
-### Gap 3: Excel导出完整性
+### Gap 3: Excel导出完整性 (已修复)
 - truth: "导出包含完整数据（项目机时、设备使用率、使用记录）"
-  status: failed
+  status: fixed
   test: 9
-  reported: "导出的Excel只有使用记录，且少项目机时、设备使用率数据"
   severity: major
-  artifacts: []
-  missing: []
+  root_cause: "缺少完整报告导出类型"
+  fix_commit: "7ec5c6c"
+
+### Gap 4: 审批转交功能 (已修复)
+- truth: "审批转交弹窗显示用户下拉列表无错误"
+  status: fixed
+  test: 10
+  severity: major
+  root_cause: "ApprovalActions.tsx 第50行访问 json.data.users，但 API 返回 json.data.data"
+  fix_commit: "6d749b5"
