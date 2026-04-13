@@ -31,7 +31,9 @@ interface ApprovalRecord {
     status: string
     devices: {
       name: string
+      typeId: string
       device_types: {
+        id: string
         name: string
       }
     }
@@ -195,6 +197,8 @@ export function ApprovalTable({ records, onActionComplete }: ApprovalTableProps)
                 {record.action === 'PENDING' && (
                   <ApprovalActions
                     recordId={record.bookingId}
+                    deviceTypeId={record.bookings.devices.typeId}
+                    currentLevel={record.level}
                     onActionComplete={onActionComplete}
                   />
                 )}

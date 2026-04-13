@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
         include: {
           bookings: {
             include: {
-              devices: { include: { device_types: { select: { name: true } } } },
+              devices: { include: { device_types: { select: { id: true, name: true } } } },
               users: { select: { id: true, name: true } },
               projects: { select: { id: true, name: true } },
             },
@@ -172,7 +172,7 @@ export async function GET(request: NextRequest) {
         include: {
           bookings: {
             include: {
-              devices: { include: { device_types: { select: { name: true } } } },
+              devices: { include: { device_types: { select: { id: true, name: true } } } },
               users: { select: { id: true, name: true } },
               projects: { select: { id: true, name: true } },
             },

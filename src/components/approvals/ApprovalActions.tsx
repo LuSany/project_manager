@@ -29,10 +29,12 @@ interface User {
 
 interface ApprovalActionsProps {
   recordId: string
+  deviceTypeId: string
+  currentLevel: number
   onActionComplete?: () => void
 }
 
-export function ApprovalActions({ recordId, onActionComplete }: ApprovalActionsProps) {
+export function ApprovalActions({ recordId, deviceTypeId, currentLevel, onActionComplete }: ApprovalActionsProps) {
   const [approveOpen, setApproveOpen] = useState(false)
   const [rejectOpen, setRejectOpen] = useState(false)
   const [forwardOpen, setForwardOpen] = useState(false)
@@ -42,12 +44,26 @@ export function ApprovalActions({ recordId, onActionComplete }: ApprovalActionsP
   const { toast } = useToast()
 
   const { data: usersData } = useQuery({
-    queryKey: ['users-for-forward'],
+    queryKey: ['approval-forward-users', deviceTypeId, currentLevel],
     queryFn: async () => {
-      const res = await fetch('/api/v1/users')
-      const json = await res.json()
-      if (!json.success) throw new Error('获取用户列表失败')
-      return json.data.data as User[]
+      // Get approval config for this device type
+      const configRes = await fetch(`/api/v1/approval-configs/${deviceTypeId}`)
+      const configJson = await configRes.json()
+      if (!configJson.success) throw new Error('获取审批配置失败')
+
+      const config = configJson.data
+      const approverIds = JSON.parse(config.approverIds) as string[][]
+      const levelApprovers = approverIds[currentLevel - 1] || []
+
+      if (levelApprovers.length === 0) return []
+
+      // Fetch user details for these approvers
+      const usersRes = await fetch(`/api/v1/users?pageSize=100`)
+      const usersJson = await usersRes.json()
+      if (!usersJson.success) throw new Error('获取用户列表失败')
+
+      const allUsers = usersJson.data.data as User[]
+      return allUsers.filter(u => levelApprovers.includes(u.id))
     },
     enabled: forwardOpen,
   })
