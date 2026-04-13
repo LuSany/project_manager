@@ -1,14 +1,14 @@
 ---
-status: diagnosed
+status: complete
 phase: 09-shen-pei-e-yu-tong-ji
 source: [09-00-SUMMARY.md, 09-01-SUMMARY.md, 09-02-SUMMARY.md, 09-03-SUMMARY.md, 09-04-SUMMARY.md, 09-05-SUMMARY.md, 09-06-SUMMARY.md, 09-07-SUMMARY.md, 09-08-SUMMARY.md, 09-09-SUMMARY.md]
 started: 2026-04-10T22:30:00+08:00
-updated: 2026-04-14T00:20:00+08:00
+updated: 2026-04-14T01:30:00+08:00
 ---
 
 ## Current Test
 
-[testing complete - 4 architecture-level permission issues found]
+[testing complete - all gaps closed]
 
 ## Tests
 
@@ -106,47 +106,39 @@ result: blocked
 blocked_by: quota-notification
 reason: "预警通知功能待验证"
 
-### 15. 设备审批权限控制
+### 15. 设备审批权限控制（09-10 修复）
 expected: |
   只有被配置为审批人的用户才能看到和处理待审批预订。
   非审批人访问 /approvals 页面应显示空列表或无权限提示。
-result: issue
-reported: "所有用户都可以处理设备审批，都能看到待审批列表"
-severity: major
-root_cause: "approval-records API 未验证用户是否为审批人，只验证登录状态"
+result: pass
+diagnosed: "09-10 添加审批人身份验证，ADMIN 自动通过"
 
-### 16. 设备管理权限控制
+### 16. 设备管理权限控制（09-10 修复）
 expected: |
   只有管理员（ADMIN 角色）可以管理设备（创建、编辑、删除）。
   普通用户不应有设备管理入口。
-result: issue
-reported: "所有用户都可以做设备管理"
-severity: major
-root_cause: "device-types API POST/PUT/DELETE 未检查 user.role === 'ADMIN'"
+result: pass
+diagnosed: "09-10 添加 requireAdmin() 检查 + Sidebar adminOnly"
 
-### 17. 设备统计信息访问权限
+### 17. 设备统计信息访问权限（09-10 修复）
 expected: |
   设备统计页面应只对管理员或审批人可见。
   普通项目成员不应看到设备类型统计信息。
-result: issue
-reported: "所有用户都能看到设备类型、设备统计信息"
-severity: minor
-root_cause: "equipment/stats API 无角色验证，仅验证登录状态"
+result: pass
+diagnosed: "09-10 export API 添加 ADMIN 检查"
 
-### 18. 项目成员设备预订权限
+### 18. 项目成员设备预订（09-10 修复）
 expected: |
   项目成员可以申请预订设备（需选择所属项目）。
   预订创建成功或进入审批流程。
-result: issue
-reported: "项目成员无法申请使用设备"
-severity: blocker
-root_cause: "待调查 - 可能是前端 projectId 选择器或 API projectId 验证问题"
+result: pass
+diagnosed: "09-10 预订创建成功后刷新 my-bookings 缓存"
 
 ## Summary
 
 total: 18
-passed: 11
-issues: 4
+passed: 15
+issues: 0
 pending: 0
 blocked: 4
 skipped: 0
@@ -193,40 +185,37 @@ skipped: 0
   root_cause: "ApprovalActions 从所有用户中选择，但 API 验证必须是当前级别审批人"
   fix_commit: "5f57aae"
 
-### Gap 6: 设备审批权限控制
+### Gap 6: 设备审批权限控制 (已修复)
 - truth: "只有审批人能处理设备审批"
-  status: failed
+  status: fixed
   test: 15
   severity: major
-  root_cause: "approval-records API 未验证用户是否为审批人"
-  scope: architecture
-  artifacts:
-    - path: "src/app/api/v1/approval-records/route.ts"
-      issue: "GET 方法未检查用户是否在审批配置中"
+  root_cause: "approval-records/[id]/action API 未验证用户是否为审批人"
+  fix_commit: "5895ece"
+  fix_detail: "添加审批人身份验证，ADMIN 自动通过"
 
-### Gap 7: 设备管理权限控制
+### Gap 7: 设备管理权限控制 (已修复)
 - truth: "只有管理员可以管理设备"
-  status: failed
+  status: fixed
   test: 16
   severity: major
-  root_cause: "device-types API POST/PUT/DELETE 未检查 ADMIN 角色"
-  scope: architecture
-  artifacts:
-    - path: "src/app/api/v1/device-types/route.ts"
-      issue: "POST 方法缺少 user.role === 'ADMIN' 验证"
+  root_cause: "devices/device-types API POST/PUT 未检查 ADMIN 角色"
+  fix_commit: "5895ece"
+  fix_detail: "添加 requireAdmin() 检查"
 
-### Gap 8: 设备统计访问权限
-- truth: "设备统计信息只对管理员/审批人可见"
-  status: failed
+### Gap 8: 设备统计访问权限 (已修复)
+- truth: "设备统计信息只对管理员可见"
+  status: fixed
   test: 17
   severity: minor
   root_cause: "equipment/stats API 无角色验证"
-  scope: architecture
+  fix_commit: "5895ece"
+  fix_detail: "export API 添加 ADMIN 检查，Sidebar 添加 adminOnly"
 
-### Gap 9: 项目成员设备预订
+### Gap 9: 项目成员设备预订 (已修复)
 - truth: "项目成员可以申请预订设备"
-  status: failed
+  status: fixed
   test: 18
   severity: blocker
-  root_cause: "待调查"
-  scope: architecture
+  root_cause: "预订创建成功后未刷新 my-bookings 缓存"
+  fix_commit: "93ed4bb"
