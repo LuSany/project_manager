@@ -45,6 +45,10 @@ export interface QuotaResponse {
   createdAt: string
   updatedAt: string
   projectName?: string
+  // Usage data for progress bar and warning display
+  usedHours?: number
+  usagePercent?: number
+  warningLevel?: 'normal' | 'warning-50' | 'warning-80' | 'critical-100'
 }
 
 export interface QuotaSubItem {

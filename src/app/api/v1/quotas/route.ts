@@ -40,27 +40,66 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     })
 
-    const formattedQuotas = quotas.map((q) => ({
-      id: q.id,
-      projectId: q.projectId,
-      totalHours: q.totalHours,
-      period: q.period,
-      warningSent50: q.warningSent50,
-      warningSent80: q.warningSent80,
-      warningSent100: q.warningSent100,
-      subItems: q.subItems.map((item) => ({
-        id: item.id,
-        quotaId: item.quotaId,
-        deviceTypeId: item.deviceTypeId,
-        subHours: item.subHours,
-        deviceTypeName: item.device_types.name,
-      })),
-      createdAt: q.createdAt.toISOString(),
-      updatedAt: q.updatedAt.toISOString(),
-      projectName: q.projects.name,
-    }))
+    // Calculate usage for each quota
+    const quotasWithUsage = await Promise.all(
+      quotas.map(async (q) => {
+        // Calculate time range based on period
+        const now = new Date()
+        const startDate =
+          q.period === 'MONTHLY'
+            ? new Date(now.getFullYear(), now.getMonth(), 1)
+            : new Date(now.getFullYear(), Math.floor(now.getMonth() / 3) * 3, 1)
 
-    return success(formattedQuotas)
+        // Query bookings for this project in the period
+        const bookings = await prisma.bookings.findMany({
+          where: {
+            projectId: q.projectId,
+            startTime: { gte: startDate },
+            status: { in: ['RESERVED', 'IN_PROGRESS', 'COMPLETED'] },
+          },
+          select: { startTime: true, endTime: true },
+        })
+
+        // Calculate used hours
+        const usedHours = bookings.reduce((sum, b) => {
+          const hours = (b.endTime.getTime() - b.startTime.getTime()) / 3600000
+          return sum + hours
+        }, 0)
+
+        const usagePercent = Math.round((usedHours / q.totalHours) * 100)
+
+        // Determine warning level
+        let warningLevel: 'normal' | 'warning-50' | 'warning-80' | 'critical-100' = 'normal'
+        if (usagePercent >= 100) warningLevel = 'critical-100'
+        else if (usagePercent >= 80) warningLevel = 'warning-80'
+        else if (usagePercent >= 50) warningLevel = 'warning-50'
+
+        return {
+          id: q.id,
+          projectId: q.projectId,
+          totalHours: q.totalHours,
+          period: q.period,
+          warningSent50: q.warningSent50,
+          warningSent80: q.warningSent80,
+          warningSent100: q.warningSent100,
+          subItems: q.subItems.map((item) => ({
+            id: item.id,
+            quotaId: item.quotaId,
+            deviceTypeId: item.deviceTypeId,
+            subHours: item.subHours,
+            deviceTypeName: item.device_types.name,
+          })),
+          createdAt: q.createdAt.toISOString(),
+          updatedAt: q.updatedAt.toISOString(),
+          projectName: q.projects.name,
+          usedHours: Math.round(usedHours * 100) / 100,
+          usagePercent,
+          warningLevel,
+        }
+      })
+    )
+
+    return success(quotasWithUsage)
   } catch (err) {
     console.error('获取配额列表失败:', err)
     return error('FETCH_ERROR', '获取配额列表失败', undefined, 500)

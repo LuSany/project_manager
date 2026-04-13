@@ -48,15 +48,18 @@ export default function EquipmentStatsPage() {
       return { month, deviceTypeId }
     } else if (activeTab === 'device-utilization') {
       return { startDate, endDate, deviceTypeId }
-    } else {
+    } else if (activeTab === 'usage-records') {
       return { startDate, endDate }
     }
+    // Default: complete-report with all params
+    return { startDate, endDate, projectId: undefined, deviceTypeId }
   }
 
-  const getExportType = () => {
+  const getExportType = (): 'project-hours' | 'device-utilization' | 'usage-record' | 'complete-report' => {
     if (activeTab === 'project-hours') return 'project-hours'
     if (activeTab === 'device-utilization') return 'device-utilization'
-    return 'usage-record'
+    if (activeTab === 'usage-records') return 'usage-record'
+    return 'complete-report'
   }
 
   return (

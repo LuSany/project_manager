@@ -93,8 +93,12 @@ export async function GET(request: NextRequest) {
       const pendingBookingIds = pendingBookings.map((b) => b.id)
 
       // 获取当前用户已处理的预订（无论通过还是驳回）
+      // 注意：approval_records 表只存储已处理记录，但需要排除可能的 PENDING 记录
       const processedRecords = await db.approval_records.findMany({
-        where: { approverId: user.id },
+        where: {
+          approverId: user.id,
+          action: { not: 'PENDING' }  // 排除 PENDING 记录，确保只取已处理记录
+        },
         select: { bookingId: true },
       })
       const processedBookingIds = processedRecords.map((r) => r.bookingId)

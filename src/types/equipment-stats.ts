@@ -129,13 +129,13 @@ export interface UsageRecordsResponse {
  * Parameters for Excel export
  */
 export interface ExportParams {
-  /** Type of export: project-hours, device-utilization, or usage-record */
-  type: 'project-hours' | 'device-utilization' | 'usage-record'
+  /** Type of export: project-hours, device-utilization, usage-record, or complete-report */
+  type: 'project-hours' | 'device-utilization' | 'usage-record' | 'complete-report'
   /** Month in 'yyyy-MM' format (for project-hours) */
   month?: string
-  /** Start date for export (for device-utilization, usage-record) */
+  /** Start date for export (for device-utilization, usage-record, complete-report) */
   startDate?: string
-  /** End date for export (for device-utilization, usage-record) */
+  /** End date for export (for device-utilization, usage-record, complete-report) */
   endDate?: string
   /** Filter by project ID */
   projectId?: string

@@ -388,6 +388,103 @@ async function generateExcelBuffer(params: ExportParams): Promise<Buffer> {
     }))
     const worksheet = XLSX.utils.json_to_sheet(data, { header: headers })
     XLSX.utils.book_append_sheet(workbook, worksheet, '使用记录')
+
+  } else if (type === 'complete-report') {
+    // Complete report with 3 sheets: project hours summary + device utilization + usage records
+    const { start, end } = month
+      ? getMonthDateRange(month)
+      : { start: new Date(startDate || new Date()), end: new Date(endDate || new Date()) }
+
+    // Sheet 1: Project Hours Summary
+    const projectItems = await aggregateProjectHours({
+      month,
+      topN: 1000,
+      deviceTypeId: deviceTypeId as any,
+    } as any)
+
+    const summaryHeaders = [
+      '项目名称',
+      '设备类型',
+      '预定数量',
+      '总使用时长(小时)',
+      '平均单次时长(小时)',
+      '最大单次时长(小时)',
+      '最小单次时长(小时)',
+    ]
+    const summaryData = projectItems.map((item: any) => ({
+      '项目名称': item.projectName,
+      '设备类型': item.deviceTypeName || '-',
+      '预定数量': item.bookingCount,
+      '总使用时长(小时)': item.totalHours,
+      '平均单次时长(小时)': item.avgHours,
+      '最大单次时长(小时)': item.maxHours,
+      '最小单次时长(小时)': item.minHours,
+    }))
+    const summarySheet = XLSX.utils.json_to_sheet(summaryData, { header: summaryHeaders })
+    XLSX.utils.book_append_sheet(workbook, summarySheet, '项目机时汇总')
+
+    // Sheet 2: Device Utilization Summary
+    const deviceItems = await calculateDeviceUtilization({
+      startDate: start.toISOString(),
+      endDate: end.toISOString(),
+      deviceTypeId,
+    })
+
+    const deviceHeaders = ['设备名称', '设备类型', '使用时长(小时)', '可用时长(小时)', '使用率(%)', '预定次数']
+    const deviceData = deviceItems.map((item: any) => ({
+      '设备名称': item.deviceName,
+      '设备类型': item.deviceTypeName,
+      '使用时长(小时)': item.usedHours,
+      '可用时长(小时)': item.availableHours,
+      '使用率(%)': item.utilization,
+      '预定次数': item.dailyTrend.reduce((sum: number, d: any) => sum + (d.hours > 0 ? 1 : 0), 0),
+    }))
+    const deviceSheet = XLSX.utils.json_to_sheet(deviceData, { header: deviceHeaders })
+    XLSX.utils.book_append_sheet(workbook, deviceSheet, '设备使用率汇总')
+
+    // Sheet 3: Detailed Usage Records
+    const bookingWhere: any = {
+      startTime: { gte: start },
+      endTime: { lte: end },
+      status: { in: ['RESERVED', 'IN_PROGRESS', 'COMPLETED'] },
+    }
+    if (deviceTypeId) bookingWhere.devices = { typeId: deviceTypeId }
+    if (projectId) bookingWhere.projectId = projectId
+
+    const bookings = await prisma.bookings.findMany({
+      where: bookingWhere,
+      include: {
+        projects: { select: { name: true } },
+        devices: { include: { device_types: { select: { name: true } } } },
+        users: { select: { name: true } },
+      },
+      orderBy: { startTime: 'desc' },
+    })
+
+    const detailHeaders = [
+      '预定ID',
+      '项目',
+      '设备',
+      '设备类型',
+      '用户',
+      '开始时间',
+      '结束时间',
+      '状态',
+      '使用时长(小时)',
+    ]
+    const detailData = bookings.map((b: any) => ({
+      '预定ID': b.id,
+      '项目': b.projects?.name || '-',
+      '设备': b.devices?.name || '-',
+      '设备类型': b.devices?.device_types?.name || '-',
+      '用户': b.users?.name || '-',
+      '开始时间': b.startTime.toISOString().slice(0, 19).replace('T', ' '),
+      '结束时间': b.endTime.toISOString().slice(0, 19).replace('T', ' '),
+      '状态': b.status,
+      '使用时长(小时)': calculateHours(b.startTime, b.endTime),
+    }))
+    const detailSheet = XLSX.utils.json_to_sheet(detailData, { header: detailHeaders })
+    XLSX.utils.book_append_sheet(workbook, detailSheet, '详细使用记录')
   }
 
   const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'buffer' })

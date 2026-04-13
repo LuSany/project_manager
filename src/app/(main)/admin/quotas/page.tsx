@@ -43,6 +43,10 @@ interface Quota {
   createdAt: string
   updatedAt: string
   projectName: string
+  // Usage data for progress bar
+  usedHours?: number
+  usagePercent?: number
+  warningLevel?: 'normal' | 'warning-50' | 'warning-80' | 'critical-100'
 }
 
 interface QuotaSubItem {
@@ -449,18 +453,44 @@ export default function QuotasPage() {
                     <TableCell>{quota.period === 'MONTHLY' ? '月度' : '季度'}</TableCell>
                     <TableCell className="max-w-xs truncate">{getSubItemsSummary(quota.subItems)}</TableCell>
                     <TableCell>
-                      <div className="flex gap-1">
-                        {quota.warningSent50 && (
-                          <span className="bg-yellow-100 text-yellow-800 rounded px-1 text-xs">50%</span>
+                      <div className="space-y-2">
+                        {/* Progress bar */}
+                        {quota.usagePercent !== undefined && (
+                          <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full ${
+                                quota.usagePercent >= 100
+                                  ? 'bg-red-500'
+                                  : quota.usagePercent >= 80
+                                    ? 'bg-orange-500'
+                                    : quota.usagePercent >= 50
+                                      ? 'bg-yellow-500'
+                                      : 'bg-green-500'
+                              }`}
+                              style={{ width: `${Math.min(quota.usagePercent, 100)}%` }}
+                            />
+                          </div>
                         )}
-                        {quota.warningSent80 && (
-                          <span className="bg-orange-100 text-orange-800 rounded px-1 text-xs">80%</span>
-                        )}
-                        {quota.warningSent100 && (
-                          <span className="bg-red-100 text-red-800 rounded px-1 text-xs">100%</span>
-                        )}
-                        {!quota.warningSent50 && !quota.warningSent80 && !quota.warningSent100 && (
-                          <span className="text-muted-foreground text-xs">正常</span>
+                        {/* Warning status badges */}
+                        <div className="flex gap-1">
+                          {quota.warningSent50 && (
+                            <span className="bg-yellow-100 text-yellow-800 rounded px-1 text-xs">50%</span>
+                          )}
+                          {quota.warningSent80 && (
+                            <span className="bg-orange-100 text-orange-800 rounded px-1 text-xs">80%</span>
+                          )}
+                          {quota.warningSent100 && (
+                            <span className="bg-red-100 text-red-800 rounded px-1 text-xs">100%</span>
+                          )}
+                          {!quota.warningSent50 && !quota.warningSent80 && !quota.warningSent100 && (
+                            <span className="text-muted-foreground text-xs">正常</span>
+                          )}
+                        </div>
+                        {/* Usage text */}
+                        {quota.usagePercent !== undefined && (
+                          <p className="text-xs text-muted-foreground">
+                            已用 {quota.usedHours}h / 总 {quota.totalHours}h ({quota.usagePercent}%)
+                          </p>
                         )}
                       </div>
                     </TableCell>
