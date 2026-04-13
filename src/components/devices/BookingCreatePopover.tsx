@@ -80,6 +80,7 @@ export function BookingCreatePopover({
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['device-bookings', deviceId] })
       queryClient.invalidateQueries({ queryKey: ['device', deviceId] })
+      queryClient.invalidateQueries({ queryKey: ['my-bookings'] })
 
       if (data.approval?.needsApproval) {
         toast({
