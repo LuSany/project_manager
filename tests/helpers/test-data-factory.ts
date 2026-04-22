@@ -206,6 +206,7 @@ export async function createTestTask(
 ) {
   return testPrisma.tasks.create({
     data: {
+      id: faker.string.uuid(),
       title: overrides.title ?? faker.hacker.phrase(),
       description: overrides.description,
       status: overrides.status ?? 'TODO',
@@ -214,9 +215,10 @@ export async function createTestTask(
       startDate: overrides.startDate,
       dueDate: overrides.dueDate,
       estimatedHours: overrides.estimatedHours,
-      project: { connect: { id: projectId } },
-      ...(overrides.milestoneId ? { milestone: { connect: { id: overrides.milestoneId } } } : {}),
-      ...(overrides.acceptorId ? { acceptor: { connect: { id: overrides.acceptorId } } } : {}),
+      projectId,
+      updatedAt: new Date(),
+      ...(overrides.milestoneId ? { milestoneId: overrides.milestoneId } : {}),
+      ...(overrides.acceptorId ? { acceptorId: overrides.acceptorId } : {}),
     } as any,
   })
 }
