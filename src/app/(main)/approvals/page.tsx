@@ -29,7 +29,9 @@ interface ApprovalRecord {
     status: string
     devices: {
       name: string
+      typeId: string
       device_types: {
+        id: string
         name: string
       }
     }

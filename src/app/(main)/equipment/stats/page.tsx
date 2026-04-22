@@ -69,7 +69,14 @@ export default function EquipmentStatsPage() {
           <BarChart3 className="h-6 w-6" />
           设备使用统计
         </h1>
-        <ExcelExportButton type={getExportType() as any} params={getExportParams()} />
+        <div className="flex gap-2">
+          <ExcelExportButton type={getExportType() as any} params={getExportParams()} />
+          <ExcelExportButton
+            type="complete-report"
+            params={{ month, deviceTypeId }}
+            label="导出完整报告"
+          />
+        </div>
       </div>
 
       <StatsOverview />

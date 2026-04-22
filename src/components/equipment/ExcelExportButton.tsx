@@ -5,8 +5,8 @@ import { Download, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface ExcelExportButtonProps {
-  type: 'project-hours' | 'device-utilization' | 'usage-record'
-  params?: Record<string, string>
+  type: 'project-hours' | 'device-utilization' | 'usage-record' | 'complete-report'
+  params?: Record<string, string | undefined>
   label?: string
 }
 
