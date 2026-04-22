@@ -48,6 +48,8 @@ export default defineConfig({
         /breadcrumb-navigation\.spec\.ts$/,
         /sidebar-interactions\.spec\.ts$/,
         /style-fix-verification\.spec\.ts$/,
+        // 配额测试（需要管理员权限）
+        /quota-warning\.spec\.ts$/,
       ],
       dependencies: ['setup'],
     },
@@ -84,6 +86,24 @@ export default defineConfig({
         /critical-flows\/05-.*\.spec\.ts$/,
         /critical-flows\/06-.*\.spec\.ts$/,
       ],
+      dependencies: ['setup'],
+    },
+    {
+      name: 'chromium-approver1',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/approver1.json',
+      },
+      testMatch: [/approval-workflow\.spec\.ts$/],
+      dependencies: ['setup'],
+    },
+    {
+      name: 'chromium-approver2',
+      use: {
+        ...devices['Desktop Chrome'],
+        storageState: 'tests/e2e/.auth/approver2.json',
+      },
+      testMatch: [/approval-workflow\.spec\.ts$/],
       dependencies: ['setup'],
     },
   ],

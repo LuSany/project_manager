@@ -71,6 +71,54 @@ async function globalSetup(config: FullConfig) {
     await userContext.close()
   }
 
+  // 5. 登录审批人1并保存认证状态
+  console.log('🔐 创建审批人1认证状态...')
+  const approver1Context = await browser.newContext()
+  const approver1Page = await approver1Context.newPage()
+
+  try {
+    await approver1Page.goto(`${baseURL}/login`)
+    await approver1Page.fill('input[name="email"]', 'approver1@example.com')
+    await approver1Page.fill('input[name="password"]', 'approver123')
+    await approver1Page.click('button[type="submit"]')
+
+    // 等待登录成功跳转
+    await approver1Page.waitForURL('**/dashboard**', { timeout: 15000 })
+
+    // 保存认证状态
+    await approver1Context.storageState({ path: 'tests/e2e/.auth/approver1.json' })
+    console.log('✅ 审批人1认证状态已保存')
+  } catch (error) {
+    console.error('❌ 审批人1登录失败:', error)
+    throw error
+  } finally {
+    await approver1Context.close()
+  }
+
+  // 6. 登录审批人2并保存认证状态
+  console.log('🔐 创建审批人2认证状态...')
+  const approver2Context = await browser.newContext()
+  const approver2Page = await approver2Context.newPage()
+
+  try {
+    await approver2Page.goto(`${baseURL}/login`)
+    await approver2Page.fill('input[name="email"]', 'approver2@example.com')
+    await approver2Page.fill('input[name="password"]', 'approver234')
+    await approver2Page.click('button[type="submit"]')
+
+    // 等待登录成功跳转
+    await approver2Page.waitForURL('**/dashboard**', { timeout: 15000 })
+
+    // 保存认证状态
+    await approver2Context.storageState({ path: 'tests/e2e/.auth/approver2.json' })
+    console.log('✅ 审批人2认证状态已保存')
+  } catch (error) {
+    console.error('❌ 审批人2登录失败:', error)
+    throw error
+  } finally {
+    await approver2Context.close()
+  }
+
   await browser.close()
   console.log('🎉 全局 Setup 完成')
 }

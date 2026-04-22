@@ -84,27 +84,23 @@ diagnosed: "09-10 修复 ApprovalActions.tsx json.data.users → json.data.data"
 
 ### 11. 审批流程通过（原测试项）
 expected: 审批人点击"通过"，预订状态变为RESERVED，申请人收到通知。
-result: blocked
-blocked_by: approval-flow
-reason: "审批通过功能待验证"
+result: pass
+verified_by: playwright E2E test approval-workflow.spec.ts
 
 ### 12. 审批流程驳回（原测试项）
 expected: 审批人点击"驳回"并填写理由，预订状态变为CANCELLED，申请人收到通知。
-result: blocked
-blocked_by: approval-flow
-reason: "审批驳回功能待验证"
+result: pass
+verified_by: playwright E2E test approval-workflow.spec.ts
 
 ### 13. 审批流程转交（原测试项）
 expected: 审批人点击"转交"选择其他审批人，新审批人收到通知。
-result: blocked
-blocked_by: approval-flow
-reason: "审批转交功能待验证"
+result: pass
+verified_by: playwright E2E test approval-workflow.spec.ts
 
 ### 14. 配额预警通知（原测试项）
 expected: 项目配额达到50%/80%/100%时发送站内通知。
-result: blocked
-blocked_by: quota-notification
-reason: "预警通知功能待验证"
+result: pass
+verified_by: playwright E2E test quota-warning.spec.ts
 
 ### 15. 设备审批权限控制（09-10 修复）
 expected: |
@@ -137,11 +133,17 @@ diagnosed: "09-10 预订创建成功后刷新 my-bookings 缓存"
 ## Summary
 
 total: 18
-passed: 15
+passed: 18
 issues: 0
 pending: 0
-blocked: 4
+blocked: 0
 skipped: 0
+
+## Verification
+
+Test 11-14 verified by Playwright E2E tests:
+- approval-workflow.spec.ts: Test 11-13 (审批通过/驳回/转交)
+- quota-warning.spec.ts: Test 14 (配额预警通知)
 
 ## Gaps
 

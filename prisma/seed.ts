@@ -29,10 +29,12 @@ async function main() {
   console.log('✅ 创建系统管理员:', admin.email)
 
   // 创建系统 AI 用户 (Phase 10) - 用于 AI 评审员角色
-  const aiUser = await prisma.users.upsert({
-    where: { email: 'ai-system@internal' },
-    update: {},
-    create: {
+  // 先检查是否存在，避免 ID 冲突
+  const existingAiUser = await prisma.users.findUnique({
+    where: { id: SYSTEM_AI_REVIEWER_ID },
+  })
+  const aiUser = existingAiUser || await prisma.users.create({
+    data: {
       id: SYSTEM_AI_REVIEWER_ID,
       email: 'ai-system@internal',
       passwordHash: randomUUID(),
@@ -179,10 +181,217 @@ async function main() {
   })
   console.log('✅ 创建测试任务并分配给:', testUser.email)
 
+  // ===================== 审批流程测试数据 =====================
+  console.log('\n📋 创建审批流程测试数据...')
+
+  // 创建审批人用户
+  const approver1Id = randomUUID()
+  const approver1Password = await bcrypt.hash('approver123', 10)
+  const approver1 = await prisma.users.upsert({
+    where: { email: 'approver1@example.com' },
+    update: {},
+    create: {
+      id: approver1Id,
+      email: 'approver1@example.com',
+      passwordHash: approver1Password,
+      name: '审批人1',
+      status: 'ACTIVE',
+      role: 'EMPLOYEE',
+      updatedAt: new Date(),
+    },
+  })
+  console.log('✅ 创建审批人1:', approver1.email)
+
+  const approver2Id = randomUUID()
+  const approver2Password = await bcrypt.hash('approver234', 10)
+  const approver2 = await prisma.users.upsert({
+    where: { email: 'approver2@example.com' },
+    update: {},
+    create: {
+      id: approver2Id,
+      email: 'approver2@example.com',
+      passwordHash: approver2Password,
+      name: '审批人2',
+      status: 'ACTIVE',
+      role: 'EMPLOYEE',
+      updatedAt: new Date(),
+    },
+  })
+  console.log('✅ 创建审批人2:', approver2.email)
+
+  // 创建单级审批设备类型
+  const singleApprovalTypeId = randomUUID()
+  const singleApprovalType = await prisma.device_types.upsert({
+    where: { name: '单级审批设备' },
+    update: {},
+    create: {
+      id: singleApprovalTypeId,
+      name: '单级审批设备',
+      modelName: 'Test-Single',
+      location: '测试区域',
+      description: '用于测试单级审批流程',
+      owner: '测试管理员',
+    },
+  })
+  console.log('✅ 创建单级审批设备类型:', singleApprovalType.name)
+
+  // 创建多级审批设备类型
+  const multiApprovalTypeId = randomUUID()
+  const multiApprovalType = await prisma.device_types.upsert({
+    where: { name: '多级审批设备' },
+    update: {},
+    create: {
+      id: multiApprovalTypeId,
+      name: '多级审批设备',
+      modelName: 'Test-Multi',
+      location: '测试区域',
+      description: '用于测试多级审批流程',
+      owner: '测试管理员',
+    },
+  })
+  console.log('✅ 创建多级审批设备类型:', multiApprovalType.name)
+
+  // 创建设备实例（使用upsert返回的实际ID）
+  const singleDevice = await prisma.devices.create({
+    data: {
+      id: randomUUID(),
+      name: '单级审批设备-001',
+      typeId: singleApprovalType.id,  // 使用upsert返回的ID
+      status: 'AVAILABLE',
+    },
+  })
+  console.log('✅ 创建单级审批设备:', singleDevice.name)
+
+  const multiDevice = await prisma.devices.create({
+    data: {
+      id: randomUUID(),
+      name: '多级审批设备-001',
+      typeId: multiApprovalType.id,  // 使用upsert返回的ID
+      status: 'AVAILABLE',
+    },
+  })
+  console.log('✅ 创建多级审批设备:', multiDevice.name)
+
+  // 创建审批配置（使用upsert避免重复）
+  const singleApprovalConfig = await prisma.approval_configs.upsert({
+    where: { deviceTypeId: singleApprovalType.id },
+    update: {
+      levels: 1,
+      approverIds: JSON.stringify([[approver1.id]]),
+    },
+    create: {
+      id: randomUUID(),
+      deviceTypeId: singleApprovalType.id,
+      levels: 1,
+      approverIds: JSON.stringify([[approver1.id]]),
+    },
+  })
+  console.log('✅ 创建/更新单级审批配置:', '1级审批人:', approver1.name)
+
+  const multiApprovalConfig = await prisma.approval_configs.upsert({
+    where: { deviceTypeId: multiApprovalType.id },
+    update: {
+      levels: 2,
+      approverIds: JSON.stringify([[approver1.id], [approver2.id]]),
+    },
+    create: {
+      id: randomUUID(),
+      deviceTypeId: multiApprovalType.id,
+      levels: 2,
+      approverIds: JSON.stringify([[approver1.id], [approver2.id]]),
+    },
+  })
+  console.log('✅ 创建/更新多级审批配置:', '1级:', approver1.name, '| 2级:', approver2.name)
+
+  // 创建配额（总配额10小时便于测试阈值）
+  const testQuota = await prisma.quotas.upsert({
+    where: { projectId: project.id },
+    update: {
+      totalHours: 10,
+      warningSent50: false,
+      warningSent80: false,
+      warningSent100: false,
+    },
+    create: {
+      id: randomUUID(),
+      projectId: project.id,
+      totalHours: 10,
+      period: 'MONTHLY',
+      warningSent50: false,
+      warningSent80: false,
+      warningSent100: false,
+    },
+  })
+  console.log('✅ 创建/更新项目配额:', testQuota.totalHours, '小时')
+
+  // 创建待审批预订（单级）- 检查是否存在
+  const existingSingleBooking = await prisma.bookings.findFirst({
+    where: { deviceId: singleDevice.id, status: 'PENDING_APPROVAL' },
+  })
+
+  if (!existingSingleBooking) {
+    const pendingBookingSingle = await prisma.bookings.create({
+      data: {
+        id: randomUUID(),
+        deviceId: singleDevice.id,
+        userId: testUser.id,
+        projectId: project.id,
+        startTime: new Date(Date.now() + 24 * 60 * 60 * 1000),
+        endTime: new Date(Date.now() + 25 * 60 * 60 * 1000),
+        status: 'PENDING_APPROVAL',
+      },
+    })
+    await prisma.approval_records.create({
+      data: {
+        id: randomUUID(),
+        bookingId: pendingBookingSingle.id,
+        approverId: approver1.id,
+        level: 1,
+        action: 'PENDING',
+      },
+    })
+    console.log('✅ 创建单级待审批预订:', pendingBookingSingle.id)
+  } else {
+    console.log('✅ 单级待审批预订已存在:', existingSingleBooking.id)
+  }
+
+  // 创建待审批预订（多级）- 检查是否存在
+  const existingMultiBooking = await prisma.bookings.findFirst({
+    where: { deviceId: multiDevice.id, status: 'PENDING_APPROVAL' },
+  })
+
+  if (!existingMultiBooking) {
+    const pendingBookingMulti = await prisma.bookings.create({
+      data: {
+        id: randomUUID(),
+        deviceId: multiDevice.id,
+        userId: testUser.id,
+        projectId: project.id,
+        startTime: new Date(Date.now() + 48 * 60 * 60 * 1000),
+        endTime: new Date(Date.now() + 50 * 60 * 60 * 1000),
+        status: 'PENDING_APPROVAL',
+      },
+    })
+    await prisma.approval_records.create({
+      data: {
+        id: randomUUID(),
+        bookingId: pendingBookingMulti.id,
+        approverId: approver1.id,
+        level: 1,
+        action: 'PENDING',
+      },
+    })
+    console.log('✅ 创建多级待审批预订:', pendingBookingMulti.id)
+  } else {
+    console.log('✅ 多级待审批预订已存在:', existingMultiBooking.id)
+  }
+
   console.log('\n✨ 种子数据填充完成！')
   console.log('\n测试账号:')
   console.log('  管理员账号：admin@example.com / admin123')
   console.log('  普通用户：test@example.com / test123')
+  console.log('  审批人1：approver1@example.com / approver123')
+  console.log('  审批人2：approver2@example.com / approver234')
 }
 
 main()
