@@ -2,7 +2,23 @@
 
 ## 问题背景
 
-OnlyOffice 容器重启后，以下配置会丢失：
+OnlyOffice 容器重启后存在两个主要问题：
+
+### 问题一：服务无法启动（unhealthy）
+
+**症状：**
+- 容器状态长时间显示 `unhealthy`
+- 健康检查失败：`curl: (7) Failed to connect to localhost port 80`
+- PostgreSQL 服务状态为 `down`
+
+**根本原因：**
+- Docker 停止容器时 PostgreSQL 未优雅关闭
+- 残留的 socket 文件 (`/var/run/postgresql/.s.PGSQL.5432`) 和 pid 文件阻止 PostgreSQL 启动
+- Supervisor 等待 PostgreSQL 时卡住，导致所有服务无法启动
+
+### 问题二：配置丢失
+
+重启后以下配置会丢失：
 1. `request-filtering-agent` - 允许访问私有 IP
 2. `storage.fs.secretString` - 缓存 URL 签名密钥
 3. `secure_link_secret` - nginx 签名密钥
@@ -12,6 +28,31 @@ OnlyOffice 容器重启后，以下配置会丢失：
 - `403 Forbidden` (缓存 URL 签名不匹配)
 
 ---
+
+## 快速修复
+
+如果容器状态为 `unhealthy`，运行：
+
+```bash
+./onlyoffice/fix-startup.sh
+```
+
+检查状态：
+
+```bash
+./onlyoffice/fix-startup.sh --status
+```
+
+预期输出：
+```
+✅ PostgreSQL: RUNNING
+✅ Nginx: RUNNING
+✅ RabbitMQ: RUNNING
+✅ Redis: RUNNING
+✅ DocService: RUNNING
+✅ Converter: RUNNING
+✅ Healthcheck: PASS
+```
 
 ## 方案一：手动脚本（推荐用于开发环境）
 
@@ -102,24 +143,66 @@ services:
 
 ---
 
-## 推荐方案
+## 推荐方案（综合）
 
 | 场景 | 推荐方案 |
 |------|----------|
-| 开发环境 | 方案一：手动脚本 |
-| 生产服务器 | 方案二：Systemd 服务 |
-| 高可用要求 | 方案三 + 方案二 |
+| 开发环境 | 手动运行 `fix-startup.sh` 和 `init-config.sh` |
+| 生产服务器 | Systemd 服务（自动修复启动 + 应用配置） |
+| 高可用要求 | Systemd 服务 + Cron 定时检查 |
+
+---
+
+## Systemd 服务（推荐生产环境）
+
+**重要更新：** Systemd 服务已整合启动修复功能，会自动：
+1. 等待容器启动
+2. 清理 PostgreSQL 残留文件
+3. 启动所有服务
+4. 应用 OnlyOffice 配置
+
+### 安装步骤
+
+```bash
+# 1. 复制服务文件
+sudo cp onlyoffice/onlyoffice-config.service /etc/systemd/system/
+
+# 2. 编辑服务文件，修改项目路径（如果不是默认路径）
+sudo nano /etc/systemd/system/onlyoffice-config.service
+# 将 /home/sany/projects/project_manager 改为你的实际路径
+
+# 3. 启用服务（系统启动时自动运行）
+sudo systemctl daemon-reload
+sudo systemctl enable onlyoffice-config.service
+
+# 4. 手动触发一次测试
+sudo systemctl start onlyoffice-config.service
+
+# 5. 检查状态
+sudo systemctl status onlyoffice-config.service
+```
 
 ---
 
 ## 验证配置
 
 ```bash
+# 检查服务状态
+./onlyoffice/fix-startup.sh --status
+
+# 验证 OnlyOffice 配置
 ./onlyoffice/init-config.sh --verify
 ```
 
 预期输出：
 ```
+✅ PostgreSQL: RUNNING
+✅ Nginx: RUNNING
+✅ RabbitMQ: RUNNING
+✅ Redis: RUNNING
+✅ DocService: RUNNING
+✅ Converter: RUNNING
+✅ Healthcheck: PASS
 ✅ 配置正确: 已允许私有IP访问
 ✅ 配置正确: storage.fs.secretString 已设置
 ✅ 配置正确: nginx secure_link_secret 已同步
@@ -131,9 +214,10 @@ services:
 
 | 文件 | 用途 |
 |------|------|
+| `onlyoffice/fix-startup.sh` | 启动修复脚本（清理残留文件、启动服务） |
+| `onlyoffice/init-config.sh` | 应用配置脚本（允许私有IP、同步密钥） |
 | `onlyoffice/local.json` | OnlyOffice 主配置文件 |
-| `onlyoffice/init-config.sh` | 应用配置脚本 |
-| `onlyoffice/onlyoffice-config.service` | Systemd 服务定义 |
+| `onlyoffice/onlyoffice-config.service` | Systemd 服务定义（整合修复+配置） |
 | `docker-compose.onlyoffice.yml` | Docker Compose 配置 |
 
 ---

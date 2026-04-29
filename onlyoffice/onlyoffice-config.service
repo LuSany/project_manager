@@ -1,18 +1,19 @@
 [Unit]
-Description=OnlyOffice Configuration Service
+Description=OnlyOffice Configuration and Startup Fix Service
 After=docker.service
 Requires=docker.service
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
-# 等待容器健康
-ExecStartPre=/bin/bash -c 'for i in {1..30}; do docker ps --filter "name=pm-onlyoffice" --format "{{.Status}}" | grep -q "healthy" && break; sleep 10; done'
-# 应用配置
+# 等待容器启动（不一定是 healthy，因为可能需要修复）
+ExecStartPre=/bin/bash -c 'for i in {1..30}; do docker ps --filter "name=pm-onlyoffice" --format "{{.Names}}" | grep -q "pm-onlyoffice" && break; sleep 5; done'
+# 修复启动问题（清理残留文件、启动服务）
+ExecStartPre=/home/sany/projects/project_manager/onlyoffice/fix-startup.sh
+# 等待服务稳定
+ExecStartPre=/bin/sleep 10
+# 应用 OnlyOffice 配置（允许私有IP、同步密钥）
 ExecStart=/home/sany/projects/project_manager/onlyoffice/init-config.sh
-# 延迟 5 分钟后检查配置是否丢失（可选）
-# ExecStartPost=/bin/sleep 300
-# ExecStartPost=/home/sany/projects/project_manager/onlyoffice/init-config.sh --verify
 
 [Install]
 WantedBy=multi-user.target
