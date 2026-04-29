@@ -17,9 +17,9 @@
 - [x] **Phase 4: 日历视图** - 日历展示、日期拖拽
 - [x] **Phase 5: 甘特图视图** - 时间线、依赖关系可视化
 - [x] **Phase 6: 仪表盘** - 统计卡片、图表组件
-- [ ] **Phase 7: 管理后台** - 用户/项目/权限/AI 配置界面
-- [ ] **Phase 8: 设备管理 MVP** - 设备 CRUD、预定、冲突检测
-- [ ] **Phase 9: 审批配额与统计** - 审批流程、配额管理、机时报表
+- [x] **Phase 7: 管理后台** - 用户/项目/权限/AI 配置界面 (completed 2026-04-11)
+- [x] **Phase 8: 设备管理 MVP** - 设备 CRUD、预定、冲突检测 (completed 2026-04-13)
+- [x] **Phase 9: 审批配额与统计** - 审批流程、配额管理、机时报表 (completed 2026-04-22)
 - [x] **Phase 10: AI 增强功能** - AI 风险识别、AI 评审员 (completed 2026-03-31)
 
 ## Phase Details
@@ -176,12 +176,12 @@ Plans:
 - [x] 07-00-PLAN.md — Wave 0: Install dependencies + create test scaffolds
 - [x] 07-01-PLAN.md — Wave 1: User management (TanStack Table + CSV import + bulk ops)
 - [x] 07-02-PLAN.md — Wave 1: Project management (CRUD + members + archive)
-- [ ] 07-03-PLAN.md — Wave 1: AI/Email/Template CRUD + test connection
-- [ ] 07-04-PLAN.md — Wave 2: Permission system (RBAC + resource-based)
-- [ ] 07-05-PLAN.md — Wave 3: Project settings + integration verification
-- [ ] 07-07-PLAN.md — **Gap Closure (Wave 1)**: 修复 BLOCKER 级别问题（MembersPanel 空值、email logs 数组、权限页面、批量操作状态更新）
-- [ ] 07-08-PLAN.md — **Gap Closure (Wave 2)**: 修复 MAJOR 级别问题（负责人选择器、编辑归档按钮、AI 自定义 URL、暗色主题适配）
-- [ ] 07-09-PLAN.md — **Gap Closure (Wave 3)**: 修复 MINOR 级别问题和模板功能增强（多选添加成员、模板格式支持、预览面板、导入导出）
+- [x] 07-03-PLAN.md — Wave 1: AI/Email/Template CRUD + test connection
+- [x] 07-04-PLAN.md — Wave 2: Permission system (RBAC + resource-based)
+- [x] 07-05-PLAN.md — Wave 3: Project settings + integration verification
+- [x] 07-07-PLAN.md — **Gap Closure (Wave 1)**: 修复 BLOCKER 级别问题（MembersPanel 空值、email logs 数组、权限页面、批量操作状态更新）
+- [x] 07-08-PLAN.md — **Gap Closure (Wave 2)**: 修复 MAJOR 级别问题（负责人选择器、编辑归档按钮、AI 自定义 URL、暗色主题适配）
+- [x] 07-09-PLAN.md — **Gap Closure (Wave 3)**: 修复 MINOR 级别问题和模板功能增强（多选添加成员、模板格式支持、预览面板、导入导出）
 
 **UI hint**: yes
 
@@ -204,12 +204,12 @@ Plans:
 
 Plans:
 
-- [ ] 08-00-PLAN.md — Wave 0: Test scaffolds + Prisma schema (foundation)
-- [ ] 08-01-PLAN.md — Wave 1: DeviceType API + Device API (backend CRUD)
-- [ ] 08-02-PLAN.md — Wave 2: Device List UI + Sidebar navigation (frontend entry)
-- [ ] 08-03-PLAN.md — Wave 3: Booking API + Conflict detection (TDD approach)
-- [ ] 08-04-PLAN.md — Wave 4: Device Details + Booking Calendar (drag-to-select)
-- [ ] 08-05-PLAN.md — Wave 5: Bookings Page + Integration verification
+- [x] 08-00-PLAN.md — Wave 0: Test scaffolds + Prisma schema (foundation)
+- [x] 08-01-PLAN.md — Wave 1: DeviceType API + Device API (backend CRUD)
+- [x] 08-02-PLAN.md — Wave 2: Device List UI + Sidebar navigation (frontend entry)
+- [x] 08-03-PLAN.md — Wave 3: Booking API + Conflict detection (TDD approach)
+- [x] 08-04-PLAN.md — Wave 4: Device Details + Booking Calendar (drag-to-select)
+- [x] 08-05-PLAN.md — Wave 5: Bookings Page + Integration verification
 
 **UI hint**: yes
 
@@ -241,7 +241,7 @@ Plans:
 - [x] 09-06-PLAN.md — Wave 3: 设备统计页面
 - [x] 09-07-PLAN.md — Wave 4: 审批流程 + 配额预警增强
 - [x] 09-08-PLAN.md — Wave 4: 预订冲突提示增强
-- [ ] 09-09-PLAN.md — Wave 1: Gap Closure (审批记录查询、配额预警状态、Excel 完整报告导出)
+- [x] 09-09-PLAN.md — Wave 1: Gap Closure (审批记录查询、配额预警状态、Excel 完整报告导出)
 
 ### Phase 10: AI 增强功能
 
@@ -275,11 +275,11 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5 → 6 → 7 → 8 →
 | ----------------- | -------------- | ----------- | ---------- |
 | 1. UI 基础设施    | 3/3            | Complete    | 2026-03-25 |
 | 2. UI 功能组件    | 2/2            | Complete    | 2026-03-28 |
-| 3. 列表与看板视图 | 3/3            | Complete    | 2026-03-28 |
+| 3. 列表与看板视图 | 4/4            | Complete    | 2026-03-28 |
 | 4. 日历视图       | 6/6            | Complete    | 2026-03-28 |
-| 5. 甘特图视图     | 3/3            | Complete    | 2026-03-29 |
-| 6. 仪表盘         | 5/5            | Complete    | 2026-04-09 |
-| 7. 管理后台       | 3/9            | In Progress | -          |
-| 8. 设备管理 MVP   | 0/6            | Planned     | -          |
-| 9. 审批配额与统计 | 8/10           | In Progress | -          |
+| 5. 甘特图视图     | 4/4            | Complete    | 2026-03-29 |
+| 6. 仪表盘         | 6/6            | Complete    | 2026-04-09 |
+| 7. 管理后台       | 9/9            | Complete    | 2026-04-11 |
+| 8. 设备管理 MVP   | 7/7            | Complete    | 2026-04-13 |
+| 9. 审批配额与统计 | 10/10          | Complete    | 2026-04-22 |
 | 10. AI 增强功能   | 3/3            | Complete    | 2026-03-31 |
