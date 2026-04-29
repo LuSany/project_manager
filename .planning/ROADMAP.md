@@ -24,7 +24,7 @@
 
 ## Phase Details
 
-### Phase 1: UI 基础设施
+### Phase 01: UI 基础设施
 
 **Goal**: 建立稳定的 UI 布局基础架构
 **Depends on**: Nothing (first phase)
@@ -45,7 +45,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 2: UI 功能组件
+### Phase 02: UI 功能组件
 
 **Goal**: 完善用户交互体验的核心功能组件
 **Depends on**: Phase 1
@@ -65,7 +65,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 3: 列表与看板视图
+### Phase 03: 列表与看板视图
 
 **Goal**: 用户可以通过列表和看板视图管理任务
 **Depends on**: Phase 1
@@ -87,7 +87,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 4: 日历视图
+### Phase 04: 日历视图
 
 **Goal**: 用户可以通过日历视图管理任务时间
 **Depends on**: Phase 3
@@ -111,7 +111,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 5: 甘特图视图
+### Phase 05: 甘特图视图
 
 **Goal**: 用户可以查看项目时间线和任务依赖关系
 **Depends on**: Phase 4
@@ -133,7 +133,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 6: 仪表盘
+### Phase 06: 仪表盘
 
 **Goal**: 用户可以查看项目健康状况和统计数据
 **Depends on**: Phase 3
@@ -157,7 +157,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 7: 管理后台
+### Phase 07: 管理后台
 
 **Goal**: 管理员可以配置系统基础数据
 **Depends on**: Phase 1
@@ -185,7 +185,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 8: 设备管理 MVP
+### Phase 08: 设备管理 MVP
 
 **Goal**: 用户可以管理设备并进行预定
 **Depends on**: Phase 1
@@ -213,7 +213,7 @@ Plans:
 
 **UI hint**: yes
 
-### Phase 9: 审批配额与统计
+### Phase 09: 审批配额与统计
 
 **Goal**: 管理员可以配置审批流程和管理配额
 **Depends on**: Phase 8
