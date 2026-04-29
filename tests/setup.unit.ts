@@ -3,6 +3,7 @@
  * 提供全局 mock 设置，但不 mock Prisma（测试文件有自己的 mock）
  */
 
+import '@testing-library/jest-dom/vitest'
 import { vi, beforeAll, afterAll, beforeEach } from 'vitest'
 
 // Mock Email (全局服务，不需要每个测试单独 mock)
