@@ -2,10 +2,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import type { MockedFunction } from 'vitest'
 
-// Mock Prisma
+// Mock Prisma - 使用复数模型名（与 Prisma schema 一致）
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    risk: {
+    risks: {
       create: vi.fn(),
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -13,16 +13,16 @@ vi.mock('@/lib/prisma', () => ({
       delete: vi.fn(),
       count: vi.fn(),
     },
-    project: {
+    projects: {
       findUnique: vi.fn(),
       findMany: vi.fn(),
     },
-    task: {
+    tasks: {
       findUnique: vi.fn(),
       update: vi.fn(),
       findFirst: vi.fn(),
     },
-    riskTask: {
+    risk_tasks: {
       create: vi.fn(),
       deleteMany: vi.fn(),
       findMany: vi.fn(),
@@ -35,7 +35,7 @@ vi.mock('@/lib/prisma', () => ({
 // Mock DB (alternative import used in some routes)
 vi.mock('@/lib/db', () => ({
   db: {
-    risk: {
+    risks: {
       create: vi.fn(),
       findMany: vi.fn(),
       findUnique: vi.fn(),
@@ -43,14 +43,14 @@ vi.mock('@/lib/db', () => ({
       delete: vi.fn(),
       count: vi.fn(),
     },
-    project: {
+    projects: {
       findUnique: vi.fn(),
     },
-    task: {
+    tasks: {
       findUnique: vi.fn(),
       update: vi.fn(),
     },
-    riskTask: {
+    risk_tasks: {
       create: vi.fn(),
       deleteMany: vi.fn(),
     },
@@ -108,7 +108,7 @@ const mockProject = {
   endDate: null,
   createdAt: new Date(),
   updatedAt: new Date(),
-  members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
+  project_members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
 }
 
 const mockRisk = {
@@ -142,10 +142,10 @@ describe('Risk API', () => {
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
       // Mock project with user as member
-      vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue(mockProject as any)
 
       // Mock created risk
-      vi.mocked(prisma.risk.create).mockResolvedValue(mockRisk as any)
+      vi.mocked(prisma.risks.create).mockResolvedValue(mockRisk as any)
 
       // Import and test the route handler
       const { POST } = await import('@/app/api/v1/risks/route')
@@ -164,7 +164,7 @@ describe('Risk API', () => {
 
       const response = await POST(request)
 
-      expect(prisma.risk.create).toHaveBeenCalledWith({
+      expect(prisma.risks.create).toHaveBeenCalledWith({
         data: {
           title: 'API Rate Limiting Risk',
           description: 'Third-party API may hit rate limits during peak usage',
@@ -225,9 +225,9 @@ describe('Risk API', () => {
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-      vi.mocked(prisma.project.findUnique).mockResolvedValue({
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue({
         ...mockProject,
-        members: [], // User is not a member
+        project_members: [], // User is not a member
       } as any)
 
       const { POST } = await import('@/app/api/v1/risks/route')
@@ -293,10 +293,10 @@ describe('Risk API', () => {
         },
       ]
 
-      vi.mocked(prisma.risk.findMany).mockResolvedValue(mockRisks as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(2)
-      vi.mocked(prisma.project.findMany).mockResolvedValue([mockProject] as any)
-      vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue(mockRisks as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(2)
+      vi.mocked(prisma.projects.findMany).mockResolvedValue([mockProject] as any)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue(mockProject as any)
       const { GET } = await import('@/app/api/v1/risks/route')
 
       const request = {
@@ -306,7 +306,7 @@ describe('Risk API', () => {
 
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalledWith(
+      expect(prisma.risks.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             projectId: 'project-123',
@@ -341,9 +341,9 @@ describe('Risk API', () => {
       const { getAuthenticatedUser } = await import('@/lib/auth')
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
-      vi.mocked(prisma.risk.findMany).mockResolvedValue([mockRisk] as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(1)
-      vi.mocked(prisma.project.findMany).mockResolvedValue([mockProject] as any)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue([mockRisk] as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(1)
+      vi.mocked(prisma.projects.findMany).mockResolvedValue([mockProject] as any)
 
       const { GET } = await import('@/app/api/v1/risks/route')
 
@@ -354,7 +354,7 @@ describe('Risk API', () => {
 
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalledWith(
+      expect(prisma.risks.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           skip: 20, // (page - 1) * pageSize
           take: 20,
@@ -379,9 +379,9 @@ describe('Risk API', () => {
         },
       ]
 
-      vi.mocked(prisma.risk.findMany).mockResolvedValue(mockRisks as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(1)
-      vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue(mockRisks as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(1)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue(mockProject as any)
 
       const { GET } = await import('@/app/api/v1/risks/route')
 
@@ -392,7 +392,7 @@ describe('Risk API', () => {
 
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalledWith(
+      expect(prisma.risks.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             projectId: 'project-123',
@@ -409,7 +409,7 @@ describe('Risk API', () => {
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-      vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue(mockProject as any)
 
       const mockRisks = [
         {
@@ -422,8 +422,8 @@ describe('Risk API', () => {
         },
       ]
 
-      vi.mocked(prisma.risk.findMany).mockResolvedValue(mockRisks as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(1)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue(mockRisks as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(1)
 
       const request = {
         url: 'http://localhost:3000/api/v1/risks?projectId=project-123',
@@ -433,7 +433,7 @@ describe('Risk API', () => {
       const { GET } = await import('@/app/api/v1/risks/route')
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalled()
+      expect(prisma.risks.findMany).toHaveBeenCalled()
     })
 
     it('should filter risks by status in project context', async () => {
@@ -441,9 +441,9 @@ describe('Risk API', () => {
       const { getAuthenticatedUser } = await import('@/lib/auth')
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
-      vi.mocked(prisma.project.findUnique).mockResolvedValue(mockProject as any)
-      vi.mocked(prisma.risk.findMany).mockResolvedValue([mockRisk] as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(1)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue(mockProject as any)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue([mockRisk] as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(1)
 
       const request = {
         url: 'http://localhost:3000/api/v1/risks?projectId=project-123&status=RESOLVED',
@@ -453,7 +453,7 @@ describe('Risk API', () => {
       const { GET } = await import('@/app/api/v1/risks/route')
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalledWith(
+      expect(prisma.risks.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             projectId: 'project-123',
@@ -472,16 +472,16 @@ describe('Risk API', () => {
       const ownerUser = { ...mockUser, id: 'owner-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(ownerUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [],
+          project_members: [],
         },
       } as any)
 
-      vi.mocked(prisma.risk.update).mockResolvedValue({
+      vi.mocked(prisma.risks.update).mockResolvedValue({
         ...mockRisk,
         status: 'RESOLVED',
         probability: 2,
@@ -502,7 +502,7 @@ describe('Risk API', () => {
 
       const response = await PUT(request, { params } as any)
 
-      expect(prisma.risk.update).toHaveBeenCalledWith({
+      expect(prisma.risks.update).toHaveBeenCalledWith({
         where: { id: 'risk-123' },
         data: expect.objectContaining({
           status: 'RESOLVED',
@@ -520,12 +520,12 @@ describe('Risk API', () => {
       const otherUser = { ...mockUser, id: 'other-user-456' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(otherUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123', // Different user
-          members: [], // Not a member
+          project_members: [], // Not a member
         },
       } as any)
 
@@ -554,7 +554,7 @@ describe('Risk API', () => {
       const { getAuthenticatedUser } = await import('@/lib/auth')
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue(null)
 
       const { PUT } = await import('@/app/api/v1/risks/[id]/route')
 
@@ -585,16 +585,16 @@ describe('Risk API', () => {
       const ownerUser = { ...mockUser, id: 'owner-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(ownerUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [],
+          project_members: [],
         },
       } as any)
 
-      vi.mocked(prisma.risk.delete).mockResolvedValue({} as any)
+      vi.mocked(prisma.risks.delete).mockResolvedValue({} as any)
 
       const request = {
         cookies: { get: vi.fn() },
@@ -605,7 +605,7 @@ describe('Risk API', () => {
         .importActual('@/app/api/v1/risks/[id]/route')
         .then(({ DELETE }) => DELETE(request, { params } as any))
 
-      expect(prisma.risk.delete).toHaveBeenCalledWith({
+      expect(prisma.risks.delete).toHaveBeenCalledWith({
         where: { id: 'risk-123' },
       })
     })
@@ -616,12 +616,12 @@ describe('Risk API', () => {
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123', // Different user
-          members: [],
+          project_members: [],
         },
       } as any)
 
@@ -646,7 +646,7 @@ describe('Risk API', () => {
       const { getAuthenticatedUser } = await import('@/lib/auth')
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue(null)
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue(null)
 
       const request = {
         cookies: { get: vi.fn() },
@@ -672,22 +672,22 @@ describe('Risk API', () => {
 
         vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-        vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+        vi.mocked(prisma.risks.findUnique).mockResolvedValue({
           ...mockRisk,
           project: {
             id: 'project-123',
             ownerId: 'owner-123',
-            members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
+            project_members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
           },
         } as any)
 
-        vi.mocked(prisma.task.findUnique).mockResolvedValue({
+        vi.mocked(prisma.tasks.findUnique).mockResolvedValue({
           id: 'task-456',
           title: 'New Task',
           projectId: 'project-123',
         } as any)
 
-        vi.mocked(prisma.riskTask.create).mockResolvedValue({
+        vi.mocked(prisma.risk_tasks.create).mockResolvedValue({
           riskId: 'risk-123',
           taskId: 'task-456',
           relationType: 'RELATED',
@@ -712,7 +712,7 @@ describe('Risk API', () => {
 
         const response = await POST(request, { params } as any)
 
-        expect(prisma.riskTask.create).toHaveBeenCalledWith({
+        expect(prisma.risk_tasks.create).toHaveBeenCalledWith({
           data: {
             riskId: 'risk-123',
             taskId: 'task-456',
@@ -737,16 +737,16 @@ describe('Risk API', () => {
 
         vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-        vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+        vi.mocked(prisma.risks.findUnique).mockResolvedValue({
           ...mockRisk,
           project: {
             id: 'project-123',
             ownerId: 'owner-123',
-            members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
+            project_members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
           },
         } as any)
 
-        vi.mocked(prisma.task.findUnique).mockResolvedValue(null)
+        vi.mocked(prisma.tasks.findUnique).mockResolvedValue(null)
 
         const { POST } = await import('@/app/api/v1/risks/[id]/tasks/route')
 
@@ -774,16 +774,16 @@ describe('Risk API', () => {
 
         vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-        vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+        vi.mocked(prisma.risks.findUnique).mockResolvedValue({
           ...mockRisk,
           project: {
             id: 'project-123',
             ownerId: 'owner-123',
-            members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
+            project_members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
           },
         } as any)
 
-        vi.mocked(prisma.task.findUnique).mockResolvedValue({
+        vi.mocked(prisma.tasks.findUnique).mockResolvedValue({
           id: 'task-456',
           title: 'Task from different project',
           projectId: 'project-456', // Different project
@@ -819,22 +819,22 @@ describe('Risk API', () => {
       const ownerUser = { ...mockUser, id: 'owner-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(ownerUser as any)
 
-      vi.mocked(prisma.project.findUnique).mockResolvedValue({
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue({
         ...mockProject,
         ownerId: 'owner-123',
       } as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [],
+          project_members: [],
         },
       } as any)
 
-      vi.mocked(prisma.risk.update).mockResolvedValue(mockRisk as any)
-      vi.mocked(prisma.risk.delete).mockResolvedValue({} as any)
+      vi.mocked(prisma.risks.update).mockResolvedValue(mockRisk as any)
+      vi.mocked(prisma.risks.delete).mockResolvedValue({} as any)
 
       // Test PUT
       const { PUT } = await import('@/app/api/v1/risks/[id]/route')
@@ -844,7 +844,7 @@ describe('Risk API', () => {
       } as any
       await PUT(putRequest, { params: Promise.resolve({ id: 'risk-123' }) } as any)
 
-      expect(prisma.risk.update).toHaveBeenCalled()
+      expect(prisma.risks.update).toHaveBeenCalled()
 
       // Test DELETE
       const deleteRequest = {
@@ -854,7 +854,7 @@ describe('Risk API', () => {
       const { DELETE } = await import('@/app/api/v1/risks/[id]/route')
       await DELETE(deleteRequest, { params: Promise.resolve({ id: 'risk-123' }) } as any)
 
-      expect(prisma.risk.delete).toHaveBeenCalled()
+      expect(prisma.risks.delete).toHaveBeenCalled()
     })
 
     it('should allow project admin to update risks', async () => {
@@ -864,16 +864,16 @@ describe('Risk API', () => {
       const adminUser = { ...mockUser, id: 'admin-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(adminUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [{ userId: 'admin-123', role: 'PROJECT_ADMIN' }],
+          project_members: [{ userId: 'admin-123', role: 'PROJECT_ADMIN' }],
         },
       } as any)
 
-      vi.mocked(prisma.risk.update).mockResolvedValue(mockRisk as any)
+      vi.mocked(prisma.risks.update).mockResolvedValue(mockRisk as any)
 
       const { PUT } = await import('@/app/api/v1/risks/[id]/route')
 
@@ -886,7 +886,7 @@ describe('Risk API', () => {
 
       const response = await PUT(request, { params } as any)
 
-      expect(prisma.risk.update).toHaveBeenCalled()
+      expect(prisma.risks.update).toHaveBeenCalled()
     })
 
     it('should deny project member from deleting risks', async () => {
@@ -895,12 +895,12 @@ describe('Risk API', () => {
 
       vi.mocked(getAuthenticatedUser).mockResolvedValue(mockUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
+          project_members: [{ userId: 'user-123', role: 'PROJECT_MEMBER' }],
         },
       } as any)
 
@@ -917,7 +917,7 @@ describe('Risk API', () => {
           success: false,
         })
       )
-      expect(prisma.risk.delete).not.toHaveBeenCalled()
+      expect(prisma.risks.delete).not.toHaveBeenCalled()
     })
 
     it('should allow system admin to access any risk', async () => {
@@ -927,9 +927,9 @@ describe('Risk API', () => {
       const systemAdmin = { ...mockUser, id: 'sysadmin-123', role: 'ADMIN' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(systemAdmin as any)
 
-      vi.mocked(prisma.risk.findMany).mockResolvedValue([mockRisk] as any)
-      vi.mocked(prisma.risk.count).mockResolvedValue(1)
-      vi.mocked(prisma.project.findMany).mockResolvedValue([mockProject] as any)
+      vi.mocked(prisma.risks.findMany).mockResolvedValue([mockRisk] as any)
+      vi.mocked(prisma.risks.count).mockResolvedValue(1)
+      vi.mocked(prisma.projects.findMany).mockResolvedValue([mockProject] as any)
 
       const { GET } = await import('@/app/api/v1/risks/route')
 
@@ -940,7 +940,7 @@ describe('Risk API', () => {
 
       const response = await GET(request)
 
-      expect(prisma.risk.findMany).toHaveBeenCalled()
+      expect(prisma.risks.findMany).toHaveBeenCalled()
     })
   })
 
@@ -952,17 +952,17 @@ describe('Risk API', () => {
       const ownerUser = { ...mockUser, id: 'owner-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(ownerUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         status: 'IDENTIFIED',
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [],
+          project_members: [],
         },
       } as any)
 
-      vi.mocked(prisma.risk.update).mockResolvedValue({
+      vi.mocked(prisma.risks.update).mockResolvedValue({
         ...mockRisk,
         status: 'RESOLVED',
       } as any)
@@ -978,7 +978,7 @@ describe('Risk API', () => {
 
       const response = await PUT(request, { params } as any)
 
-      expect(prisma.risk.update).toHaveBeenCalledWith(
+      expect(prisma.risks.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             status: 'RESOLVED',
@@ -994,17 +994,17 @@ describe('Risk API', () => {
       const ownerUser = { ...mockUser, id: 'owner-123' }
       vi.mocked(getAuthenticatedUser).mockResolvedValue(ownerUser as any)
 
-      vi.mocked(prisma.risk.findUnique).mockResolvedValue({
+      vi.mocked(prisma.risks.findUnique).mockResolvedValue({
         ...mockRisk,
         status: 'RESOLVED',
         project: {
           id: 'project-123',
           ownerId: 'owner-123',
-          members: [],
+          project_members: [],
         },
       } as any)
 
-      vi.mocked(prisma.risk.update).mockResolvedValue({
+      vi.mocked(prisma.risks.update).mockResolvedValue({
         ...mockRisk,
         status: 'CLOSED',
       } as any)
@@ -1020,7 +1020,7 @@ describe('Risk API', () => {
 
       const response = await PUT(request, { params } as any)
 
-      expect(prisma.risk.update).toHaveBeenCalledWith(
+      expect(prisma.risks.update).toHaveBeenCalledWith(
         expect.objectContaining({
           data: expect.objectContaining({
             status: 'CLOSED',
