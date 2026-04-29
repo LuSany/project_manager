@@ -3,13 +3,13 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 // Create fetch mock before any imports
 const mockFetch = vi.fn()
 
-// Mock prisma module before any imports
+// Mock prisma module before any imports - 使用复数模型名（与 Prisma schema 一致）
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    aIConfig: {
+    ai_configs: {
       findFirst: vi.fn().mockResolvedValue(null),
     },
-    aILog: {
+    ai_logs: {
       create: vi.fn().mockResolvedValue({ id: 'log-1' }),
       update: vi.fn().mockResolvedValue({ id: 'log-1' }),
     },
