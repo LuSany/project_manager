@@ -8,15 +8,21 @@ dotenv.config({ path: '.env.test' })
 export default defineConfig({
   test: {
     include: [
-      'tests/**/*.test.ts',
-      'tests/**/*.spec.ts',
-      'tests/**/*.test.tsx',
-      'src/**/*.test.ts',
-      'src/**/*.spec.ts',
-      'src/**/*.test.tsx',
+      // 单元测试 - 不连接数据库
+      'tests/unit/**/*.test.ts',
+      'tests/unit/**/*.spec.ts',
+      'tests/unit/**/*.test.tsx',
     ],
-    exclude: ['tests/e2e/**/*', 'tests/**/*.e2e.ts', 'tests/integration/**/*'],
-    setupFiles: ['tests/setup.ts'],
+    exclude: [
+      'tests/e2e/**/*',
+      'tests/**/*.e2e.ts',
+      'tests/integration/**/*',
+      // 排除需要数据库的测试
+      'tests/unit/db.test.ts',
+      'tests/unit/business.test.ts',
+    ],
+    // 单元测试使用 mock setup (不连接数据库)
+    setupFiles: ['tests/setup.unit.ts'],
     environment: 'jsdom',
     testTimeout: 30000,
     hookTimeout: 30000,

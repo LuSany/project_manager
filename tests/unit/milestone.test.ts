@@ -1,17 +1,20 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
-// Mock Prisma
+// Mock Prisma - 使用复数模型名（与 Prisma schema 一致）
 vi.mock('@/lib/prisma', () => ({
   prisma: {
-    milestone: {
+    milestones: {
       create: vi.fn(),
       findMany: vi.fn(),
       findUnique: vi.fn(),
       update: vi.fn(),
       delete: vi.fn(),
     },
-    project: {
+    projects: {
       findUnique: vi.fn(),
+    },
+    project_members: {
+      findMany: vi.fn(),
     },
   },
 }))
@@ -57,16 +60,16 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      // Mock project with user as member
-      vi.mocked(prisma.project.findUnique).mockResolvedValue({
+      // Mock project with user as member (使用 Prisma schema 的字段名)
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue({
         id: 'project-123',
         name: 'Test Project',
         ownerId: 'owner-123',
-        members: [{ userId: 'user-123' }],
+        project_members: [{ userId: 'user-123', projectId: 'project-123' }],
       } as any)
 
       // Mock created milestone
-      vi.mocked(prisma.milestone.create).mockResolvedValue({
+      vi.mocked(prisma.milestones.create).mockResolvedValue({
         id: 'milestone-123',
         title: 'Test Milestone',
         description: 'Test Description',
@@ -92,7 +95,7 @@ describe('Milestone API', () => {
 
       const response = await POST(request)
 
-      expect(prisma.milestone.create).toHaveBeenCalledWith({
+      expect(prisma.milestones.create).toHaveBeenCalledWith({
         data: {
           title: 'Test Milestone',
           description: 'Test Description',
@@ -152,7 +155,7 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      vi.mocked(prisma.project.findUnique).mockResolvedValue({
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue({
         id: 'project-123',
         name: 'Test Project',
         ownerId: 'owner-123',
@@ -197,7 +200,7 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      vi.mocked(prisma.project.findUnique).mockResolvedValue({
+      vi.mocked(prisma.projects.findUnique).mockResolvedValue({
         id: 'project-123',
         name: 'Test Project',
         ownerId: 'owner-123',
@@ -217,7 +220,7 @@ describe('Milestone API', () => {
         },
       ]
 
-      vi.mocked(prisma.milestone.findMany).mockResolvedValue(mockMilestones as any)
+      vi.mocked(prisma.milestones.findMany).mockResolvedValue(mockMilestones as any)
 
       const { GET } = await import('@/app/api/v1/projects/[id]/milestones/route')
 
@@ -229,7 +232,7 @@ describe('Milestone API', () => {
 
       const response = await GET(request, { params } as any)
 
-      expect(prisma.milestone.findMany).toHaveBeenCalledWith({
+      expect(prisma.milestones.findMany).toHaveBeenCalledWith({
         where: { projectId: 'project-123' },
         orderBy: [{ dueDate: 'asc' }, { createdAt: 'desc' }],
         include: {
@@ -269,7 +272,7 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      vi.mocked(prisma.milestone.findUnique).mockResolvedValue({
+      vi.mocked(prisma.milestones.findUnique).mockResolvedValue({
         id: 'milestone-123',
         title: 'Old Title',
         projectId: 'project-123',
@@ -280,7 +283,7 @@ describe('Milestone API', () => {
         },
       } as any)
 
-      vi.mocked(prisma.milestone.update).mockResolvedValue({
+      vi.mocked(prisma.milestones.update).mockResolvedValue({
         id: 'milestone-123',
         title: 'New Title',
         status: 'IN_PROGRESS',
@@ -303,7 +306,7 @@ describe('Milestone API', () => {
 
       const response = await PUT(request, { params } as any)
 
-      expect(prisma.milestone.update).toHaveBeenCalled()
+      expect(prisma.milestones.update).toHaveBeenCalled()
     })
   })
 
@@ -325,7 +328,7 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      vi.mocked(prisma.milestone.findUnique).mockResolvedValue({
+      vi.mocked(prisma.milestones.findUnique).mockResolvedValue({
         id: 'milestone-123',
         title: 'Test Milestone',
         projectId: 'project-123',
@@ -335,7 +338,7 @@ describe('Milestone API', () => {
         },
       } as any)
 
-      vi.mocked(prisma.milestone.delete).mockResolvedValue({} as any)
+      vi.mocked(prisma.milestones.delete).mockResolvedValue({} as any)
 
       const { DELETE } = await import('@/app/api/v1/milestones/[id]/route')
 
@@ -347,7 +350,7 @@ describe('Milestone API', () => {
 
       const response = await DELETE(request, { params } as any)
 
-      expect(prisma.milestone.delete).toHaveBeenCalledWith({
+      expect(prisma.milestones.delete).toHaveBeenCalledWith({
         where: { id: 'milestone-123' },
       })
     })
@@ -369,7 +372,7 @@ describe('Milestone API', () => {
         updatedAt: new Date(),
       } as any)
 
-      vi.mocked(prisma.milestone.findUnique).mockResolvedValue({
+      vi.mocked(prisma.milestones.findUnique).mockResolvedValue({
         id: 'milestone-123',
         title: 'Test Milestone',
         projectId: 'project-123',
