@@ -143,18 +143,18 @@ export const useBoardStore = create<BoardState & BoardActions>()(
             return {
               boards: newBoards,
               activeBoard: state.activeBoard?.id === id ? null : state.activeBoard,
-              cards: new Map([...state.cards].filter(([_, card]) => card.id !== id)),
+              cards: new Map([...state.cards].filter(([_, card]) => card.boardId !== id)),
             }
           }),
 
         addCard: (card) =>
           set((state) => {
-            const boardCards = state.cardsByBoard[card.id] || []
+            const boardCards = state.cardsByBoard[card.boardId] || []
             return {
               cards: new Map(state.cards).set(card.id, card),
               cardsByBoard: {
                 ...state.cardsByBoard,
-                [card.id]: [...boardCards, card],
+                [card.boardId]: [...boardCards, card],
               },
             }
           }),

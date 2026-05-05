@@ -56,6 +56,7 @@ export interface BoardFields {
 export interface Card extends Block {
   type: 'card'
   fields: CardFields
+  boardId?: string
 }
 
 /**

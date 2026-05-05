@@ -482,6 +482,104 @@ describe('BoardStore', () => {
     })
   })
 
+  describe('Board-Card Relationship', () => {
+    it('should delete board and its associated cards using boardId', () => {
+      const board: Board = {
+        id: 'board-1',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'board',
+        fields: { title: 'Test Board', cardProperties: [] },
+      }
+
+      const card1: Card = {
+        id: 'card-1',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'card',
+        boardId: 'board-1',
+        fields: { title: 'Task 1', properties: {} },
+      }
+
+      const card2: Card = {
+        id: 'card-2',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'card',
+        boardId: 'board-1',
+        fields: { title: 'Task 2', properties: {} },
+      }
+
+      const otherBoardCard: Card = {
+        id: 'card-3',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'card',
+        boardId: 'board-2',
+        fields: { title: 'Task 3', properties: {} },
+      }
+
+      useBoardStore.getState().addBoard(board)
+      useBoardStore.getState().addCards([card1, card2, otherBoardCard])
+
+      expect(useBoardStore.getState().cards.size).toBe(3)
+      expect(useBoardStore.getState().cards.get('card-1')).toBeDefined()
+      expect(useBoardStore.getState().cards.get('card-2')).toBeDefined()
+      expect(useBoardStore.getState().cards.get('card-3')).toBeDefined()
+
+      useBoardStore.getState().deleteBoard('board-1')
+
+      expect(useBoardStore.getState().boards.get('board-1')).toBeUndefined()
+      expect(useBoardStore.getState().cards.size).toBe(1)
+      expect(useBoardStore.getState().cards.get('card-1')).toBeUndefined()
+      expect(useBoardStore.getState().cards.get('card-2')).toBeUndefined()
+      expect(useBoardStore.getState().cards.get('card-3')).toBeDefined()
+    })
+
+    it('should add card to correct board bucket using boardId', () => {
+      const board: Board = {
+        id: 'board-1',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'board',
+        fields: { title: 'Test Board', cardProperties: [] },
+      }
+
+      const card: Card = {
+        id: 'card-1',
+        workspaceId: 'ws-1',
+        createdBy: 'user-1',
+        createAt: Date.now(),
+        updateAt: Date.now(),
+        type: 'card',
+        boardId: 'board-1',
+        fields: { title: 'Task 1', properties: {} },
+      }
+
+      useBoardStore.getState().addBoard(board)
+      useBoardStore.getState().addCard(card)
+
+      expect(useBoardStore.getState().cards.get('card-1')).toBeDefined()
+
+      const boardCards = useBoardStore.getState().cardsByBoard['board-1']
+      expect(boardCards).toBeDefined()
+      expect(boardCards).toHaveLength(1)
+      expect(boardCards[0].id).toBe('card-1')
+
+      expect(useBoardStore.getState().cardsByBoard['card-1']).toBeUndefined()
+    })
+  })
+
   describe('Clear All', () => {
     it('should clear all data', () => {
       const board: Board = {
