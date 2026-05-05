@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 默认偏好设置
 const defaultPreferences = {
@@ -18,7 +19,7 @@ const defaultPreferences = {
 // GET /api/v1/notifications/preferences - 获取用户通知偏好设置
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
 // PUT /api/v1/notifications/preferences - 更新用户通知偏好设置
 export async function PUT(request: NextRequest) {
   try {
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);

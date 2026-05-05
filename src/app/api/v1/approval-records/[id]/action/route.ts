@@ -3,9 +3,10 @@ import { db } from '@/lib/db'
 import { z } from 'zod'
 import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
 import { notifyApprovalResult, notifyApprovalRequest } from '@/lib/notification'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
   return db.users.findUnique({ where: { id: userId } })
 }

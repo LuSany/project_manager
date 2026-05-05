@@ -4,9 +4,10 @@ import { z } from 'zod'
 import { hasBookingConflict } from '@/lib/booking-conflict'
 import { getApprovalConfigByDeviceType, startApprovalChain } from '@/lib/approval-flow'
 import { checkWarningThresholds } from '@/lib/quota'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
   return db.users.findUnique({ where: { id: userId } })
 }

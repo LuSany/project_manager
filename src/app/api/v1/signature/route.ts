@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createHmac } from 'crypto';
 import { success, error } from '@/lib/api/response';
 import { z } from 'zod';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // POST /api/v1/signature - 生成URL签名
 const signUrlSchema = z.object({
@@ -12,7 +13,7 @@ const signUrlSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // 从中间件设置的 cookies 获取用户信息
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);

@@ -3,9 +3,10 @@ import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import type { SearchType, SearchResult } from '@/types/search'
 import { SearchType as SearchTypeEnum } from '@/types/search'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 export async function GET(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   if (!userId) {
     return error('UNAUTHORIZED', '未授权，请先登录', undefined, 401)

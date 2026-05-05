@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 成员验证Schema
 const addMemberSchema = z.object({
@@ -16,8 +17,8 @@ export async function GET(
   const { id } = await params;
 
   // 认证检查
-  const userId = req.cookies.get('user-id')?.value;
-  const userRole = req.cookies.get('user-role')?.value;
+  const { userId } = await getAuthUser(req);
+  const { role: userRole } = await getAuthUser(req);
 
   if (!userId) {
     return ApiResponder.unauthorized("未授权，请先登录");

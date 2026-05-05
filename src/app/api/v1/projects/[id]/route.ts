@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import type { AuthenticatedRequest } from '@/middleware'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 项目更新验证 Schema
 const updateProjectSchema = z.object({
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   try {
     // 从 cookie 获取用户 ID
-    const userId = req.cookies.get('user-id')?.value
+    const { userId } = await getAuthUser(req)
 
     if (!userId) {
       return ApiResponder.unauthorized('请先登录')
@@ -114,7 +115,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const { id } = await params
 
   try {
-    const userId = req.cookies.get('user-id')?.value
+    const { userId } = await getAuthUser(req)
 
     if (!userId) {
       return ApiResponder.unauthorized('请先登录')

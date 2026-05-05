@@ -3,10 +3,11 @@ import { success, error } from '@/lib/api/response'
 import { db } from '@/lib/db'
 import { getAllServicesHealth, checkServiceHealth } from '@/lib/preview/degradation'
 import { PreviewServiceType } from '@/lib/preview/degradation'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
   return db.users.findUnique({ where: { id: userId } })
 }

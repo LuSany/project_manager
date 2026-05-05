@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { success, error } from '@/lib/api/response'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 辅助函数：检查管理员权限
 async function checkAdmin(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
   if (!userId) return null
 
   const user = await db.users.findUnique({ where: { id: userId } })

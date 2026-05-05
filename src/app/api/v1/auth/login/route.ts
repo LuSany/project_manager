@@ -5,6 +5,7 @@ import { ApiResponder } from '@/lib/api/response'
 import { SignJWT } from 'jose'
 import bcrypt from 'bcrypt'
 import type { AuthenticatedRequest } from '@/middleware'
+import { authRateLimit } from '@/lib/rate-limiter'
 
 // 登录请求验证Schema
 const loginSchema = z.object({
@@ -13,8 +14,32 @@ const loginSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  const forwarded = req.headers.get('x-forwarded-for')
+  const ip = forwarded ? forwarded.split(',')[0] : req.headers.get('x-real-ip') || 'unknown'
+
+  const rateLimitResult = authRateLimit(ip)
+
+  if (!rateLimitResult.allowed) {
+    const response = NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: '请求过于频繁，请稍后再试',
+          data: {
+            resetTime: new Date(rateLimitResult.resetTime).toISOString(),
+          },
+        },
+      },
+      { status: 429 }
+    )
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+    return response
+  }
+
   try {
-    // 解析请求体
     const body = await req.json()
 
     // 验证请求数据
@@ -70,23 +95,9 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // 设置 user-id cookie 用于后续认证
-    response.cookies.set('user-id', user.id, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
-    })
-
-    // 设置 token cookie（可选，用于双重认证）
-    response.cookies.set('auth-token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      maxAge: 60 * 60 * 24, // 24 hours
-      path: '/',
-    })
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
 
     return response
   } catch (error) {

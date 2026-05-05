@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value;
+  const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
   return db.users.findUnique({ where: { id: userId } });
 }

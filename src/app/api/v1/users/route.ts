@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // GET /api/v1/users - 获取系统用户列表
 export async function GET(req: NextRequest) {
   // 认证检查
-  const userId = req.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(req)
 
   if (!userId) {
     return ApiResponder.unauthorized('未授权，请先登录')

@@ -3,6 +3,7 @@ import { db } from '@/lib/db'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 const updateRoleSchema = z.object({
   role: z.enum(['ADMIN', 'PROJECT_ADMIN', 'PROJECT_OWNER', 'PROJECT_MEMBER', 'EMPLOYEE']),
@@ -10,7 +11,7 @@ const updateRoleSchema = z.object({
 
 // 辅助函数：检查管理员权限
 async function checkAdmin(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
   if (!userId) return null
 
   const user = await db.users.findUnique({ where: { id: userId } })

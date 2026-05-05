@@ -3,10 +3,11 @@ import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 辅助函数：获取认证用户并检查管理员权限
 async function checkAdmin(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
   if (!userId) return null
 
   const user = await prisma.users.findUnique({ where: { id: userId } })
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
   try {
     const admin = await checkAdmin(req)
     if (!admin) {
-      const userId = req.cookies.get('user-id')?.value
+      const { userId } = await getAuthUser(req)
       if (!userId) {
         return ApiResponder.unauthorized('请先登录')
       }
@@ -69,7 +70,7 @@ export async function POST(req: NextRequest) {
   try {
     const admin = await checkAdmin(req)
     if (!admin) {
-      const userId = req.cookies.get('user-id')?.value
+      const { userId } = await getAuthUser(req)
       if (!userId) {
         return ApiResponder.unauthorized('请先登录')
       }

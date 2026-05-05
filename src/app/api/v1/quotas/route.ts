@@ -4,9 +4,10 @@ import { success, error } from '@/lib/api/response'
 import { createQuotaSchema } from '@/types/quota'
 import { validateSubQuotas } from '@/lib/quota'
 import { z } from 'zod'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
 
   const user = await prisma.users.findUnique({ where: { id: userId } })
@@ -18,7 +19,7 @@ async function getAuthUser(request: NextRequest) {
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    const userId = request.cookies.get('user-id')?.value
+    const { userId } = await getAuthUserIdentity(request)
     if (!userId) return error('UNAUTHORIZED', '未授权访问', undefined, 401)
     return error('FORBIDDEN', '只有管理员可以访问配额列表', undefined, 403)
   }

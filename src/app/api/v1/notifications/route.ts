@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 import { createNotification, NotificationType } from '@/lib/notification';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // GET /api/v1/notifications - 获取通知列表
 
 // GET /api/v1/notifications - 获取通知列表
 export async function GET(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value;
+  const { userId } = await getAuthUser(request);
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -43,7 +44,7 @@ export async function GET(request: NextRequest, context: any) {
 export async function POST(request: NextRequest) {
   try {
     // 从中间件设置的 cookies 获取用户信息
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -93,7 +94,7 @@ export async function POST(request: NextRequest) {
 // PUT /api/v1/notifications/[id]/read - 标记通知为已读
 export async function PUT(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value;
+  const { userId } = await getAuthUser(request);
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -130,7 +131,7 @@ export async function PUT(request: NextRequest, context: any) {
 // DELETE /api/v1/notifications/[id] - 删除通知
 export async function DELETE(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value;
+  const { userId } = await getAuthUser(request);
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);

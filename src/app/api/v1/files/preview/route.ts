@@ -3,11 +3,12 @@ import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { checkFileAccess } from '@/lib/file-permission'
 import { isSupportedFileType } from '@/lib/preview/onlyoffice'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // GET /api/v1/files/preview - 获取文件预览URL
 export async function GET(request: NextRequest) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401)

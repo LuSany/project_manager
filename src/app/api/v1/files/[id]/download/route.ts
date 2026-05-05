@@ -8,6 +8,7 @@ import { PassThrough } from 'stream'
 import * as path from 'path'
 import * as os from 'os'
 import * as fs from 'fs/promises'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 const CORRECT_MIME_TYPES: Record<string, string> = {
   doc: 'application/msword',
@@ -53,7 +54,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const documentKey = searchParams.get('key')
 
   // 方式1：Cookie 认证
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   // 先获取文件信息（需要版本号来验证文档密钥）
   const file = await prisma.file_storage.findUnique({

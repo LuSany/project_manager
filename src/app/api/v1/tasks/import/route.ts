@@ -6,7 +6,7 @@ import type { TaskImportResult, TemplateTask } from "@/types/task-template";
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value;
+  const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
   return db.users.findUnique({ where: { id: userId } });
 }
@@ -95,6 +95,7 @@ async function createTasks(
 }
 
 // POST /api/v1/tasks/import - 导入任务
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 export async function POST(request: NextRequest) {
   // 认证检查
   const user = await getAuthUser(request);

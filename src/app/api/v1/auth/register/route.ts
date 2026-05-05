@@ -1,10 +1,11 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import bcrypt from 'bcrypt'
 import type { AuthenticatedRequest } from '@/middleware'
 import { randomUUID } from 'crypto'
+import { authRateLimit } from '@/lib/rate-limiter'
 
 // 注册请求验证Schema
 const registerSchema = z.object({
@@ -15,8 +16,32 @@ const registerSchema = z.object({
 })
 
 export async function POST(req: NextRequest) {
+  const forwarded = req.headers.get('x-forwarded-for')
+  const ip = forwarded ? forwarded.split(',')[0] : req.headers.get('x-real-ip') || 'unknown'
+
+  const rateLimitResult = authRateLimit(ip)
+
+  if (!rateLimitResult.allowed) {
+    const response = NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: '请求过于频繁，请稍后再试',
+          data: {
+            resetTime: new Date(rateLimitResult.resetTime).toISOString(),
+          },
+        },
+      },
+      { status: 429 }
+    )
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+    return response
+  }
+
   try {
-    // 解析请求体
     const body = await req.json()
 
     // 验证请求数据
@@ -49,7 +74,7 @@ export async function POST(req: NextRequest) {
     })
 
     // 返回成功响应（201 Created）
-    return ApiResponder.created(
+    const response = ApiResponder.created(
       {
         id: newUser.id,
         email: newUser.email,
@@ -58,6 +83,12 @@ export async function POST(req: NextRequest) {
       },
       '注册成功，请等待管理员审批'
     )
+
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+
+    return response
   } catch (error) {
     // 处理验证错误
     if (error instanceof z.ZodError) {

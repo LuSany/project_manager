@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 // 允许的文件类型
 const ALLOWED_MIME_TYPES = [
@@ -114,7 +115,7 @@ const uploadFileSchema = z.object({
 
 // 从中间件获取用户信息
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
   return prisma.users.findUnique({ where: { id: userId } })
 }

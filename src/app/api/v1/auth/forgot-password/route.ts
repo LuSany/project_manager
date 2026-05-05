@@ -1,9 +1,10 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { sendPasswordResetEmail } from '@/lib/email'
 import crypto from 'crypto'
+import { authRateLimit } from '@/lib/rate-limiter'
 
 // 请求验证Schema
 const forgotPasswordSchema = z.object({
@@ -16,6 +17,31 @@ function generateResetToken(): string {
 }
 
 export async function POST(req: NextRequest) {
+  const forwarded = req.headers.get('x-forwarded-for')
+  const ip = forwarded ? forwarded.split(',')[0] : req.headers.get('x-real-ip') || 'unknown'
+
+  const rateLimitResult = authRateLimit(ip)
+
+  if (!rateLimitResult.allowed) {
+    const response = NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'RATE_LIMIT_EXCEEDED',
+          message: '请求过于频繁，请稍后再试',
+          data: {
+            resetTime: new Date(rateLimitResult.resetTime).toISOString(),
+          },
+        },
+      },
+      { status: 429 }
+    )
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+    return response
+  }
+
   try {
     const body = await req.json()
     const validatedData = forgotPasswordSchema.parse(body)
@@ -51,13 +77,19 @@ export async function POST(req: NextRequest) {
       console.error('发送密码重置邮件失败:', emailResult.error)
     }
 
-    return ApiResponder.success({
+    const response = ApiResponder.success({
       message: '密码重置邮件已发送，请检查您的邮箱',
       data: {
         email: user.email,
         expiresAt: expiresAt.toISOString(),
       },
     })
+
+    response.headers.set('X-RateLimit-Limit', '10')
+    response.headers.set('X-RateLimit-Remaining', rateLimitResult.remaining.toString())
+    response.headers.set('X-RateLimit-Reset', new Date(rateLimitResult.resetTime).toISOString())
+
+    return response
   } catch (error) {
     if (error instanceof z.ZodError) {
       return ApiResponder.validationError('请求数据验证失败', error.issues as any)

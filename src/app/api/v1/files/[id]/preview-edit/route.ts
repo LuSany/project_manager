@@ -13,10 +13,11 @@ import {
 } from '@/lib/preview/onlyoffice'
 import { checkFilePreviewAccess } from '@/lib/file-permission'
 import { acquireDocumentLock } from '@/lib/document-lock'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // GET /api/v1/files/:id/preview-edit - 获取OnlyOffice编辑URL
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   if (!userId) {
     return unauthorized('未授权，请先登录')

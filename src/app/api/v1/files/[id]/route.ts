@@ -4,9 +4,10 @@ import { error } from '@/lib/api/response'
 import { createReadStream } from 'fs'
 import { checkFileAccess } from '@/lib/file-permission'
 import { validateFilePath } from '@/lib/file-security'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401)

@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // POST /api/v1/notifications/ignore - 忽略项目通知
 export async function POST(request: NextRequest) {
   try {
     // 从中间件设置的 cookies 获取用户信息
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -37,7 +38,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // 从中间件设置的 cookies 获取用户信息
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);

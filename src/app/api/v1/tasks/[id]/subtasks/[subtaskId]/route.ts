@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
 import { z } from 'zod'
+import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 const updateSubTaskSchema = z.object({
   title: z.string().min(1, '子任务标题不能为空').optional(),
@@ -10,7 +11,7 @@ const updateSubTaskSchema = z.object({
 })
 
 async function getAuthUser(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
   return db.users.findUnique({ where: { id: userId } })
 }

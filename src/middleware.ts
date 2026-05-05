@@ -90,66 +90,34 @@ export async function middleware(request: NextRequest) {
       }
     }
 
-    // 检查认证
     const authHeader = request.headers.get('authorization')
-    const userIdFromCookie = request.cookies.get('user-id')?.value
 
-    if (!authHeader && !userIdFromCookie) {
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return NextResponse.json(
-        { success: false, error: { code: 'UNAUTHORIZED', message: '请先登录系统' } },
+        { success: false, error: { code: 'UNAUTHORIZED', message: '请提供有效的认证令牌' } },
         { status: 401 }
       )
     }
 
-    // 如果有 Bearer token，验证它
-    if (authHeader && authHeader.startsWith('Bearer ')) {
-      const token = authHeader.substring(7)
-      const jwtSecret = process.env.JWT_SECRET
+    const token = authHeader.substring(7)
+    const jwtSecret = process.env.JWT_SECRET
 
-      if (!jwtSecret || jwtSecret.length < 32) {
-        return NextResponse.json(
-          { success: false, error: { code: 'INTERNAL_ERROR', message: '服务器配置错误' } },
-          { status: 500 }
-        )
-      }
-
-      try {
-        const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret))
-
-        // 通过 cookies 传递用户信息给路由处理器
-        const response = NextResponse.next()
-        response.cookies.set('user-id', (payload as any).userId, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24,
-          path: '/',
-        })
-        response.cookies.set('user-email', (payload as any).email, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24,
-          path: '/',
-        })
-        response.cookies.set('user-role', (payload as any).role, {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          maxAge: 60 * 60 * 24,
-          path: '/',
-        })
-        return response
-      } catch (error) {
-        return NextResponse.json(
-          { success: false, error: { code: 'UNAUTHORIZED', message: '令牌无效或已过期' } },
-          { status: 401 }
-        )
-      }
+    if (!jwtSecret || jwtSecret.length < 32) {
+      return NextResponse.json(
+        { success: false, error: { code: 'INTERNAL_ERROR', message: '服务器配置错误' } },
+        { status: 500 }
+      )
     }
 
-    // 如果只有 cookie，直接继续请求（让路由处理器验证）
-    return NextResponse.next()
+    try {
+      await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+      return NextResponse.next()
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: { code: 'UNAUTHORIZED', message: '令牌无效或已过期' } },
+        { status: 401 }
+      )
+    }
   }
 
   return NextResponse.next()

@@ -3,6 +3,7 @@ import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import type { AuthenticatedRequest } from '@/middleware'
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // 项目创建验证 Schema
 const createProjectSchema = z.object({
@@ -15,7 +16,7 @@ const createProjectSchema = z.object({
 
 export async function GET(request: NextRequest, context: any) {
   // 从中间件设置的 cookies 获取用户信息
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401)
@@ -130,7 +131,7 @@ export async function GET(request: NextRequest, context: any) {
 export async function POST(request: NextRequest) {
   try {
     // 从中间件获取用户信息
-    const userId = request.cookies.get('user-id')?.value
+    const { userId } = await getAuthUser(request)
 
     if (!userId) {
       return error('UNAUTHORIZED', '未授权，请先登录', undefined, 401)

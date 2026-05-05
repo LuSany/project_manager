@@ -1,11 +1,12 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 // GET /api/v1/milestones/upcoming - 获取即将到来的里程碑
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.cookies.get('user-id')?.value;
+    const { userId } = await getAuthUser(request);
 
     if (!userId) {
       return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);

@@ -7,7 +7,7 @@ import { randomUUID } from 'crypto'
 
 // 辅助函数：获取认证用户并检查管理员权限
 async function checkAdmin(request: NextRequest) {
-  const userId = request.cookies.get('user-id')?.value
+  const { userId } = await getAuthUser(request)
   if (!userId) return null
 
   const user = await db.users.findUnique({ where: { id: userId } })
@@ -41,6 +41,7 @@ function generatePassword(): string {
 }
 
 // POST /api/v1/admin/users/import - 批量导入用户
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 export async function POST(request: NextRequest) {
   const admin = await checkAdmin(request)
   if (!admin) {

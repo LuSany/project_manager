@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { success, error } from '@/lib/api/response';
 import { z } from 'zod';
+import { getAuthUser } from '@/lib/auth/get-auth-user'
 
 const updateServiceSchema = z.object({
   endpoint: z.string().optional(),
@@ -11,8 +12,8 @@ const updateServiceSchema = z.object({
 
 export async function PUT(request: NextRequest, context: any) {
   // 认证检查
-  const userId = request.cookies.get('user-id')?.value;
-  const userRole = request.cookies.get('user-role')?.value;
+  const { userId } = await getAuthUser(request);
+  const { role: userRole } = await getAuthUser(request);
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
@@ -60,8 +61,8 @@ export async function PUT(request: NextRequest, context: any) {
 // DELETE /api/v1/preview/services/[id] - 删除预览服务配置
 export async function DELETE(request: NextRequest, context: any) {
   // 认证检查
-  const userId = request.cookies.get('user-id')?.value;
-  const userRole = request.cookies.get('user-role')?.value;
+  const { userId } = await getAuthUser(request);
+  const { role: userRole } = await getAuthUser(request);
 
   if (!userId) {
     return error('UNAUTHORIZED_ERROR', '未授权，请先登录', undefined, 401);
