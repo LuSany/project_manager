@@ -1,4 +1,4 @@
-import { db } from '@/lib/db';
+import { prisma } from '@/lib/prisma';
 
 /**
  * 检查 Issue 是否应该自动关闭
@@ -6,7 +6,7 @@ import { db } from '@/lib/db';
  */
 export async function checkIssueAutoClose(issueId: string): Promise<void> {
   try {
-    const issue = await db.issues.findUnique({
+    const issue = await prisma.issues.findUnique({
       where: { id: issueId },
       include: { tasks: true }
     });
@@ -22,7 +22,7 @@ export async function checkIssueAutoClose(issueId: string): Promise<void> {
 
     // 只有在 Issue 不是 RESOLVED 或 CLOSED 状态时才自动更新
     if (allTasksCompleted && issue.status !== 'RESOLVED' && issue.status !== 'CLOSED') {
-      await db.issues.update({
+      await prisma.issues.update({
         where: { id: issueId },
         data: {
           status: 'RESOLVED',

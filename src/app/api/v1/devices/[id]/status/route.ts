@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const updateStatusSchema = z.object({
@@ -25,7 +25,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json()
     const validatedData = updateStatusSchema.parse(body)
 
-    const device = await db.devices.findUnique({ where: { id } })
+    const device = await prisma.devices.findUnique({ where: { id } })
     if (!device) {
       return NextResponse.json({ success: false, error: '设备不存在' }, { status: 404 })
     }
@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Cannot set to DISABLED if has active bookings
     if (validatedData.status === 'DISABLED') {
-      const activeBookings = await db.bookings.count({
+      const activeBookings = await prisma.bookings.count({
         where: { deviceId: id, status: { in: ['RESERVED', 'IN_PROGRESS'] } },
       })
       if (activeBookings > 0) {
@@ -61,7 +61,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       )
     }
 
-    const updatedDevice = await db.devices.update({
+    const updatedDevice = await prisma.devices.update({
       where: { id },
       data: { status: validatedData.status },
       include: { device_types: { select: { name: true } } },

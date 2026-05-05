@@ -1,4 +1,4 @@
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { notifyApprovalRequest, notifyApprovalResult } from '@/lib/notification'
 
 export interface ApprovalConfig {
@@ -22,7 +22,7 @@ export interface ApprovalRecord {
 export async function getApprovalConfigByDeviceType(
   deviceTypeId: string
 ): Promise<ApprovalConfig | null> {
-  const config = await db.approval_configs.findUnique({
+  const config = await prisma.approval_configs.findUnique({
     where: { deviceTypeId },
     include: { device_types: { select: { id: true, name: true } } },
   })
@@ -36,7 +36,7 @@ export async function getApprovalConfigByDeviceType(
 }
 
 export async function getApprovalRecordsByBooking(bookingId: string): Promise<ApprovalRecord[]> {
-  return db.approval_records.findMany({
+  return prisma.approval_records.findMany({
     where: { bookingId },
     orderBy: { level: 'asc' },
   })
@@ -117,7 +117,7 @@ export async function startApprovalChain(
     return { success: true, message: 'No approval config, auto-approved', config: undefined }
   }
 
-  await db.bookings.update({
+  await prisma.bookings.update({
     where: { id: bookingId },
     data: { status: 'PENDING_APPROVAL' },
   })
@@ -125,7 +125,7 @@ export async function startApprovalChain(
   const level1Approvers = config.approverIds[0] || []
 
   for (const approverId of level1Approvers) {
-    await db.approval_records.create({
+    await prisma.approval_records.create({
       data: {
         id: crypto.randomUUID(),
         bookingId,
@@ -136,7 +136,7 @@ export async function startApprovalChain(
     })
   }
 
-  const booking = await db.bookings.findUnique({
+  const booking = await prisma.bookings.findUnique({
     where: { id: bookingId },
     include: {
       devices: true,
@@ -166,10 +166,10 @@ export async function forwardApproval(
   currentLevel: number,
   forwardToUserId: string
 ): Promise<{ success: boolean; message: string }> {
-  const config = await db.approval_configs.findUnique({
+  const config = await prisma.approval_configs.findUnique({
     where: {
       deviceTypeId:
-        (await db.bookings.findUnique({ where: { id: bookingId }, include: { devices: true } }))
+        (await prisma.bookings.findUnique({ where: { id: bookingId }, include: { devices: true } }))
           ?.devices.typeId || '',
     },
   })
@@ -184,7 +184,7 @@ export async function forwardApproval(
     return { success: false, message: 'Target user is not in the approver list for this level' }
   }
 
-  await db.approval_records.create({
+  await prisma.approval_records.create({
     data: {
       id: crypto.randomUUID(),
       bookingId,

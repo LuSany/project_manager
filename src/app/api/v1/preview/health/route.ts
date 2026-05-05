@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { success, error } from '@/lib/api/response'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { getAllServicesHealth, checkServiceHealth } from '@/lib/preview/degradation'
 import { PreviewServiceType } from '@/lib/preview/degradation'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -9,7 +9,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // GET /api/v1/preview/health - 获取所有预览服务健康状态
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       return error('VALIDATION_ERROR', '缺少服务类型', undefined, 400)
     }
 
-    const config = await db.preview_service_configs.findFirst({
+    const config = await prisma.preview_service_configs.findFirst({
       where: { serviceType: serviceType as any, isEnabled: true },
     })
 

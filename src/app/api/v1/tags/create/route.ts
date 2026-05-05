@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 标签创建验证 Schema
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createTagSchema.parse(body);
 
     // 检查标签名是否已存在
-    const existingTag = await db.tags.findUnique({
+    const existingTag = await prisma.tags.findUnique({
       where: { name: validatedData.name },
     });
 
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const tag = await db.tags.create({
+    const tag = await prisma.tags.create({
       data: {
         id: crypto.randomUUID(),
         name: validatedData.name,

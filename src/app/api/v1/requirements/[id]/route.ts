@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 需求更新验证 Schema
@@ -42,7 +42,7 @@ export async function GET(
   }
 
   try {
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id },
       include: {
         projects: {
@@ -109,7 +109,7 @@ export async function PUT(
     const validatedData = updateRequirementSchema.parse(body);
 
     // 验证需求是否存在
-    const existing = await db.requirements.findUnique({
+    const existing = await prisma.requirements.findUnique({
       where: { id },
     });
 
@@ -147,7 +147,7 @@ export async function PUT(
     }
 
     const [requirement] = await Promise.all([
-      db.requirements.update({
+      prisma.requirements.update({
         where: { id },
         data: updateData,
         include: {
@@ -175,7 +175,7 @@ export async function PUT(
       }),
       // 如果有变更，记录到历史
       changes.changeType
-        ? db.requirement_history.create({
+        ? prisma.requirement_history.create({
             data: {
               id: crypto.randomUUID(),
               requirements: { connect: { id } },
@@ -225,7 +225,7 @@ export async function DELETE(
 
   try {
     // 验证需求是否存在
-    const existing = await db.requirements.findUnique({
+    const existing = await prisma.requirements.findUnique({
       where: { id },
     });
 
@@ -236,7 +236,7 @@ export async function DELETE(
       );
     }
 
-    await db.requirements.delete({
+    await prisma.requirements.delete({
       where: { id },
     });
 

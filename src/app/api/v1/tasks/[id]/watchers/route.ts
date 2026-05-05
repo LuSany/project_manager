@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 添加关注者验证 Schema
@@ -32,7 +32,7 @@ export async function GET(
     const { id: taskId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id: taskId,
         projects: {
@@ -52,7 +52,7 @@ export async function GET(
       );
     }
 
-    const watchers = await db.task_watchers.findMany({
+    const watchers = await prisma.task_watchers.findMany({
       where: { taskId },
       include: {
         users: {
@@ -101,7 +101,7 @@ export async function POST(
     const { userId } = addWatcherSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id: taskId,
         projects: {
@@ -122,7 +122,7 @@ export async function POST(
     }
 
     // 验证目标用户是否为项目成员
-    const targetUser = await db.project_members.findFirst({
+    const targetUser = await prisma.project_members.findFirst({
       where: {
         projectId: task.projectId,
         userId,
@@ -137,7 +137,7 @@ export async function POST(
     }
 
     // 检查是否已经关注
-    const existingWatcher = await db.task_watchers.findUnique({
+    const existingWatcher = await prisma.task_watchers.findUnique({
       where: {
         taskId_userId: {
           taskId,
@@ -154,7 +154,7 @@ export async function POST(
     }
 
     // 创建关注关系
-    const watcher = await db.task_watchers.create({
+    const watcher = await prisma.task_watchers.create({
       data: {
         taskId,
         userId,

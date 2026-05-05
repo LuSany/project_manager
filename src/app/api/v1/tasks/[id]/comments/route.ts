@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const createCommentSchema = z.object({
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
   }
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         projects: {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
       return ApiResponder.forbidden('无权访问此任务')
     }
 
-    const comments = await db.task_comments.findMany({
+    const comments = await prisma.task_comments.findMany({
       where: { taskId },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const body = await request.json()
     const validatedData = createCommentSchema.parse(body)
 
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         projects: {
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       return ApiResponder.forbidden('无权访问此任务')
     }
 
-    const newComment = await db.task_comments.create({
+    const newComment = await prisma.task_comments.create({
       data: {
         id: crypto.randomUUID(),
         taskId,

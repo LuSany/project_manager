@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error, unauthorized, notFound } from '@/lib/api/response'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 export async function GET(request: NextRequest) {
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * pageSize
 
     if (bookingId) {
-      const records = await db.approval_records.findMany({
+      const records = await prisma.approval_records.findMany({
         where: { bookingId },
         include: {
           bookings: {
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     if (status === 'PENDING') {
       // 获取当前用户可审批的设备类型
       // approverIds 存储为 JSON 字符串 string[][]，需要解析检查用户是否在其中
-      const allApprovalConfigs = await db.approval_configs.findMany({
+      const allApprovalConfigs = await prisma.approval_configs.findMany({
         select: {
           deviceTypeId: true,
           approverIds: true,
@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       }
 
       // 获取这些设备类型的待审批预订
-      const pendingBookings = await db.bookings.findMany({
+      const pendingBookings = await prisma.bookings.findMany({
         where: {
           status: 'PENDING_APPROVAL',
           devices: { typeId: { in: myDeviceTypeIds } },
@@ -95,7 +95,7 @@ export async function GET(request: NextRequest) {
 
       // 获取当前用户已处理的预订（无论通过还是驳回）
       // 注意：approval_records 表只存储已处理记录，但需要排除可能的 PENDING 记录
-      const processedRecords = await db.approval_records.findMany({
+      const processedRecords = await prisma.approval_records.findMany({
         where: {
           approverId: user.id,
           action: { not: 'PENDING' }  // 排除 PENDING 记录，确保只取已处理记录
@@ -112,7 +112,7 @@ export async function GET(request: NextRequest) {
       // 返回这些预订对应的审批记录（实际上需要返回预订信息）
       // 由于 approval_records 表只存储已处理的记录，待审批的记录没有审批记录
       // 这里我们直接返回预订信息，以 booking 包装成类似审批记录的格式
-      const pendingItems = await db.bookings.findMany({
+      const pendingItems = await prisma.bookings.findMany({
         where: { id: { in: availableBookingIds } },
         skip,
         take: pageSize,
@@ -166,7 +166,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [items, total] = await Promise.all([
-      db.approval_records.findMany({
+      prisma.approval_records.findMany({
         where: recordsWhere,
         skip,
         take: pageSize,
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      db.approval_records.count({ where: recordsWhere }),
+      prisma.approval_records.count({ where: recordsWhere }),
     ])
 
     return success({

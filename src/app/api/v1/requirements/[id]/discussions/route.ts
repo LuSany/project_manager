@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 创建讨论验证 Schema
@@ -33,7 +33,7 @@ export async function GET(
   }
 
   try {
-    const discussions = await db.requirement_discussions.findMany({
+    const discussions = await prisma.requirement_discussions.findMany({
       where: { requirementId },
       include: {
         users: {
@@ -89,7 +89,7 @@ export async function POST(
     const validatedData = createDiscussionSchema.parse(body);
 
     // 验证需求是否存在
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id: requirementId },
     });
 
@@ -102,7 +102,7 @@ export async function POST(
 
     // 验证任务是否存在（如果提供了 taskId）
     if (validatedData.taskId) {
-      const task = await db.tasks.findUnique({
+      const task = await prisma.tasks.findUnique({
         where: { id: validatedData.taskId },
       });
 
@@ -114,7 +114,7 @@ export async function POST(
       }
     }
 
-    const discussion = await db.requirement_discussions.create({
+    const discussion = await prisma.requirement_discussions.create({
       data: {
         id: crypto.randomUUID(),
         content: validatedData.content,
@@ -141,7 +141,7 @@ export async function POST(
     });
 
     // 自动记录到变更历史
-    await db.requirement_history.create({
+    await prisma.requirement_history.create({
       data: {
         id: crypto.randomUUID(),
         requirements: { connect: { id: requirementId } },

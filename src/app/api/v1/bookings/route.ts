@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { hasBookingConflict } from '@/lib/booking-conflict'
 import { getApprovalConfigByDeviceType, startApprovalChain } from '@/lib/approval-flow'
@@ -9,7 +9,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const createBookingSchema = z
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
     if (status) where.status = status
 
     const [items, total] = await Promise.all([
-      db.bookings.findMany({
+      prisma.bookings.findMany({
         where,
         skip,
         take: pageSize,
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { startTime: 'desc' },
       }),
-      db.bookings.count({ where }),
+      prisma.bookings.count({ where }),
     ])
 
     return NextResponse.json({
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const startTime = new Date(validatedData.startTime)
     const endTime = new Date(validatedData.endTime)
 
-    const device = await db.devices.findUnique({
+    const device = await prisma.devices.findUnique({
       where: { id: validatedData.deviceId },
       include: { device_types: true },
     })
@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: '设备正在维护，无法预定' }, { status: 400 })
     }
 
-    const existingBookings = await db.bookings.findMany({
+    const existingBookings = await prisma.bookings.findMany({
       where: { deviceId: validatedData.deviceId },
       select: {
         startTime: true,
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest) {
     const config = await getApprovalConfigByDeviceType(device.device_types.id)
     const needsApproval = config !== null
 
-    const booking = await db.bookings.create({
+    const booking = await prisma.bookings.create({
       data: {
         id: crypto.randomUUID(),
         deviceId: validatedData.deviceId,
@@ -158,7 +158,7 @@ export async function POST(request: NextRequest) {
       approvalInfo.needsApproval = true
       approvalInfo.config = config
     } else if (!needsApproval && device.status === 'AVAILABLE') {
-      await db.devices.update({
+      await prisma.devices.update({
         where: { id: validatedData.deviceId },
         data: { status: 'RESERVED' },
       })

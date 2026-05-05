@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { notifyTaskAssigned } from '@/lib/notification'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -8,12 +8,12 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // 辅助函数：获取用户有权限访问的项目ID列表
 async function getUserProjectIds(userId: string) {
-  const userProjects = await db.projects.findMany({
+  const userProjects = await prisma.projects.findMany({
     where: {
       OR: [{ ownerId: userId }, { project_members: { some: { userId: userId } } }],
     },
@@ -110,7 +110,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [tasks, total] = await Promise.all([
-      db.tasks.findMany({
+      prisma.tasks.findMany({
         where,
         skip,
         take: pageSize,
@@ -131,7 +131,7 @@ export async function GET(request: NextRequest) {
           createdAt: 'desc',
         },
       }),
-      db.tasks.count({ where }),
+      prisma.tasks.count({ where }),
     ])
 
     // 转换数据格式以匹配前端期望的格式
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const task = await db.tasks.create({
+    const task = await prisma.tasks.create({
       data: {
         id: crypto.randomUUID(),
         title: validatedData.title,
@@ -218,7 +218,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (validatedData.assigneeIds && validatedData.assigneeIds.length > 0) {
-      const project = await db.projects.findUnique({
+      const project = await prisma.projects.findUnique({
         where: { id: validatedData.projectId },
         select: { name: true },
       })

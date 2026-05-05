@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const updateDeviceTypeSchema = z.object({
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params
-    const deviceType = await db.device_types.findUnique({
+    const deviceType = await prisma.device_types.findUnique({
       where: { id },
       include: {
         devices: {
@@ -66,7 +66,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     // If name is being updated, check for duplicate
     if (validatedData.name) {
-      const existing = await db.device_types.findFirst({
+      const existing = await prisma.device_types.findFirst({
         where: { name: validatedData.name, id: { not: id } },
       })
       if (existing) {
@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const deviceType = await db.device_types.update({
+    const deviceType = await prisma.device_types.update({
       where: { id },
       data: validatedData,
     })
@@ -103,7 +103,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check if device type has devices
-    const devicesCount = await db.devices.count({
+    const devicesCount = await prisma.devices.count({
       where: { typeId: id },
     })
 
@@ -117,7 +117,7 @@ export async function DELETE(
       )
     }
 
-    await db.device_types.delete({ where: { id } })
+    await prisma.device_types.delete({ where: { id } })
 
     return NextResponse.json({ success: true, data: { id } })
   } catch (error) {

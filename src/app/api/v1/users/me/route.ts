@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // 用户更新 Schema
@@ -59,7 +59,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json()
     const validatedData = updateUserSchema.parse(body)
 
-    const updatedUser = await db.users.update({
+    const updatedUser = await prisma.users.update({
       where: { id: user.id },
       data: validatedData,
     })

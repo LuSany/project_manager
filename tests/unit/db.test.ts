@@ -9,23 +9,23 @@ vi.mock('@prisma/client', () => ({
 
 describe('Database Module', () => {
   describe('Prisma Singleton', () => {
-    it('应该导出 db 实例', async () => {
-      const { db } = await import('@/lib/db')
-      expect(db).toBeDefined()
-      expect(typeof db).toBe('object')
+    it('应该导出 prisma 实例', async () => {
+      const { prisma } = await import('@/lib/prisma')
+      expect(prisma).toBeDefined()
+      expect(typeof prisma).toBe('object')
     })
 
     it('应该返回相同的实例', async () => {
-      const { db: db1 } = await import('@/lib/db')
-      const { db: db2 } = await import('@/lib/db')
-      expect(db1).toBe(db2)
+      const { prisma: prisma1 } = await import('@/lib/prisma')
+      const { prisma: prisma2 } = await import('@/lib/prisma')
+      expect(prisma1).toBe(prisma2)
     })
 
     it('开发环境 singleton 行为', async () => {
       vi.stubEnv('NODE_ENV', 'development')
 
-      const { db } = await import('@/lib/db')
-      expect(db).toBeDefined()
+      const { prisma } = await import('@/lib/prisma')
+      expect(prisma).toBeDefined()
 
       vi.unstubAllEnvs()
     })

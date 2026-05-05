@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
@@ -10,7 +10,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -41,7 +41,7 @@ export async function GET(
   try {
     const { id } = await params
 
-    const user = await db.users.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id },
       select: {
         id: true,
@@ -92,14 +92,14 @@ export async function PUT(
     const validatedData = updateUserSchema.parse(body)
 
     // 检查用户是否存在
-    const existingUser = await db.users.findUnique({ where: { id } })
+    const existingUser = await prisma.users.findUnique({ where: { id } })
     if (!existingUser) {
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
     // 如果更新邮箱，检查是否已被其他用户使用
     if (validatedData.email && validatedData.email !== existingUser.email) {
-      const emailUser = await db.users.findUnique({
+      const emailUser = await prisma.users.findUnique({
         where: { email: validatedData.email },
       })
       if (emailUser) {
@@ -122,7 +122,7 @@ export async function PUT(
       updateData.passwordHash = await bcrypt.hash(validatedData.password, 10)
     }
 
-    const user = await db.users.update({
+    const user = await prisma.users.update({
       where: { id },
       data: updateData,
       select: {
@@ -168,13 +168,13 @@ export async function DELETE(
     }
 
     // 检查用户是否存在
-    const existingUser = await db.users.findUnique({ where: { id } })
+    const existingUser = await prisma.users.findUnique({ where: { id } })
     if (!existingUser) {
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
     // 删除用户（级联删除相关数据）
-    await db.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // 删除用户的项目成员关系
       await tx.project_members.deleteMany({
         where: { userId: id },

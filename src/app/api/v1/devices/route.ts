@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const createDeviceSchema = z.object({
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     if (name) where.name = { contains: name, mode: 'insensitive' }
 
     const [items, total] = await Promise.all([
-      db.devices.findMany({
+      prisma.devices.findMany({
         where,
         skip,
         take: pageSize,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { updatedAt: 'desc' },
       }),
-      db.devices.count({ where }),
+      prisma.devices.count({ where }),
     ])
 
     return NextResponse.json({
@@ -78,14 +78,14 @@ export async function POST(request: NextRequest) {
     const validatedData = createDeviceSchema.parse(body)
 
     // Verify device type exists
-    const deviceType = await db.device_types.findUnique({
+    const deviceType = await prisma.device_types.findUnique({
       where: { id: validatedData.typeId },
     })
     if (!deviceType) {
       return NextResponse.json({ success: false, error: '设备类型不存在' }, { status: 400 })
     }
 
-    const device = await db.devices.create({
+    const device = await prisma.devices.create({
       data: {
         id: crypto.randomUUID(),
         name: validatedData.name,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 // 默认看板列配置
@@ -14,7 +14,7 @@ const DEFAULT_BOARD_COLUMNS = [
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // GET /api/v1/projects/[id]/board-config - 获取看板配置
@@ -34,13 +34,13 @@ export async function GET(
   }
 
   try {
-    let config = await db.requirement_board_configs.findUnique({
+    let config = await prisma.requirement_board_configs.findUnique({
       where: { projectId },
     });
 
     // 如果不存在配置，创建默认配置
     if (!config) {
-      config = await db.requirement_board_configs.create({
+      config = await prisma.requirement_board_configs.create({
         data: {
           id: crypto.randomUUID(),
           projectId,
@@ -83,7 +83,7 @@ export async function PUT(
     const { columns } = body;
 
     // 验证权限：只有项目所有者或管理员可以修改
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: projectId },
       include: {
         project_members: {
@@ -107,7 +107,7 @@ export async function PUT(
     }
 
     // 更新或创建配置
-    const config = await db.requirement_board_configs.upsert({
+    const config = await prisma.requirement_board_configs.upsert({
       where: { projectId },
       update: { columns },
       create: {

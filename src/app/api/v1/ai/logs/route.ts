@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { getAuthUser } from '@/lib/auth/get-auth-user'
 
@@ -8,7 +8,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
       where.serviceType = serviceType
     }
 
-    const logs = await db.ai_logs.findMany({
+    const logs = await prisma.ai_logs.findMany({
       where,
       orderBy: { createdAt: 'desc' },
       take: limit,

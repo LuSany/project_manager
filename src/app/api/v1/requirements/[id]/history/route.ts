@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 export async function GET(
@@ -23,14 +23,14 @@ export async function GET(
   }
 
   try {
-    const history = await db.requirement_history.findMany({
+    const history = await prisma.requirement_history.findMany({
       where: { requirementId },
       orderBy: { createdAt: "desc" },
     });
 
     // 获取变更用户信息
     const userIds = [...new Set(history.map(h => h.changedBy))]
-    const users = await db.users.findMany({
+    const users = await prisma.users.findMany({
       where: { id: { in: userIds } },
       select: { id: true, name: true, email: true },
     })

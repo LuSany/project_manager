@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // Issue更新验证 Schema
@@ -36,7 +36,7 @@ export async function GET(
   }
 
   try {
-    const issue = await db.issues.findUnique({
+    const issue = await prisma.issues.findUnique({
       where: { id },
       include: {
         projects: {
@@ -89,7 +89,7 @@ export async function PUT(
     const validatedData = updateIssueSchema.parse(body);
 
     // 验证问题是否存在
-    const existing = await db.issues.findUnique({
+    const existing = await prisma.issues.findUnique({
       where: { id },
     });
 
@@ -115,7 +115,7 @@ export async function PUT(
       } as typeof validatedData & { resolvedAt?: Date | null };
     }
 
-    const issue = await db.issues.update({
+    const issue = await prisma.issues.update({
       where: { id },
       data: updateData,
       include: {
@@ -166,7 +166,7 @@ export async function DELETE(
 
   try {
     // 验证问题是否存在
-    const existing = await db.issues.findUnique({
+    const existing = await prisma.issues.findUnique({
       where: { id },
     });
 
@@ -177,7 +177,7 @@ export async function DELETE(
       );
     }
 
-    await db.issues.delete({
+    await prisma.issues.delete({
       where: { id },
     });
 

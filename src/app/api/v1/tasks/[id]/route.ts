@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -22,7 +22,7 @@ const updateTaskSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 export async function GET(
@@ -41,7 +41,7 @@ export async function GET(
   }
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       include: {
         task_assignees: {
@@ -92,7 +92,7 @@ export async function GET(
     const isAdmin = user.role === 'ADMIN';
 
     // 查询项目成员关系
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -138,7 +138,7 @@ export async function DELETE(
   }
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       include: {
         projects: {
@@ -162,7 +162,7 @@ export async function DELETE(
     const isAdmin = user.role === 'ADMIN';
 
     // 查询项目成员关系
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -179,7 +179,7 @@ export async function DELETE(
     }
 
     // 删除任务的相关数据
-    await db.$transaction(async (tx) => {
+    await prisma.$transaction(async (tx) => {
       // 删除任务分配
       await tx.task_assignees.deleteMany({
         where: { taskId: id },
@@ -236,7 +236,7 @@ export async function PUT(
   }
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       include: {
         projects: {
@@ -259,7 +259,7 @@ export async function PUT(
     const isProjectOwner = task.projects.ownerId === user.id;
     const isAdmin = user.role === 'ADMIN';
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -301,12 +301,12 @@ export async function PUT(
     // 处理负责人更新
     if (validatedData.assigneeIds !== undefined) {
       // 删除现有的负责人
-      await db.task_assignees.deleteMany({
+      await prisma.task_assignees.deleteMany({
         where: { taskId: id },
       });
       // 添加新的负责人
       if (validatedData.assigneeIds.length > 0) {
-        await db.task_assignees.createMany({
+        await prisma.task_assignees.createMany({
           data: validatedData.assigneeIds.map((userId) => ({
             taskId: id,
             userId,
@@ -316,7 +316,7 @@ export async function PUT(
     }
 
     // 更新任务
-    const updatedTask = await db.tasks.update({
+    const updatedTask = await prisma.tasks.update({
       where: { id },
       data: updateData,
       include: {

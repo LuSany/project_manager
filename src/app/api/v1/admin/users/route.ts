@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
@@ -11,7 +11,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
       where.role = role
     }
 
-    const users = await db.users.findMany({
+    const users = await prisma.users.findMany({
       where,
       select: {
         id: true,
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createUserSchema.parse(body)
 
     // 检查邮箱是否已存在
-    const existingUser = await db.users.findUnique({
+    const existingUser = await prisma.users.findUnique({
       where: { email: validatedData.email },
     })
 
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     // 加密密码
     const passwordHash = await bcrypt.hash(validatedData.password, 10)
 
-    const user = await db.users.create({
+    const user = await prisma.users.create({
       data: {
         id: randomUUID(),
         name: validatedData.name,

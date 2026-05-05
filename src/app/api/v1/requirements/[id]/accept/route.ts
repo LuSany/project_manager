@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // PUT /api/v1/requirements/[id]/accept - 接受需求
@@ -30,7 +30,7 @@ export async function PUT(
     const userId = user.id; // 使用认证用户的ID
 
     // 验证需求是否存在
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id },
       include: {
         projects: {
@@ -65,7 +65,7 @@ export async function PUT(
     }
 
     // 更新需求状态为APPROVED
-    const updatedRequirement = await db.requirements.update({
+    const updatedRequirement = await prisma.requirements.update({
       where: { id },
       data: {
         status: "APPROVED",

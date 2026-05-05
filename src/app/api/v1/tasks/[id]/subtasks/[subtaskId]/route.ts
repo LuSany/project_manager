@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -13,7 +13,7 @@ const updateSubTaskSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 export async function PUT(
@@ -31,7 +31,7 @@ export async function PUT(
     const body = await request.json()
     const validatedData = updateSubTaskSchema.parse(body)
 
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         task_assignees: { select: { userId: true } },
@@ -47,7 +47,7 @@ export async function PUT(
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -60,7 +60,7 @@ export async function PUT(
       return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
     }
 
-    const updatedSubtask = await db.subtasks.update({
+    const updatedSubtask = await prisma.subtasks.update({
       where: { id: subtaskId },
       data: {
         ...(validatedData.title && { title: validatedData.title }),
@@ -102,7 +102,7 @@ export async function DELETE(
   const { id: taskId, subtaskId } = await params
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         task_assignees: { select: { userId: true } },
@@ -118,7 +118,7 @@ export async function DELETE(
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -131,7 +131,7 @@ export async function DELETE(
       return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
     }
 
-    await db.subtasks.delete({
+    await prisma.subtasks.delete({
       where: { id: subtaskId },
     })
 

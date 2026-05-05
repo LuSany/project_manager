@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const createApprovalConfigSchema = z.object({
@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [items, total] = await Promise.all([
-      db.approval_configs.findMany({
+      prisma.approval_configs.findMany({
         where,
         skip,
         take: pageSize,
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest) {
         },
         orderBy: { createdAt: 'desc' },
       }),
-      db.approval_configs.count({ where }),
+      prisma.approval_configs.count({ where }),
     ])
 
     // Parse approverIds JSON for each item
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
     const validatedData = createApprovalConfigSchema.parse(body)
 
     // Check if device type exists
-    const deviceType = await db.device_types.findUnique({
+    const deviceType = await prisma.device_types.findUnique({
       where: { id: validatedData.deviceTypeId },
     })
     if (!deviceType) {
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if approval config already exists for this device type
-    const existing = await db.approval_configs.findUnique({
+    const existing = await prisma.approval_configs.findUnique({
       where: { deviceTypeId: validatedData.deviceTypeId },
     })
     if (existing) {
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     const approverIdsArray = JSON.parse(validatedData.approverIds) as string[][]
     const allApproverIds = approverIdsArray.flat()
 
-    const validApprovers = await db.users.findMany({
+    const validApprovers = await prisma.users.findMany({
       where: { id: { in: allApproverIds } },
       select: { id: true },
     })
@@ -124,7 +124,7 @@ export async function POST(request: NextRequest) {
       return validationError(`审批人不存在: ${invalidIds.join(', ')}`)
     }
 
-    const approvalConfig = await db.approval_configs.create({
+    const approvalConfig = await prisma.approval_configs.create({
       data: {
         id: crypto.randomUUID(),
         deviceTypeId: validatedData.deviceTypeId,

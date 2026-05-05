@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 状态变更验证 Schema
@@ -37,7 +37,7 @@ export async function POST(
     const validatedData = changeStatusSchema.parse(body);
 
     // 获取需求
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id },
       include: {
         projects: {
@@ -72,7 +72,7 @@ export async function POST(
 
     // 更新需求和记录历史
     const [updatedRequirement] = await Promise.all([
-      db.requirements.update({
+      prisma.requirements.update({
         where: { id },
         data: {
           status: newStatus,
@@ -84,7 +84,7 @@ export async function POST(
           reporter: { select: { id: true, name: true, avatar: true } },
         },
       }),
-      db.requirement_history.create({
+      prisma.requirement_history.create({
         data: {
           id: crypto.randomUUID(),
           requirementId: id,

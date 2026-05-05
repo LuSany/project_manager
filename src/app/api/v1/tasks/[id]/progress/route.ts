@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 const updateProgressSchema = z.object({
@@ -32,7 +32,7 @@ export async function PUT(
     const validatedData = updateProgressSchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id,
         projects: {
@@ -52,7 +52,7 @@ export async function PUT(
       );
     }
 
-    const updatedTask = await db.tasks.update({
+    const updatedTask = await prisma.tasks.update({
       where: { id },
       data: validatedData,
     });

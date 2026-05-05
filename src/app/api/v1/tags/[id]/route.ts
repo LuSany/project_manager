@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tags/[id] - 删除标签
@@ -27,7 +27,7 @@ export async function DELETE(
     const { id } = await params;
 
     // 验证标签是否存在
-    const tag = await db.tags.findUnique({
+    const tag = await prisma.tags.findUnique({
       where: { id },
       include: {
         _count: {
@@ -46,7 +46,7 @@ export async function DELETE(
     }
 
     // 删除标签（级联删除关联的TaskTag记录）
-    await db.tags.delete({
+    await prisma.tags.delete({
       where: { id },
     });
 

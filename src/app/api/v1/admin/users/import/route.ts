@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import bcrypt from 'bcrypt'
@@ -10,7 +10,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     const emails = users.map((u) => u.email)
 
     // 检查重复邮箱
-    const duplicateUsers = await db.users.findMany({
+    const duplicateUsers = await prisma.users.findMany({
       where: {
         email: {
           in: emails,
@@ -102,7 +102,7 @@ export async function POST(request: NextRequest) {
     )
 
     // 批量创建用户（跳过重复）
-    const result = await db.users.createMany({
+    const result = await prisma.users.createMany({
       data: userData,
       skipDuplicates: true,
     })

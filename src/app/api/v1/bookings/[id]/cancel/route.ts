@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id } = await params
 
-    const booking = await db.bookings.findUnique({
+    const booking = await prisma.bookings.findUnique({
       where: { id },
       include: { devices: true },
     })
@@ -42,12 +42,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, error: '使用中的预定无法取消' }, { status: 400 })
     }
 
-    const updatedBooking = await db.bookings.update({
+    const updatedBooking = await prisma.bookings.update({
       where: { id },
       data: { status: 'CANCELLED' },
     })
 
-    const remainingActiveBookings = await db.bookings.count({
+    const remainingActiveBookings = await prisma.bookings.count({
       where: {
         deviceId: booking.deviceId,
         status: { in: ['RESERVED', 'IN_PROGRESS'] },
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
 
     if (remainingActiveBookings === 0 && booking.devices.status === 'RESERVED') {
-      await db.devices.update({
+      await prisma.devices.update({
         where: { id: booking.deviceId },
         data: { status: 'AVAILABLE' },
       })

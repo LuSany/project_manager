@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 方案更新验证 Schema
@@ -39,7 +39,7 @@ export async function PUT(
     const validatedData = updateProposalSchema.parse(body);
 
     // 验证方案是否存在
-    const existingProposal = await db.proposals.findUnique({
+    const existingProposal = await prisma.proposals.findUnique({
       where: { id: proposalId },
       include: {
         requirements: {
@@ -85,7 +85,7 @@ export async function PUT(
     }
 
     // 更新方案
-    const proposal = await db.proposals.update({
+    const proposal = await prisma.proposals.update({
       where: { id: proposalId },
       data: validatedData,
     });

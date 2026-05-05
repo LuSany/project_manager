@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -13,7 +13,7 @@ const createSubTaskSchema = z.object({
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // GET /api/v1/tasks/[id]/subtasks - 获取子任务列表
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   const { id } = await params
 
   try {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       include: {
         task_assignees: { select: { userId: true } },
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
     }
 
-    const subtasks = await db.subtasks.findMany({
+    const subtasks = await prisma.subtasks.findMany({
       where: {
         taskId: id,
         parentId: null,
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json()
     const validatedData = createSubTaskSchema.parse(body)
 
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       include: {
         task_assignees: { select: { userId: true } },
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: task.projectId,
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
     }
 
-    const subTask = await db.subtasks.create({
+    const subTask = await prisma.subtasks.create({
       data: {
         id: crypto.randomUUID(),
         title: validatedData.title,

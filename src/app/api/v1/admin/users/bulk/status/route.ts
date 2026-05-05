@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import { getAuthUser } from '@/lib/auth/get-auth-user'
@@ -9,7 +9,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -35,7 +35,7 @@ export async function PATCH(request: NextRequest) {
     const { userIds, status } = validatedData
 
     // 批量更新状态
-    const result = await db.users.updateMany({
+    const result = await prisma.users.updateMany({
       where: {
         id: {
           in: userIds,

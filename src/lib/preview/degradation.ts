@@ -3,7 +3,7 @@
  * 实现服务选择和降级策略
  */
 
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 
 export type PreviewServiceType = 'ONLYOFFICE' | 'KKFILEVIEW' | 'NATIVE'
 export type HealthStatus = 'healthy' | 'degraded' | 'unhealthy'
@@ -192,7 +192,7 @@ export async function selectPreviewService(
   const priority = SERVICE_PRIORITY[extension] || ['KKFILEVIEW', 'NATIVE']
 
   // 获取已配置的服务
-  const configs = await db.preview_service_configs.findMany({
+  const configs = await prisma.preview_service_configs.findMany({
     where: { isEnabled: true },
   })
 
@@ -282,7 +282,7 @@ export function generatePreviewUrl(
  * 获取所有服务健康状态
  */
 export async function getAllServicesHealth(): Promise<PreviewServiceHealth[]> {
-  const configs = await db.preview_service_configs.findMany({
+  const configs = await prisma.preview_service_configs.findMany({
     where: { isEnabled: true },
   })
 

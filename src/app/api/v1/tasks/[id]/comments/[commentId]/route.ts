@@ -1,12 +1,12 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 export async function DELETE(
@@ -21,7 +21,7 @@ export async function DELETE(
   }
 
   try {
-    const comment = await db.task_comments.findUnique({
+    const comment = await prisma.task_comments.findUnique({
       where: { id: commentId },
       include: {
         tasks: {
@@ -55,7 +55,7 @@ export async function DELETE(
       return ApiResponder.forbidden('无权删除此评论')
     }
 
-    await db.task_comments.delete({
+    await prisma.task_comments.delete({
       where: { id: commentId },
     })
 

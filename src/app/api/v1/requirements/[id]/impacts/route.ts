@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import crypto from 'crypto';
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -8,7 +8,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 波及影响分析创建验证 Schema
@@ -38,7 +38,7 @@ export async function POST(
     const validatedData = createImpactSchema.parse(body);
 
     // 验证需求是否存在并检查项目成员权限
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id },
       include: {
         projects: {
@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // 创建波及影响分析记录
-    const impact = await db.requirement_impacts.create({
+    const impact = await prisma.requirement_impacts.create({
       data: {
         id: crypto.randomUUID(),
         requirements: { connect: { id } },

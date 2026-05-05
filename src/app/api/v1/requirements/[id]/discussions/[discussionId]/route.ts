@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // 更新讨论验证 Schema
@@ -29,7 +29,7 @@ export async function GET(
   }
 
   try {
-    const discussion = await db.requirement_discussions.findUnique({
+    const discussion = await prisma.requirement_discussions.findUnique({
       where: { id: discussionId, requirementId },
       include: {
         users: {
@@ -80,7 +80,7 @@ export async function PUT(
     const validatedData = updateDiscussionSchema.parse(body)
 
     // 验证讨论是否存在
-    const existingDiscussion = await db.requirement_discussions.findUnique({
+    const existingDiscussion = await prisma.requirement_discussions.findUnique({
       where: { id: discussionId },
     })
 
@@ -93,7 +93,7 @@ export async function PUT(
       return NextResponse.json({ success: false, error: '无权限修改此讨论' }, { status: 403 })
     }
 
-    const discussion = await db.requirement_discussions.update({
+    const discussion = await prisma.requirement_discussions.update({
       where: { id: discussionId },
       data: {
         ...validatedData,
@@ -145,7 +145,7 @@ export async function DELETE(
 
   try {
     // 验证讨论是否存在
-    const existingDiscussion = await db.requirement_discussions.findUnique({
+    const existingDiscussion = await prisma.requirement_discussions.findUnique({
       where: { id: discussionId },
     })
 
@@ -156,7 +156,7 @@ export async function DELETE(
     // 权限检查：只有作者或管理员可以删除
     if (existingDiscussion.userId !== user.id) {
       // 检查是否为项目管理员
-      const requirement = await db.requirements.findUnique({
+      const requirement = await prisma.requirements.findUnique({
         where: { id: requirementId },
         include: {
           projects: true,
@@ -164,7 +164,7 @@ export async function DELETE(
       })
 
       if (requirement) {
-        const membership = await db.project_members.findUnique({
+        const membership = await prisma.project_members.findUnique({
           where: {
             projectId_userId: {
               projectId: requirement.projects.id,
@@ -187,7 +187,7 @@ export async function DELETE(
       }
     }
 
-    await db.requirement_discussions.delete({
+    await prisma.requirement_discussions.delete({
       where: { id: discussionId },
     })
 

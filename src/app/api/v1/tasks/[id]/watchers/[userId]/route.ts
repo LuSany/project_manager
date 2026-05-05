@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 // 辅助函数：获取认证用户
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // DELETE /api/v1/tasks/[id]/watchers/[userId] - 移除关注者
@@ -26,7 +26,7 @@ export async function DELETE(
     const { id: taskId, userId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id: taskId,
         projects: {
@@ -47,7 +47,7 @@ export async function DELETE(
     }
 
     // 检查关注关系是否存在
-    const watcher = await db.task_watchers.findUnique({
+    const watcher = await prisma.task_watchers.findUnique({
       where: {
         taskId_userId: {
           taskId,
@@ -64,7 +64,7 @@ export async function DELETE(
     }
 
     // 删除关注关系
-    await db.task_watchers.delete({
+    await prisma.task_watchers.delete({
       where: {
         taskId_userId: {
           taskId,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { success,
   error,
@@ -12,7 +12,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const updateApprovalConfigSchema = z.object({
@@ -44,7 +44,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
 
-    const approvalConfig = await db.approval_configs.findUnique({
+    const approvalConfig = await prisma.approval_configs.findUnique({
       where: { id },
       include: {
         device_types: { select: { id: true, name: true } },
@@ -79,7 +79,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
 
-    const existing = await db.approval_configs.findUnique({
+    const existing = await prisma.approval_configs.findUnique({
       where: { id },
     })
 
@@ -94,7 +94,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       const approverIdsArray = JSON.parse(validatedData.approverIds) as string[][]
       const allApproverIds = approverIdsArray.flat()
 
-      const validApprovers = await db.users.findMany({
+      const validApprovers = await prisma.users.findMany({
         where: { id: { in: allApproverIds } },
         select: { id: true },
       })
@@ -113,7 +113,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       updateData.approverIds = validatedData.approverIds
     }
 
-    const approvalConfig = await db.approval_configs.update({
+    const approvalConfig = await prisma.approval_configs.update({
       where: { id },
       data: updateData,
       include: {
@@ -146,7 +146,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params
 
-    const existing = await db.approval_configs.findUnique({
+    const existing = await prisma.approval_configs.findUnique({
       where: { id },
     })
 
@@ -154,7 +154,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return notFound('审批配置不存在')
     }
 
-    await db.approval_configs.delete({
+    await prisma.approval_configs.delete({
       where: { id },
     })
 

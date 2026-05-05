@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // Issue 关联需求验证 Schema
@@ -30,7 +30,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const validatedData = linkRequirementSchema.parse(body)
 
     // 验证 Issue 是否存在
-    const issue = await db.issues.findUnique({
+    const issue = await prisma.issues.findUnique({
       where: { id },
       include: {
         projects: {
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 验证需求是否存在
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id: validatedData.requirementId },
     })
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 权限检查：只有项目成员可以关联需求
-    const membership = await db.project_members.findUnique({
+    const membership = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: issue.projects.id,
@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 更新 Issue，关联需求
-    const updatedIssue = await db.issues.update({
+    const updatedIssue = await prisma.issues.update({
       where: { id },
       data: {
         requirementId: validatedData.requirementId,
@@ -136,7 +136,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
 
   try {
     // 验证 Issue 是否存在
-    const issue = await db.issues.findUnique({
+    const issue = await prisma.issues.findUnique({
       where: { id },
       include: {
         projects: {
@@ -158,7 +158,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     }
 
     // 权限检查
-    const membership = await db.project_members.findUnique({
+    const membership = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: issue.projects.id,
@@ -177,7 +177,7 @@ export async function DELETE(request: NextRequest, context: { params: Promise<{ 
     }
 
     // 取消关联
-    const updatedIssue = await db.issues.update({
+    const updatedIssue = await prisma.issues.update({
       where: { id },
       data: {
         requirementId: null,

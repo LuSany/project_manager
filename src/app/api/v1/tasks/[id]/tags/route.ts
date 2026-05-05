@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const addTagSchema = z
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const body = await request.json()
     const { name, tagId } = addTagSchema.parse(body)
 
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         task_assignees: { select: { userId: true } },
@@ -59,7 +59,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: { projectId: task.projectId, userId: user.id },
       },
@@ -71,14 +71,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     let tag
     if (name) {
-      tag = await db.tags.findFirst({ where: { name } })
+      tag = await prisma.tags.findFirst({ where: { name } })
       if (!tag) {
-        tag = await db.tags.create({
+        tag = await prisma.tags.create({
           data: { id: crypto.randomUUID(), name, color: getRandomColor(), updatedAt: new Date() },
         })
       }
     } else if (tagId) {
-      tag = await db.tags.findUnique({ where: { id: tagId } })
+      tag = await prisma.tags.findUnique({ where: { id: tagId } })
       if (!tag) {
         return NextResponse.json({ success: false, error: '标签不存在' }, { status: 404 })
       }
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       )
     }
 
-    const existingRelation = await db.task_tags.findUnique({
+    const existingRelation = await prisma.task_tags.findUnique({
       where: { taskId_tagId: { taskId, tagId: tag.id } },
     })
 
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, error: '任务已关联该标签' }, { status: 400 })
     }
 
-    await db.task_tags.create({
+    await prisma.task_tags.create({
       data: { taskId, tagId: tag.id },
     })
 
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id: taskId } = await params
 
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         task_assignees: { select: { userId: true } },
@@ -136,7 +136,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const isProjectOwner = task.projects?.ownerId === user.id
     const isAdmin = user.role === 'ADMIN'
 
-    const projectMember = await db.project_members.findUnique({
+    const projectMember = await prisma.project_members.findUnique({
       where: {
         projectId_userId: { projectId: task.projectId, userId: user.id },
       },
@@ -146,7 +146,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, error: '无权访问此任务' }, { status: 403 })
     }
 
-    const task_tags = await db.task_tags.findMany({
+    const task_tags = await prisma.task_tags.findMany({
       where: { taskId },
       include: { tags: true },
       orderBy: { createdAt: 'desc' },

@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
 import type { TaskImportResult, TemplateTask } from "@/types/task-template";
 
@@ -8,7 +8,7 @@ import type { TaskImportResult, TemplateTask } from "@/types/task-template";
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 任务导入验证Schema
@@ -35,7 +35,7 @@ const importFromJsonSchema = z.object({
 
 // 验证项目权限
 async function validateProjectAccess(projectId: string, userId: string): Promise<boolean> {
-  const project = await db.projects.findUnique({
+  const project = await prisma.projects.findUnique({
     where: { id: projectId },
     include: { project_members: true },
   });
@@ -44,7 +44,7 @@ async function validateProjectAccess(projectId: string, userId: string): Promise
 
   const isOwner = project.ownerId === userId;
   const isMember = project.project_members.some((m) => m.userId === userId);
-  const isAdmin = (await db.users.findUnique({ where: { id: userId } }))?.role === 'ADMIN';
+  const isAdmin = (await prisma.users.findUnique({ where: { id: userId } }))?.role === 'ADMIN';
 
   return isOwner || isMember || isAdmin === true;
 }
@@ -65,7 +65,7 @@ async function createTasks(
 
   for (const task of tasks) {
     try {
-      await db.tasks.create({
+      await prisma.tasks.create({
         data: {
           id: crypto.randomUUID(),
           title: task.title,
@@ -137,7 +137,7 @@ async function importFromTemplate(body: any, user: any) {
   }
 
   // 获取模板
-  const template = await db.task_templates.findUnique({
+  const template = await prisma.task_templates.findUnique({
     where: { id: validatedData.templateId },
   });
 
@@ -155,7 +155,7 @@ async function importFromTemplate(body: any, user: any) {
 
   // 验证里程碑ID（如果提供）
   if (validatedData.milestoneId) {
-    const milestone = await db.milestones.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id: validatedData.milestoneId },
     });
     if (!milestone || milestone.projectId !== validatedData.projectId) {
@@ -186,7 +186,7 @@ async function importFromJson(body: any, user: any) {
 
   // 验证里程碑ID（如果提供）
   if (validatedData.milestoneId) {
-    const milestone = await db.milestones.findUnique({
+    const milestone = await prisma.milestones.findUnique({
       where: { id: validatedData.milestoneId },
     });
     if (!milestone || milestone.projectId !== validatedData.projectId) {
@@ -249,7 +249,7 @@ async function handleFileImport(request: NextRequest, user: any) {
       
       // 验证里程碑ID（如果提供）
       if (milestoneId) {
-        const milestone = await db.milestones.findUnique({
+        const milestone = await prisma.milestones.findUnique({
           where: { id: milestoneId },
         });
         if (!milestone || milestone.projectId !== projectId) {

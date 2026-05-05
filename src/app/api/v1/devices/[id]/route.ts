@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const updateDeviceSchema = z.object({
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
   try {
     const { id } = await params
-    const device = await db.devices.findUnique({
+    const device = await prisma.devices.findUnique({
       where: { id },
       include: {
         device_types: true,
@@ -73,7 +73,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const validatedData = updateDeviceSchema.parse(body)
 
     if (validatedData.typeId) {
-      const deviceType = await db.device_types.findUnique({
+      const deviceType = await prisma.device_types.findUnique({
         where: { id: validatedData.typeId },
       })
       if (!deviceType) {
@@ -81,7 +81,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       }
     }
 
-    const device = await db.devices.update({
+    const device = await prisma.devices.update({
       where: { id },
       data: validatedData,
       include: { device_types: { select: { id: true, name: true } } },
@@ -111,7 +111,7 @@ export async function DELETE(
     const { id } = await params
 
     // Check for active bookings
-    const activeBookings = await db.bookings.count({
+    const activeBookings = await prisma.bookings.count({
       where: { deviceId: id, status: { in: ['RESERVED', 'IN_PROGRESS'] } },
     })
 
@@ -125,7 +125,7 @@ export async function DELETE(
       )
     }
 
-    await db.devices.delete({ where: { id } })
+    await prisma.devices.delete({ where: { id } })
 
     return NextResponse.json({ success: true, data: { id } })
   } catch (error) {

@@ -32,31 +32,6 @@ vi.mock('@/lib/prisma', () => ({
   },
 }))
 
-// Mock DB (alternative import used in some routes)
-vi.mock('@/lib/db', () => ({
-  db: {
-    risks: {
-      create: vi.fn(),
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
-      count: vi.fn(),
-    },
-    projects: {
-      findUnique: vi.fn(),
-    },
-    tasks: {
-      findUnique: vi.fn(),
-      update: vi.fn(),
-    },
-    risk_tasks: {
-      create: vi.fn(),
-      deleteMany: vi.fn(),
-    },
-  },
-}))
-
 // Mock Auth
 vi.mock('@/lib/auth', () => ({
   getAuthenticatedUser: vi.fn(),

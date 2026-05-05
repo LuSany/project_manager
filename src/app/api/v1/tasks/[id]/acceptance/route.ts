@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { ApiResponder } from '@/lib/api/response'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const updateAcceptanceSchema = z.object({
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
 
   try {
     // 验证任务存在和访问权限
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: {
         projects: {
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ id:
     }
 
     // 获取验收记录
-    const acceptances = await db.task_acceptances.findMany({
+    const acceptances = await prisma.task_acceptances.findMany({
       where: { taskId },
       orderBy: { createdAt: 'desc' },
       include: {
@@ -83,7 +83,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 验证任务状态
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: taskId },
       include: { projects: { select: { ownerId: true, project_members: true } } },
     })
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     // 权限检查：任务负责人或项目经理可发起
     const isProjectOwner = task.projects.ownerId === user.id
-    const isAssignee = await db.task_assignees.findFirst({
+    const isAssignee = await prisma.task_assignees.findFirst({
       where: { taskId, userId: user.id },
     })
     const isAdmin = user.role === 'ADMIN'
@@ -111,7 +111,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 创建验收记录并更新任务状态
-    const acceptance = await db.task_acceptances.create({
+    const acceptance = await prisma.task_acceptances.create({
       data: {
         id: crypto.randomUUID(),
         taskId,
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     })
 
     // 更新任务状态为 REVIEW
-    await db.tasks.update({
+    await prisma.tasks.update({
       where: { id: taskId },
       data: { status: 'REVIEW', updatedAt: new Date() },
     })
@@ -159,7 +159,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     const { result, notes } = validated.data
 
     // 查找待处理的验收记录
-    const pendingAcceptance = await db.task_acceptances.findFirst({
+    const pendingAcceptance = await prisma.task_acceptances.findFirst({
       where: { taskId, result: 'PENDING' },
       orderBy: { createdAt: 'desc' },
     })
@@ -170,7 +170,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
 
     // 权限检查：仅验收人可操作
     if (pendingAcceptance.acceptorId !== user.id) {
-      const task = await db.tasks.findUnique({
+      const task = await prisma.tasks.findUnique({
         where: { id: taskId },
         include: { projects: { select: { ownerId: true } } },
       })
@@ -183,7 +183,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
     }
 
     // 更新验收记录
-    const updated = await db.task_acceptances.update({
+    const updated = await prisma.task_acceptances.update({
       where: { id: pendingAcceptance.id },
       data: { result, notes, updatedAt: new Date() },
       include: {
@@ -207,7 +207,7 @@ export async function PUT(request: NextRequest, context: { params: Promise<{ id:
       updateData.completedAt = new Date()
     }
 
-    await db.tasks.update({
+    await prisma.tasks.update({
       where: { id: taskId },
       data: updateData,
     })

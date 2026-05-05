@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import { getAuthUser } from '@/lib/auth/get-auth-user'
@@ -8,7 +8,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -26,7 +26,7 @@ export async function GET(
   }
 
   try {
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: resourceId },
     })
 
@@ -34,7 +34,7 @@ export async function GET(
       return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404)
     }
 
-    const members = await db.project_members.findMany({
+    const members = await prisma.project_members.findMany({
       where: { projectId: resourceId },
       include: {
         users: {
@@ -77,7 +77,7 @@ export async function DELETE(
       return error('MISSING_USER_ID', '缺少用户ID', undefined, 400)
     }
 
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: resourceId },
     })
 
@@ -85,7 +85,7 @@ export async function DELETE(
       return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404)
     }
 
-    await db.project_members.deleteMany({
+    await prisma.project_members.deleteMany({
       where: {
         projectId: resourceId,
         userId,

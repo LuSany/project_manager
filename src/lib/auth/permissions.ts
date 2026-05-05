@@ -1,4 +1,4 @@
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**
@@ -17,7 +17,7 @@ export type ResourceType = 'project' | 'task' | 'requirement' | 'risk' | 'review
 async function getAuthUser(request: NextRequest) {
   const userId = request.cookies.get('user-id')?.value
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 /**
@@ -63,7 +63,7 @@ export async function requireAdmin(request: NextRequest): Promise<{
  * @returns 是否有审批权限
  */
 export async function isApprover(userId: string, deviceTypeId: string): Promise<boolean> {
-  const user = await db.users.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { role: true },
   })
@@ -71,7 +71,7 @@ export async function isApprover(userId: string, deviceTypeId: string): Promise<
   // ADMIN 默认有审批权限
   if (user?.role === 'ADMIN') return true
 
-  const config = await db.approval_configs.findUnique({
+  const config = await prisma.approval_configs.findUnique({
     where: { deviceTypeId },
     select: { approverIds: true },
   })
@@ -114,7 +114,7 @@ export async function requireApprover(
     return { user }
   }
 
-  const config = await db.approval_configs.findUnique({
+  const config = await prisma.approval_configs.findUnique({
     where: { deviceTypeId },
     select: { approverIds: true },
   })
@@ -173,7 +173,7 @@ export async function checkPermission(
   resourceType: ResourceType,
   resourceId?: string
 ): Promise<boolean> {
-  const user = await db.users.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { role: true },
   })
@@ -198,13 +198,13 @@ export async function checkPermission(
       return true
     }
     if (action === 'update' && resourceType === 'task' && resourceId) {
-      const task = await db.tasks.findUnique({
+      const task = await prisma.tasks.findUnique({
         where: { id: resourceId },
         select: { projectId: true },
       })
       if (!task) return false
 
-      const member = await db.project_members.findUnique({
+      const member = await prisma.project_members.findUnique({
         where: {
           projectId_userId: {
             projectId: task.projectId,
@@ -217,7 +217,7 @@ export async function checkPermission(
         return true
       }
 
-      const assignee = await db.task_assignees.findUnique({
+      const assignee = await prisma.task_assignees.findUnique({
         where: {
           taskId_userId: {
             taskId: resourceId,
@@ -237,25 +237,25 @@ export async function checkPermission(
     if (resourceType === 'project') {
       projectId = resourceId
     } else if (resourceType === 'task') {
-      const task = await db.tasks.findUnique({
+      const task = await prisma.tasks.findUnique({
         where: { id: resourceId },
         select: { projectId: true },
       })
       projectId = task?.projectId || null
     } else if (resourceType === 'requirement') {
-      const requirement = await db.requirements.findUnique({
+      const requirement = await prisma.requirements.findUnique({
         where: { id: resourceId },
         select: { projectId: true },
       })
       projectId = requirement?.projectId || null
     } else if (resourceType === 'risk') {
-      const risk = await db.risks.findUnique({
+      const risk = await prisma.risks.findUnique({
         where: { id: resourceId },
         select: { projectId: true },
       })
       projectId = risk?.projectId || null
     } else if (resourceType === 'review') {
-      const review = await db.reviews.findUnique({
+      const review = await prisma.reviews.findUnique({
         where: { id: resourceId },
         select: { projectId: true },
       })
@@ -266,7 +266,7 @@ export async function checkPermission(
       return false
     }
 
-    const member = await db.project_members.findUnique({
+    const member = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId,
@@ -309,25 +309,25 @@ export async function getResourcePermissions(
   if (resourceType === 'project') {
     projectId = resourceId
   } else if (resourceType === 'task') {
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id: resourceId },
       select: { projectId: true },
     })
     projectId = task?.projectId || null
   } else if (resourceType === 'requirement') {
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id: resourceId },
       select: { projectId: true },
     })
     projectId = requirement?.projectId || null
   } else if (resourceType === 'risk') {
-    const risk = await db.risks.findUnique({
+    const risk = await prisma.risks.findUnique({
       where: { id: resourceId },
       select: { projectId: true },
     })
     projectId = risk?.projectId || null
   } else if (resourceType === 'review') {
-    const review = await db.reviews.findUnique({
+    const review = await prisma.reviews.findUnique({
       where: { id: resourceId },
       select: { projectId: true },
     })
@@ -338,7 +338,7 @@ export async function getResourcePermissions(
     return []
   }
 
-  const members = await db.project_members.findMany({
+  const members = await prisma.project_members.findMany({
     where: { projectId },
     include: {
       users: {
@@ -374,7 +374,7 @@ export async function getUserPermissions(userId: string): Promise<
     permission: string
   }>
 > {
-  const user = await db.users.findUnique({
+  const user = await prisma.users.findUnique({
     where: { id: userId },
     select: { role: true },
   })
@@ -384,7 +384,7 @@ export async function getUserPermissions(userId: string): Promise<
   }
 
   if (user.role === 'ADMIN') {
-    const projects = await db.projects.findMany({
+    const projects = await prisma.projects.findMany({
       select: {
         id: true,
         name: true,
@@ -399,7 +399,7 @@ export async function getUserPermissions(userId: string): Promise<
     }))
   }
 
-  const memberships = await db.project_members.findMany({
+  const memberships = await prisma.project_members.findMany({
     where: { userId },
     include: {
       projects: {

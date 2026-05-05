@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // GET /api/v1/tasks/[id]/progress-history - 获取任务进展历史
@@ -27,7 +27,7 @@ export async function GET(
 
   try {
     // 验证任务是否存在
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       select: { id: true, projectId: true },
     });
@@ -40,7 +40,7 @@ export async function GET(
     }
 
     // 获取进展历史
-    const history = await db.task_progress_history.findMany({
+    const history = await prisma.task_progress_history.findMany({
       where: { taskId: id },
       include: {
         users: {
@@ -93,7 +93,7 @@ export async function POST(
     const validatedData = createProgressSchema.parse(body);
 
     // 获取当前任务
-    const task = await db.tasks.findUnique({
+    const task = await prisma.tasks.findUnique({
       where: { id },
       select: { id: true, progress: true, status: true, projectId: true },
     });
@@ -106,8 +106,8 @@ export async function POST(
     }
 
     // 创建进展历史记录并更新任务
-    const [historyRecord] = await db.$transaction([
-      db.task_progress_history.create({
+    const [historyRecord] = await prisma.$transaction([
+      prisma.task_progress_history.create({
         data: {
           id: crypto.randomUUID(),
           tasks: { connect: { id } },
@@ -127,7 +127,7 @@ export async function POST(
           },
         },
       }),
-      db.tasks.update({
+      prisma.tasks.update({
         where: { id },
         data: {
           progress: validatedData.progress,

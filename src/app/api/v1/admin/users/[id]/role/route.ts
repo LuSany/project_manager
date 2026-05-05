@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import { randomUUID } from 'crypto'
@@ -14,7 +14,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -41,7 +41,7 @@ export async function PUT(
       return error('FORBIDDEN', '不能修改自己的管理员角色', undefined, 400)
     }
 
-    const user = await db.users.update({
+    const user = await prisma.users.update({
       where: { id },
       data: { role: validatedData.role },
       select: {
@@ -53,7 +53,7 @@ export async function PUT(
     })
 
     // 记录审计日志
-    await db.audit_logs.create({
+    await prisma.audit_logs.create({
       data: {
         id: randomUUID(),
         userId: admin.id,

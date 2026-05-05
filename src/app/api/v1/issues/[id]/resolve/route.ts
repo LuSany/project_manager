@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 // Issue 翻转验证 Schema
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const validatedData = resolveIssueSchema.parse(body)
 
     // 验证 Issue 是否存在
-    const existingIssue = await db.issues.findUnique({
+    const existingIssue = await prisma.issues.findUnique({
       where: { id },
       include: {
         projects: {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // 权限检查：只有项目所有者或项目管理员可以解决/重新打开 Issue
-    const membership = await db.project_members.findUnique({
+    const membership = await prisma.project_members.findUnique({
       where: {
         projectId_userId: {
           projectId: existingIssue.projects.id,
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         return NextResponse.json({ success: false, error: '该问题已经解决或关闭' }, { status: 400 })
       }
 
-      updatedIssue = await db.issues.update({
+      updatedIssue = await prisma.issues.update({
         where: { id },
         data: {
           status: 'RESOLVED',
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
       // 如果 autoClose 为 true，自动关闭关联的任务
       if (existingIssue.autoClose) {
-        await db.tasks.updateMany({
+        await prisma.tasks.updateMany({
           where: {
             issueId: id,
             status: { not: 'DONE' },
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         )
       }
 
-      updatedIssue = await db.issues.update({
+      updatedIssue = await prisma.issues.update({
         where: { id },
         data: {
           status: 'REOPENED',

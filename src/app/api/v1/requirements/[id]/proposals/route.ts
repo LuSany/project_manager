@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -7,7 +7,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 方案创建验证 Schema
@@ -38,7 +38,7 @@ export async function POST(
     const validatedData = createProposalSchema.parse(body);
 
     // 验证需求是否存在并检查项目成员权限
-    const requirement = await db.requirements.findUnique({
+    const requirement = await prisma.requirements.findUnique({
       where: { id },
       include: {
         projects: {
@@ -67,7 +67,7 @@ export async function POST(
     }
 
     // 创建方案（使用认证用户的ID）
-    const proposals = await db.proposals.create({
+    const proposals = await prisma.proposals.create({
       data: {
         id: crypto.randomUUID(),
         requirements: { connect: { id } },

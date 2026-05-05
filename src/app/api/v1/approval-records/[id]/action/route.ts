@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
 import { notifyApprovalResult, notifyApprovalRequest } from '@/lib/notification'
@@ -8,7 +8,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null
-  return db.users.findUnique({ where: { id: userId } })
+  return prisma.users.findUnique({ where: { id: userId } })
 }
 
 const approvalActionSchema = z.object({
@@ -28,7 +28,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: bookingId } = await params
 
-    const booking = await db.bookings.findUnique({
+    const booking = await prisma.bookings.findUnique({
       where: { id: bookingId },
       include: {
         devices: { include: { device_types: true } },
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const data = approvalActionSchema.parse(body)
 
     const deviceTypeId = booking.devices.typeId
-    const config = await db.approval_configs.findUnique({
+    const config = await prisma.approval_configs.findUnique({
       where: { deviceTypeId },
     })
 
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return forbidden('您不是该设备类型的审批人')
     }
 
-    const existingRecords = await db.approval_records.findMany({
+    const existingRecords = await prisma.approval_records.findMany({
       where: { bookingId },
       orderBy: { level: 'asc' },
     })
@@ -86,12 +86,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     if (data.action === 'REJECTED') {
-      await db.bookings.update({
+      await prisma.bookings.update({
         where: { id: bookingId },
         data: { status: 'CANCELLED' },
       })
 
-      await db.approval_records.create({
+      await prisma.approval_records.create({
         data: {
           id: crypto.randomUUID(),
           bookingId,
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return validationError('转交操作需要指定目标审批人')
       }
 
-      const targetUser = await db.users.findUnique({
+      const targetUser = await prisma.users.findUnique({
         where: { id: data.forwardTo },
       })
 
@@ -134,7 +134,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return validationError('目标用户不在当前级别的审批人列表中')
       }
 
-      await db.approval_records.create({
+      await prisma.approval_records.create({
         data: {
           id: crypto.randomUUID(),
           bookingId,
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         },
       })
 
-      await db.approval_records.create({
+      await prisma.approval_records.create({
         data: {
           id: crypto.randomUUID(),
           bookingId,
@@ -170,7 +170,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     if (data.action === 'APPROVED') {
-      await db.approval_records.create({
+      await prisma.approval_records.create({
         data: {
           id: crypto.randomUUID(),
           bookingId,
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         const nextLevelApprovers = approverIds[currentLevel]
         if (nextLevelApprovers && nextLevelApprovers.length > 0) {
           for (const approverId of nextLevelApprovers) {
-            await db.approval_records.create({
+            await prisma.approval_records.create({
               data: {
                 id: crypto.randomUUID(),
                 bookingId,
@@ -211,13 +211,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         return success({ action: 'APPROVED', nextLevel: currentLevel + 1 }, '已批准，需下一级审批')
       }
 
-      await db.bookings.update({
+      await prisma.bookings.update({
         where: { id: bookingId },
         data: { status: 'RESERVED' },
       })
 
       if (booking.devices.status === 'AVAILABLE') {
-        await db.devices.update({
+        await prisma.devices.update({
           where: { id: booking.deviceId },
           data: { status: 'RESERVED' },
         })

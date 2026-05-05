@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { db } from '@/lib/db'
+import { prisma } from '@/lib/prisma'
 import { success, error } from '@/lib/api/response'
 import { z } from 'zod'
 import { getAuthUser } from '@/lib/auth/get-auth-user'
@@ -8,7 +8,7 @@ async function checkAdmin(request: NextRequest) {
   const { userId } = await getAuthUser(request)
   if (!userId) return null
 
-  const user = await db.users.findUnique({ where: { id: userId } })
+  const user = await prisma.users.findUnique({ where: { id: userId } })
   if (!user || user.role !== 'ADMIN') return null
 
   return user
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   try {
     // 获取所有项目
-    const projects = await db.projects.findMany({
+    const projects = await prisma.projects.findMany({
       select: {
         id: true,
         name: true,
@@ -39,7 +39,7 @@ export async function GET(request: NextRequest) {
     })
 
     // 获取所有权限配置
-    const permissions = await db.project_members.findMany({
+    const permissions = await prisma.project_members.findMany({
       include: {
         users: {
           select: {
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const validatedData = addPermissionSchema.parse(body)
 
-    const user = await db.users.findUnique({
+    const user = await prisma.users.findUnique({
       where: { id: validatedData.userId },
     })
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest) {
       return error('USER_NOT_FOUND', '用户不存在', undefined, 404)
     }
 
-    const project = await db.projects.findUnique({
+    const project = await prisma.projects.findUnique({
       where: { id: validatedData.projectId },
     })
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
       return error('PROJECT_NOT_FOUND', '项目不存在', undefined, 404)
     }
 
-    const permission = await db.project_members.upsert({
+    const permission = await prisma.project_members.upsert({
       where: {
         projectId_userId: {
           projectId: validatedData.projectId,

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { DependencyType } from "@/types/task-dependency";
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
@@ -8,7 +8,7 @@ import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request);
   if (!userId) return null;
-  return db.users.findUnique({ where: { id: userId } });
+  return prisma.users.findUnique({ where: { id: userId } });
 }
 
 // 任务依赖创建验证 Schema
@@ -34,7 +34,7 @@ export async function GET(
     const { id: taskId } = await params;
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id: taskId,
         projects: {
@@ -55,7 +55,7 @@ export async function GET(
     }
 
     // 获取任务依赖列表（包含被依赖任务的信息）
-    const dependencies = await db.task_dependencies.findMany({
+    const dependencies = await prisma.task_dependencies.findMany({
       where: {
         taskId,
       },
@@ -115,7 +115,7 @@ export async function POST(
     const validatedData = createDependencySchema.parse(body);
 
     // 验证任务是否存在且用户有权限访问
-    const task = await db.tasks.findFirst({
+    const task = await prisma.tasks.findFirst({
       where: {
         id: taskId,
         projects: {
@@ -144,7 +144,7 @@ export async function POST(
     }
 
     // 验证被依赖任务是否存在且在同一项目中
-    const dependsOnTask = await db.tasks.findFirst({
+    const dependsOnTask = await prisma.tasks.findFirst({
       where: {
         id: validatedData.dependsOnId,
         projectId: task.projectId,
@@ -159,7 +159,7 @@ export async function POST(
     }
 
     // 检查依赖关系是否已存在
-    const existingDependency = await db.task_dependencies.findUnique({
+    const existingDependency = await prisma.task_dependencies.findUnique({
       where: {
         id: `${taskId}-${validatedData.dependsOnId}`,
       },
@@ -173,7 +173,7 @@ export async function POST(
     }
 
     // 创建依赖关系
-    const dependency = await db.task_dependencies.create({
+    const dependency = await prisma.task_dependencies.create({
       data: {
         id: crypto.randomUUID(),
         tasks_task_dependencies_taskIdTotasks: { connect: { id: taskId } },
