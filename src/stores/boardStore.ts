@@ -166,7 +166,7 @@ export const useBoardStore = create<BoardState & BoardActions>()(
 
             for (const card of cards) {
               newCards.set(card.id, card)
-              newCardsByBoard[card.id] = [...(newCardsByBoard[card.id] || []), card]
+              newCardsByBoard[card.boardId] = [...(newCardsByBoard[card.boardId] || []), card]
             }
 
             return {
@@ -292,7 +292,7 @@ export const useBoardStore = create<BoardState & BoardActions>()(
           const { cards } = get()
           const result: Card[] = []
           for (const card of cards.values()) {
-            if (card.id === boardId) {
+            if (card.boardId === boardId) {
               result.push(card)
             }
           }
