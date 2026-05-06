@@ -31,7 +31,6 @@ async function sanitizeOfficeFile(filePath: string): Promise<Buffer> {
     if (PROBLEMATIC_ZIP_ENTRIES.includes(entry.entryName)) {
       hasProblematicEntry = true
       zip.deleteFile(entry.entryName)
-      console.log(`[Sanitize] 移除 ${entry.entryName}`)
     }
   }
 
@@ -105,18 +104,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     let correctedFileName = file.originalName || file.fileName
     if (expectedExt && originalExt && originalExt !== expectedExt) {
       correctedFileName = correctedFileName.replace(/\.[^.]+$/, `.${expectedExt}`)
-      console.log('[Download] 扩展名修正:', file.originalName, '->', correctedFileName)
     }
-
-    // 调试日志
-    console.log('[Download] 文件信息:', {
-      fileId: file.id,
-      filePath,
-      dbMimeType: file.mimeType,
-      detectedFileType,
-      correctMimeType,
-      correctedFileName,
-    })
 
     // 对于 ZIP 格式的 Office 文件，移除可能导致问题的 jsaProject.bin
     const isZipBasedOffice = ['xlsx', 'pptx', 'docx'].includes(detectedFileType)

@@ -51,18 +51,6 @@ export async function sendEmail(options: SendEmailOptions): Promise<{
       },
     })
 
-    // MVP阶段：仅打印日志模拟发送
-    console.log('='.repeat(50))
-    console.log('📧 邮件发送（模拟）')
-    console.log('-'.repeat(50))
-    console.log(`收件人: ${to}`)
-    console.log(`主题: ${subject}`)
-    console.log(`内容: ${body.substring(0, 100)}...`)
-    console.log(`模板类型: ${templateType || '无'}`)
-    console.log(`日志ID: ${emailLog.id}`)
-    console.log('='.repeat(50))
-
-    // 模拟发送成功
     await prisma.email_logs.update({
       where: { id: emailLog.id },
       data: {
@@ -111,7 +99,6 @@ export async function getEmailTemplate(
   })
 
   if (!template) {
-    console.warn(`邮件模板不存在或已禁用: ${type}`)
     return null
   }
 

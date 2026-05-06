@@ -363,9 +363,6 @@ export async function detectRealFileType(
       // 处理 WPS Office 创建的格式不一致文件：
       // 扩展名是 .docx/.xlsx/.pptx 但实际内容是 OLE2 格式
       if (newToOldFormat[ext]) {
-        console.log(
-          `[detectRealFileType] 检测到格式不一致: 扩展名 .${ext} 但实际内容是 OLE2 格式，将作为 .${newToOldFormat[ext]} 处理`
-        )
         return newToOldFormat[ext]
       }
       // 回退到 MIME 类型推断

@@ -86,7 +86,6 @@ export async function POST(request: NextRequest) {
           await rename(tempFilePath, matchedFile.filePath)
         })
 
-        console.log('OnlyOffice文件更新成功:', matchedFile.id)
         return NextResponse.json({ error: 0 })
       } catch (downloadError) {
         console.error('下载OnlyOffice更新文件失败:', downloadError)

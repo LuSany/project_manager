@@ -29,8 +29,6 @@ export async function checkIssueAutoClose(issueId: string): Promise<void> {
           resolvedAt: new Date()
         }
       });
-
-      console.log(`[IssueService] Issue ${issueId} automatically closed as all tasks are completed`);
     }
   } catch (error) {
     console.error(`[IssueService] Error checking auto-close for issue ${issueId}:`, error);
