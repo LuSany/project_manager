@@ -146,8 +146,8 @@ export async function PUT(
       updateData.dueDate = validatedData.dueDate ? new Date(validatedData.dueDate) : null;
     }
 
-    const [requirement] = await Promise.all([
-      prisma.requirements.update({
+    const requirement = await prisma.$transaction(async (tx) => {
+      const updated = await tx.requirements.update({
         where: { id },
         data: updateData,
         include: {
@@ -172,21 +172,24 @@ export async function PUT(
             },
           },
         },
-      }),
+      })
+
       // 如果有变更，记录到历史
-      changes.changeType
-        ? prisma.requirement_history.create({
-            data: {
-              id: crypto.randomUUID(),
-              requirements: { connect: { id } },
-              changeType: changes.changeType,
-              oldValue: changes.oldValue,
-              newValue: changes.newValue,
-              changedBy: user.id,
-            },
-          })
-        : Promise.resolve(),
-    ]);
+      if (changes.changeType) {
+        await tx.requirement_history.create({
+          data: {
+            id: crypto.randomUUID(),
+            requirements: { connect: { id } },
+            changeType: changes.changeType,
+            oldValue: changes.oldValue,
+            newValue: changes.newValue,
+            changedBy: user.id,
+          },
+        })
+      }
+
+      return updated
+    })
 
     return NextResponse.json({
       success: true,

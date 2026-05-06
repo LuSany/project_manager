@@ -298,59 +298,61 @@ export async function PUT(
     if (validatedData.actualHours !== undefined) updateData.actualHours = validatedData.actualHours;
     if (validatedData.milestoneId !== undefined) updateData.milestoneId = validatedData.milestoneId || null;
 
-    // 处理负责人更新
-    if (validatedData.assigneeIds !== undefined) {
-      // 删除现有的负责人
-      await prisma.task_assignees.deleteMany({
-        where: { taskId: id },
-      });
-      // 添加新的负责人
-      if (validatedData.assigneeIds.length > 0) {
-        await prisma.task_assignees.createMany({
-          data: validatedData.assigneeIds.map((userId) => ({
-            taskId: id,
-            userId,
-          })),
+    const updatedTask = await prisma.$transaction(async (tx) => {
+      // 处理负责人更新
+      if (validatedData.assigneeIds !== undefined) {
+        // 删除现有的负责人
+        await tx.task_assignees.deleteMany({
+          where: { taskId: id },
         });
+        // 添加新的负责人
+        if (validatedData.assigneeIds.length > 0) {
+          await tx.task_assignees.createMany({
+            data: validatedData.assigneeIds.map((userId) => ({
+              taskId: id,
+              userId,
+            })),
+          });
+        }
       }
-    }
 
-    // 更新任务
-    const updatedTask = await prisma.tasks.update({
-      where: { id },
-      data: updateData,
-      include: {
-        task_assignees: {
-          include: {
-            users: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
+      // 更新任务
+      return await tx.tasks.update({
+        where: { id },
+        data: updateData,
+        include: {
+          task_assignees: {
+            include: {
+              users: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                },
               },
             },
           },
-        },
-        projects: {
-          select: {
-            id: true,
-            name: true,
+          projects: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+          milestones: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
+          subtasks: {
+            select: {
+              id: true,
+              title: true,
+              completed: true,
+            },
           },
         },
-        milestones: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },
-        subtasks: {
-          select: {
-            id: true,
-            title: true,
-            completed: true,
-          },
-        },
-      },
+      });
     });
 
     return NextResponse.json({

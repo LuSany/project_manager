@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { hasBookingConflict } from '@/lib/booking-conflict'
-import { getApprovalConfigByDeviceType, startApprovalChain } from '@/lib/approval-flow'
+import { getApprovalConfigByDeviceType, startApprovalChainTransaction, notifyApprovalChain } from '@/lib/approval-flow'
 import { checkWarningThresholds } from '@/lib/quota'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
@@ -134,34 +134,53 @@ export async function POST(request: NextRequest) {
     const config = await getApprovalConfigByDeviceType(device.device_types.id)
     const needsApproval = config !== null
 
-    const booking = await prisma.bookings.create({
-      data: {
-        id: crypto.randomUUID(),
-        deviceId: validatedData.deviceId,
-        userId: user.id,
-        projectId: validatedData.projectId,
-        startTime,
-        endTime,
-        status: needsApproval ? ('PENDING_APPROVAL' as const) : ('RESERVED' as const),
-      },
-      include: {
-        devices: { include: { device_types: true } },
-        users: { select: { id: true, name: true } },
-      },
+    const { booking, approvalInfo, approverIds } = await prisma.$transaction(async (tx) => {
+      const booking = await tx.bookings.create({
+        data: {
+          id: crypto.randomUUID(),
+          deviceId: validatedData.deviceId,
+          userId: user.id,
+          projectId: validatedData.projectId,
+          startTime,
+          endTime,
+          status: needsApproval ? ('PENDING_APPROVAL' as const) : ('RESERVED' as const),
+        },
+        include: {
+          devices: { include: { device_types: true } },
+          users: { select: { id: true, name: true } },
+        },
+      })
+
+      const approvalInfo: { needsApproval: boolean; config?: typeof config } = {
+        needsApproval: false,
+      }
+      let approverIds: string[] = []
+
+      if (needsApproval && config) {
+        const result = await startApprovalChainTransaction(tx, booking.id, device.device_types.id)
+        approvalInfo.needsApproval = true
+        approvalInfo.config = result.config
+        approverIds = result.approverIds || []
+      } else if (!needsApproval && device.status === 'AVAILABLE') {
+        await tx.devices.update({
+          where: { id: validatedData.deviceId },
+          data: { status: 'RESERVED' },
+        })
+      }
+
+      return { booking, approvalInfo, approverIds }
     })
 
-    const approvalInfo: { needsApproval: boolean; config?: typeof config } = {
-      needsApproval: false,
-    }
-    if (needsApproval && config) {
-      await startApprovalChain(booking.id, device.device_types.id)
-      approvalInfo.needsApproval = true
-      approvalInfo.config = config
-    } else if (!needsApproval && device.status === 'AVAILABLE') {
-      await prisma.devices.update({
-        where: { id: validatedData.deviceId },
-        data: { status: 'RESERVED' },
-      })
+    // 发送通知（不在事务中）
+    if (approvalInfo.needsApproval && approverIds.length > 0) {
+      await notifyApprovalChain(
+        booking.id,
+        approverIds,
+        booking.devices.name,
+        booking.users.name,
+        booking.projects?.name || '',
+        booking.projectId || undefined
+      )
     }
 
     // 检查配额并触发警告 (D-12, D-30)

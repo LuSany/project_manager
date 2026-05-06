@@ -103,6 +103,77 @@ export async function getApprovalChainStatus(
   return { status: 'PENDING', currentLevel: lastRecord.level, totalLevels: config.levels, config }
 }
 
+export async function startApprovalChainTransaction(
+  tx: any,
+  bookingId: string,
+  deviceTypeId: string
+): Promise<{
+  success: boolean
+  message: string
+  config?: ApprovalConfig
+  approverIds?: string[]
+}> {
+  const config = await getApprovalConfigByDeviceType(deviceTypeId)
+
+  if (!config) {
+    return { success: true, message: 'No approval config, auto-approved', config: undefined }
+  }
+
+  await tx.bookings.update({
+    where: { id: bookingId },
+    data: { status: 'PENDING_APPROVAL' },
+  })
+
+  const level1Approvers = config.approverIds[0] || []
+
+  for (const approverId of level1Approvers) {
+    await tx.approval_records.create({
+      data: {
+        id: crypto.randomUUID(),
+        bookingId,
+        approverId,
+        level: 1,
+        action: 'PENDING',
+      },
+    })
+  }
+
+  return { success: true, message: 'Approval chain started', config, approverIds: level1Approvers }
+}
+
+export async function notifyApprovalChain(
+  bookingId: string,
+  approverIds: string[],
+  deviceName: string,
+  userName: string,
+  projectName?: string,
+  projectId?: string
+): Promise<void> {
+  if (approverIds.length === 0) return
+
+  const booking = await prisma.bookings.findUnique({
+    where: { id: bookingId },
+    include: {
+      devices: true,
+      users: { select: { id: true, name: true } },
+      projects: { select: { id: true, name: true } },
+    },
+  })
+
+  if (!booking) return
+
+  for (const approverId of approverIds) {
+    await notifyApprovalRequest(
+      approverId,
+      bookingId,
+      deviceName,
+      userName,
+      projectName,
+      projectId
+    )
+  }
+}
+
 export async function startApprovalChain(
   bookingId: string,
   deviceTypeId: string
