@@ -3,13 +3,24 @@
   "started_at": "2026-05-05T12:17:00.000Z",
   "session_ids": [
     "ses_2080e8514ffeLwHi2kSmoLJ75b",
-    "ses_207e05dd1ffeAVzOQCRUlLdLy2"
+    "ses_207e05dd1ffeAVzOQCRUlLdLy2",
+    "ses_207a79df5ffe83IllNy578dcd5",
+    "ses_2059a605dffeC4EJVLSd8C14jb",
+    "ses_205144e83ffe1dJGjIzUsqnDTv",
+    "ses_202f6e598ffeE3lbU4WSOY6fJR",
+    "ses_202f66acfffeO2vcxeLRa8o5Dn",
+    "ses_202f4678cffeR8eQpFs4S9MjNe"
   ],
   "plan_name": "codebase-remediation",
-  "agent": "atlas",
+  "agent": "Sisyphus (Ultraworker)",
   "session_origins": {
     "ses_2080e8514ffeLwHi2kSmoLJ75b": "direct",
-    "ses_207e05dd1ffeAVzOQCRUlLdLy2": "direct"
+    "ses_207e05dd1ffeAVzOQCRUlLdLy2": "direct",
+    "ses_207a79df5ffe83IllNy578dcd5": "direct",
+    "ses_2059a605dffeC4EJVLSd8C14jb": "direct",
+    "ses_205144e83ffe1dJGjIzUsqnDTv": "direct",
+    "ses_202f6e598ffeE3lbU4WSOY6fJR": "direct",
+    "ses_202f66acfffeO2vcxeLRa8o5Dn": "direct"
   },
   "task_sessions": {
     "todo:1": {
@@ -20,6 +31,15 @@
       "agent": "Sisyphus-Junior",
       "category": "quick",
       "updated_at": "2026-05-05T12:43:14.226Z"
+    },
+    "todo:4": {
+      "task_key": "todo:4",
+      "task_label": "4",
+      "task_title": "合并 Prisma 客户端双实例",
+      "session_id": "ses_207cb2e85ffe0rVJXwtdQvMJJ9",
+      "agent": "Sisyphus-Junior",
+      "category": "quick",
+      "updated_at": "2026-05-05T12:57:48.628Z"
     }
   }
 }

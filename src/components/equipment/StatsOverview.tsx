@@ -18,7 +18,7 @@ const mockStats: StatsOverviewType = {
   totalDevices: 0,
 }
 
-export function StatsOverview({ loading: externalLoading }: StatsOverviewProps) {
+function StatsOverviewInner({ loading: externalLoading }: StatsOverviewProps) {
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState<StatsOverviewType>(mockStats)
 
@@ -118,3 +118,23 @@ export function StatsOverview({ loading: externalLoading }: StatsOverviewProps) 
     </motion.div>
   )
 }
+
+import dynamic from 'next/dynamic'
+
+function StatsOverviewLoader() {
+  return (
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {[1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-24 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+      ))}
+    </div>
+  )
+}
+
+export const StatsOverview = dynamic(
+  () => Promise.resolve({ default: StatsOverviewInner }),
+  {
+    ssr: false,
+    loading: () => <StatsOverviewLoader />,
+  }
+)

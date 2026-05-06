@@ -6,21 +6,6 @@ const API_BASE = '/api/v1'
 const DEFAULT_TIMEOUT = 30000 // 30秒默认超时
 
 /**
- * 自定义 API 错误类
- */
-export class ApiError extends Error {
-  constructor(
-    public status: number,
-    public code: string,
-    message: string,
-    public data?: unknown
-  ) {
-    super(message)
-    this.name = 'ApiError'
-  }
-}
-
-/**
  * API 请求选项
  */
 interface RequestOptions extends RequestInit {

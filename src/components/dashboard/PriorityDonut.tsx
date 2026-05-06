@@ -13,7 +13,7 @@ interface DistributionItem {
   value: number
 }
 
-export function PriorityDonut() {
+function PriorityDonutInner() {
   const [data, setData] = useState<DistributionItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -111,3 +111,11 @@ export function PriorityDonut() {
     </ChartCard>
   )
 }
+
+import dynamic from 'next/dynamic'
+import { ChartSkeleton } from '@/components/dashboard/ChartSkeleton'
+
+export const PriorityDonut = dynamic(() => Promise.resolve(PriorityDonutInner), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+})

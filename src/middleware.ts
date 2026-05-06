@@ -111,6 +111,7 @@ export async function requireCSRF(request: NextRequest): Promise<NextResponse | 
 }
 
 function getClientIp(request: NextRequest): string {
+  // 尝试从各种头部获取 IP
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) {
     return forwarded.split(',')[0].trim()
@@ -121,7 +122,17 @@ function getClientIp(request: NextRequest): string {
     return realIp
   }
 
-  return request.ip || 'unknown'
+  const cfConnectingIp = request.headers.get('cf-connecting-ip')
+  if (cfConnectingIp) {
+    return cfConnectingIp
+  }
+
+  const xClientIp = request.headers.get('x-client-ip')
+  if (xClientIp) {
+    return xClientIp
+  }
+
+  return 'unknown'
 }
 
 function getIdentifier(request: NextRequest, userId?: string): string {

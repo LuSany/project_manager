@@ -44,7 +44,7 @@ export class ApiResponder {
     return NextResponse.json(
       {
         success: false,
-        error: { code, message, ...(details && { details }) },
+        error: { status, name: 'ApiError', code, message, ...(details && { details }) },
       },
       { status }
     )

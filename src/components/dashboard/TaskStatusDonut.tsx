@@ -17,7 +17,7 @@ interface DistributionItem {
   value: number
 }
 
-export function TaskStatusDonut() {
+function TaskStatusDonutInner() {
   const [data, setData] = useState<DistributionItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -115,3 +115,11 @@ export function TaskStatusDonut() {
     </ChartCard>
   )
 }
+
+import dynamic from 'next/dynamic'
+import { ChartSkeleton } from '@/components/dashboard/ChartSkeleton'
+
+export const TaskStatusDonut = dynamic(() => Promise.resolve(TaskStatusDonutInner), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+})

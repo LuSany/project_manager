@@ -144,6 +144,7 @@ export async function POST(request: NextRequest) {
         include: {
           devices: { include: { device_types: true } },
           users: { select: { id: true, name: true } },
+          projects: { select: { id: true, name: true } },
         },
       })
 

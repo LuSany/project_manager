@@ -1,6 +1,15 @@
 // ============================================================================
 // API响应类型定义
 // ============================================================================
+// API响应类型定义
+// ============================================================================
+
+export interface ApiError {
+  status: number;
+  code: string;
+  message: string;
+  data?: unknown;
+}
 
 export interface ApiResponse<T> {
   success: boolean;
@@ -22,4 +31,12 @@ export interface PaginationParams {
   pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
+}
+
+export interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }

@@ -8,6 +8,7 @@
     "dev:services": "docker-compose up -d postgres && docker-compose -f docker-compose.onlyoffice.yml up -d",
     "dev:stop": "docker-compose -f docker-compose.onlyoffice.yml down && docker-compose down",
     "build": "next build",
+    "analyze": "ANALYZE=true next build",
     "start": "next start",
     "lint": "next lint",
     "test:unit": "vitest --config vitest.config.ts",

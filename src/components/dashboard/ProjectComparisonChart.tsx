@@ -8,7 +8,7 @@ import { ChartCard } from '@/components/dashboard/ChartCard'
 import { EMPTY_PROJECT_MESSAGE } from '@/types/dashboard-charts'
 import type { ProjectComparisonItem } from '@/types/dashboard-charts'
 
-export function ProjectComparisonChart() {
+function ProjectComparisonChartInner() {
   const [data, setData] = useState<ProjectComparisonItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -80,3 +80,11 @@ export function ProjectComparisonChart() {
     </ChartCard>
   )
 }
+
+import dynamic from 'next/dynamic'
+import { ChartSkeleton } from '@/components/dashboard/ChartSkeleton'
+
+export const ProjectComparisonChart = dynamic(() => Promise.resolve(ProjectComparisonChartInner), {
+  ssr: false,
+  loading: () => <ChartSkeleton />,
+})
