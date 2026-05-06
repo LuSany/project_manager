@@ -6,6 +6,7 @@ import { writeFile, mkdir } from 'fs/promises'
 import { join } from 'path'
 import { existsSync } from 'fs'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { validateFilePath, getSafeFilePath } from '@/lib/file-security'
 
 // 允许的文件类型
 const ALLOWED_MIME_TYPES = [
@@ -63,7 +64,6 @@ const ALLOWED_MIME_TYPES = [
   // 其他常见类型
   'application/json',
   'application/xml',
-  'application/octet-stream',
   // 富文本
   'application/rtf',
   'text/rtf',
@@ -168,10 +168,11 @@ async function handleFormDataUpload(request: NextRequest, userId: string) {
   const isMimeTypeAllowed = ALLOWED_MIME_TYPES.includes(file.type)
   const isExtensionAllowed = ALLOWED_EXTENSIONS.includes(fileExtension)
 
-  if (!isMimeTypeAllowed && !isExtensionAllowed) {
+  // AND 逻辑：MIME 类型 AND 扩展名都必须合法
+  if (!isMimeTypeAllowed || !isExtensionAllowed) {
     return error(
       'VALIDATION_ERROR',
-      `不支持的文件类型: ${file.type || '未知'} (扩展名: ${fileExtension})`,
+      `不支持的文件类型: MIME ${file.type || '未知'}，扩展名 ${fileExtension}。两者都必须匹配允许的文件类型。`,
       undefined,
       400
     )
@@ -181,8 +182,23 @@ async function handleFormDataUpload(request: NextRequest, userId: string) {
   const fileId = crypto.randomUUID()
   const extension = file.name.split('.').pop() || 'bin'
   const fileName = `${fileId}.${extension}`
+
+  // 使用安全的文件路径生成器防止路径遍历攻击
+  const safeFilePath = getSafeFilePath(fileName)
+
+  const pathValidation = validateFilePath(safeFilePath)
+  if (!pathValidation.valid) {
+    return error('VALIDATION_ERROR', pathValidation.reason || '文件路径验证失败', undefined, 400)
+  }
+
   const uploadDir = join(process.cwd(), 'uploads')
   const filePath = join(uploadDir, fileName)
+
+  // 二次验证最终路径是否安全
+  const finalPathValidation = validateFilePath(filePath)
+  if (!finalPathValidation.valid) {
+    return error('VALIDATION_ERROR', finalPathValidation.reason || '文件路径验证失败', undefined, 400)
+  }
 
   // 确保 uploads 目录存在
   if (!existsSync(uploadDir)) {
@@ -220,8 +236,14 @@ async function handleJsonUpload(request: NextRequest, userId: string) {
   const fileId = crypto.randomUUID()
   const extension = validated.fileName.split('.').pop()
   const fileName = `${fileId}.${extension}`
+
   const uploadDir = join(process.cwd(), 'uploads')
   const filePath = join(uploadDir, fileName)
+
+  const pathValidation = validateFilePath(filePath)
+  if (!pathValidation.valid) {
+    return error('VALIDATION_ERROR', pathValidation.reason || '文件路径验证失败', undefined, 400)
+  }
 
   // 确保 uploads 目录存在
   if (!existsSync(uploadDir)) {
