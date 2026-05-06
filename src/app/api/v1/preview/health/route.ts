@@ -3,14 +3,7 @@ import { success, error } from '@/lib/api/response'
 import { prisma } from '@/lib/prisma'
 import { getAllServicesHealth, checkServiceHealth } from '@/lib/preview/degradation'
 import { PreviewServiceType } from '@/lib/preview/degradation'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-// 辅助函数：获取认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // GET /api/v1/preview/health - 获取所有预览服务健康状态
 export async function GET(request: NextRequest) {

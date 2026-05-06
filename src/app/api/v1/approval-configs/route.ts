@@ -2,13 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { success, error, unauthorized, notFound, validationError, forbidden } from '@/lib/api/response'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 const createApprovalConfigSchema = z.object({
   deviceTypeId: z.string().uuid('无效的设备类型ID'),

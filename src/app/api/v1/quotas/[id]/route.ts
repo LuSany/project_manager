@@ -6,6 +6,7 @@ import { validateSubQuotas } from '@/lib/quota'
 import { z } from 'zod'
 import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
 
+// 管理员专用认证检查
 async function getAuthUser(request: NextRequest) {
   const { userId } = await getAuthUserIdentity(request)
   if (!userId) return null

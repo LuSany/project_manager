@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // 任务更新验证 Schema
 const updateTaskSchema = z.object({
@@ -17,13 +17,6 @@ const updateTaskSchema = z.object({
   milestoneId: z.string().optional().nullable(),
   assigneeIds: z.array(z.string()).optional(),
 });
-
-// 辅助函数：获取已认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
 
 export async function GET(
   request: NextRequest,

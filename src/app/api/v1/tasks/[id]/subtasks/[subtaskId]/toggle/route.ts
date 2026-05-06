@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-// 辅助函数：获取认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // PUT /api/v1/tasks/[id]/subtasks/[subtaskId]/toggle - 切换子任务完成状态
 export async function PUT(

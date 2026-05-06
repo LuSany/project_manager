@@ -1,25 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-// 辅助函数：获取已认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
-
-// 辅助函数：获取用户有权限访问的项目ID列表
-async function getUserProjectIds(userId: string) {
-  const userProjects = await prisma.projects.findMany({
-    where: {
-      OR: [{ ownerId: userId }, { project_members: { some: { userId: userId } } }],
-    },
-    select: { id: true },
-  });
-  return userProjects.map((p) => p.id);
-}
+import { getAuthUser, getUserProjectIds } from '@/lib/auth-helpers'
 
 // Issue创建验证 Schema
 const createIssueSchema = z.object({

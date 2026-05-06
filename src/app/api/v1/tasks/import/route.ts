@@ -4,13 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
 import type { TaskImportResult, TemplateTask } from "@/types/task-template";
 
-// 辅助函数：获取认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
-
 // 任务导入验证Schema
 const templateTaskSchema = z.object({
   title: z.string().min(1, "任务标题不能为空"),
@@ -95,7 +88,7 @@ async function createTasks(
 }
 
 // POST /api/v1/tasks/import - 导入任务
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { getAuthUser } from '@/lib/auth-helpers'
 export async function POST(request: NextRequest) {
   // 认证检查
   const user = await getAuthUser(request);

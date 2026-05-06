@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { getAuthUser } from '@/lib/auth-helpers'
 
 const updateSubTaskSchema = z.object({
   title: z.string().min(1, '子任务标题不能为空').optional(),
@@ -9,12 +9,6 @@ const updateSubTaskSchema = z.object({
   completed: z.boolean().optional(),
   assigneeId: z.string().optional().nullable(),
 })
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
 
 export async function PUT(
   request: NextRequest,

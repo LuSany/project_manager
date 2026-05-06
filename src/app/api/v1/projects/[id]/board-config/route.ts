@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // 默认看板列配置
 const DEFAULT_BOARD_COLUMNS = [
@@ -9,13 +9,6 @@ const DEFAULT_BOARD_COLUMNS = [
   { id: 'in_progress', title: '开发中', status: 'IN_PROGRESS', color: '#52C41A', wipLimit: null, order: 2 },
   { id: 'completed', title: '已完成', status: 'COMPLETED', color: '#8C8C8C', wipLimit: null, order: 3 },
 ];
-
-// 辅助函数：获取已认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
 
 // GET /api/v1/projects/[id]/board-config - 获取看板配置
 export async function GET(

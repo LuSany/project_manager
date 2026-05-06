@@ -2,14 +2,7 @@ import { NextRequest } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { ApiResponder } from "@/lib/api/response";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-// 辅助函数：获取认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // 模板创建验证Schema
 const createTemplateSchema = z.object({

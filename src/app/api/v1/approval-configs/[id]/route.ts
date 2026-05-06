@@ -7,13 +7,7 @@ import { success,
   notFound,
   validationError,
   forbidden, } from '@/lib/api/response'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 const updateApprovalConfigSchema = z.object({
   levels: z.number().int().min(1).max(10).optional(),

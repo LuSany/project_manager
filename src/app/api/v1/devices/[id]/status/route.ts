@@ -1,13 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
 
 const updateStatusSchema = z.object({
   status: z.enum(['AVAILABLE', 'RESERVED', 'IN_USE', 'MAINTENANCE', 'DISABLED']),

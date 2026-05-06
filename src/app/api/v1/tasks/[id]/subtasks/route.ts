@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
+import { getAuthUser } from '@/lib/auth-helpers'
 
 // 子任务创建验证 Schema
 const createSubTaskSchema = z.object({
   title: z.string().min(1, '子任务标题不能为空'),
   description: z.string().optional(),
   assigneeId: z.string().nullable().optional(),
-})
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
-
-// GET /api/v1/tasks/[id]/subtasks - 获取子任务列表
+})// GET /api/v1/tasks/[id]/subtasks - 获取子任务列表
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const user = await getAuthUser(request)
   if (!user) {
