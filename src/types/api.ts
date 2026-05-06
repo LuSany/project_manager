@@ -7,12 +7,14 @@ export interface ApiResponse<T> {
   data?: T;
   error?: ApiError;
   message?: string;
+  meta?: PaginationMeta;
 }
 
-export interface ApiError {
-  code: string;
-  message: string;
-  details?: Record<string, unknown>;
+export interface PaginationMeta {
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
 }
 
 export interface PaginationParams {
@@ -20,12 +22,4 @@ export interface PaginationParams {
   pageSize?: number;
   sortBy?: string;
   sortOrder?: "asc" | "desc";
-}
-
-export interface PaginatedResponse<T> {
-  items: T[];
-  total: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
 }

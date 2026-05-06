@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
-import type { ApiResponse } from '@/types/api'
+import type { ApiResponse, PaginationMeta } from '@/types/api'
 
 export class ApiResponder {
   static success<T>(data: T, message?: string, status: number = 200): NextResponse<ApiResponse<T>> {
@@ -8,6 +8,23 @@ export class ApiResponder {
       {
         success: true,
         data,
+        ...(message && { message }),
+      },
+      { status }
+    )
+  }
+
+  static paginated<T>(
+    data: T[],
+    meta: PaginationMeta,
+    message?: string,
+    status: number = 200
+  ): NextResponse<ApiResponse<T[]>> {
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        meta,
         ...(message && { message }),
       },
       { status }

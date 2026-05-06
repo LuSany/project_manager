@@ -1,25 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-// 辅助函数：获取已认证用户
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request);
-  if (!userId) return null;
-  return prisma.users.findUnique({ where: { id: userId } });
-}
-
-// 辅助函数：获取用户有权限访问的项目ID列表
-async function getUserProjectIds(userId: string) {
-  const userProjects = await prisma.projects.findMany({
-    where: {
-      OR: [{ ownerId: userId }, { project_members: { some: { userId: userId } } }],
-    },
-    select: { id: true },
-  });
-  return userProjects.map((p) => p.id);
-}
+import { getAuthUser, getUserProjectIds } from '@/lib/auth-helpers'
+import { ApiResponder } from "@/lib/api/response";
 
 // 需求创建验证 Schema
 const createRequirementSchema = z.object({
@@ -41,10 +24,7 @@ export async function GET(request: NextRequest) {
   // 认证检查
   const user = await getAuthUser(request);
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
@@ -73,25 +53,18 @@ export async function GET(request: NextRequest) {
       if (projectId) {
         // 检查用户是否有权限访问该项目
         if (!projectIds.includes(projectId)) {
-          return NextResponse.json(
-            { success: false, error: "无权访问此项目" },
-            { status: 403 }
-          );
+          return ApiResponder.forbidden('无权访问此项目')
         }
         where.projectId = projectId;
       } else {
         // 未指定项目时，只显示用户有权限的项目需求
         if (projectIds.length === 0) {
-          return NextResponse.json({
-            success: true,
-            data: {
-              items: [],
-              total: 0,
-              page,
-              pageSize,
-              totalPages: 0,
-            },
-          });
+          return ApiResponder.paginated([], {
+            page,
+            pageSize,
+            total: 0,
+            totalPages: 0,
+          })
         }
         where.projectId = { in: projectIds };
       }
@@ -171,22 +144,18 @@ export async function GET(request: NextRequest) {
       prisma.requirements.count({ where }),
     ]);
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        items: requirements,
-        total,
+    return ApiResponder.paginated(
+      requirements,
+      {
         page,
         pageSize,
+        total,
         totalPages: Math.ceil(total / pageSize),
-      },
-    });
+      }
+    );
   } catch (error) {
     console.error("获取需求列表失败:", error);
-    return NextResponse.json(
-      { success: false, error: "获取需求列表失败" },
-      { status: 500 }
-    );
+    return ApiResponder.serverError('获取需求列表失败')
   }
 }
 
@@ -195,10 +164,7 @@ export async function POST(request: NextRequest) {
   // 认证检查
   const user = await getAuthUser(request);
   if (!user) {
-    return NextResponse.json(
-      { success: false, error: "未授权，请先登录" },
-      { status: 401 }
-    );
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
@@ -209,10 +175,7 @@ export async function POST(request: NextRequest) {
     if (user.role !== "ADMIN") {
       const projectIds = await getUserProjectIds(user.id);
       if (!projectIds.includes(validatedData.projectId)) {
-        return NextResponse.json(
-          { success: false, error: "无权在此项目创建需求" },
-          { status: 403 }
-        );
+        return ApiResponder.forbidden('无权在此项目创建需求')
       }
     }
 
@@ -257,21 +220,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({
-      success: true,
-      data: requirement,
-    });
+    return ApiResponder.created(requirement)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { success: false, error: error.issues[0].message },
-        { status: 400 }
-      );
+      return ApiResponder.validationError('数据验证失败', { issues: error.issues })
     }
     console.error("创建需求失败:", error);
-    return NextResponse.json(
-      { success: false, error: "创建需求失败" },
-      { status: 500 }
-    );
+    return ApiResponder.serverError('创建需求失败')
   }
 }

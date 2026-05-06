@@ -1,16 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { hasBookingConflict } from '@/lib/booking-conflict'
 import { getApprovalConfigByDeviceType, startApprovalChainTransaction, notifyApprovalChain } from '@/lib/approval-flow'
 import { checkWarningThresholds } from '@/lib/quota'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
+import { ApiResponder } from '@/lib/api/response'
 
 const createBookingSchema = z
   .object({
@@ -24,7 +19,7 @@ const createBookingSchema = z
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
@@ -59,20 +54,22 @@ export async function GET(request: NextRequest) {
       prisma.bookings.count({ where }),
     ])
 
-    return NextResponse.json({
-      success: true,
-      data: { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    return ApiResponder.paginated(items, {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
     })
   } catch (error) {
     console.error('获取预定列表失败:', error)
-    return NextResponse.json({ success: false, error: '获取预定列表失败' }, { status: 500 })
+    return ApiResponder.serverError('获取预定列表失败')
   }
 }
 
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
@@ -88,15 +85,15 @@ export async function POST(request: NextRequest) {
     })
 
     if (!device) {
-      return NextResponse.json({ success: false, error: '设备不存在' }, { status: 404 })
+      return ApiResponder.notFound('设备不存在')
     }
 
     if (device.status === 'DISABLED') {
-      return NextResponse.json({ success: false, error: '设备已停用，无法预定' }, { status: 400 })
+      return ApiResponder.validationError('设备已停用，无法预定')
     }
 
     if (device.status === 'MAINTENANCE') {
-      return NextResponse.json({ success: false, error: '设备正在维护，无法预定' }, { status: 400 })
+      return ApiResponder.validationError('设备正在维护，无法预定')
     }
 
     const existingBookings = await prisma.bookings.findMany({
@@ -114,20 +111,18 @@ export async function POST(request: NextRequest) {
 
     if (conflictResult.hasConflict) {
       const conflict = conflictResult.conflictingBooking
-      return NextResponse.json(
+      return ApiResponder.error(
+        'BOOKING_CONFLICT',
+        '预定时间与现有预定冲突',
         {
-          success: false,
-          error: '预定时间与现有预定冲突',
-          data: {
-            conflictingBooking: {
-              startTime: conflict?.startTime,
-              endTime: conflict?.endTime,
-              userName: (conflict as any)?.users?.name || '未知用户',
-              projectName: (conflict as any)?.projects?.name || '未关联项目',
-            },
+          conflictingBooking: {
+            startTime: conflict?.startTime,
+            endTime: conflict?.endTime,
+            userName: (conflict as any)?.users?.name || '未知用户',
+            projectName: (conflict as any)?.projects?.name || '未关联项目',
           },
         },
-        { status: 409 }
+        409
       )
     }
 
@@ -188,12 +183,12 @@ export async function POST(request: NextRequest) {
       await checkWarningThresholds(validatedData.projectId)
     }
 
-    return NextResponse.json({ success: true, data: { ...booking, approval: approvalInfo } })
+    return ApiResponder.created({ ...booking, approval: approvalInfo })
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
+      return ApiResponder.validationError('数据验证失败', { issues: error.issues })
     }
     console.error('创建预定失败:', error)
-    return NextResponse.json({ success: false, error: '创建预定失败' }, { status: 500 })
+    return ApiResponder.serverError('创建预定失败')
   }
 }

@@ -1,13 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
-import { getAuthUser as getAuthUserIdentity } from '@/lib/auth/get-auth-user'
-
-async function getAuthUser(request: NextRequest) {
-  const { userId } = await getAuthUserIdentity(request)
-  if (!userId) return null
-  return prisma.users.findUnique({ where: { id: userId } })
-}
+import { getAuthUser } from '@/lib/auth-helpers'
+import { ApiResponder } from '@/lib/api/response'
 
 const createDeviceSchema = z.object({
   name: z.string().min(1, '设备名称不能为空'),
@@ -18,7 +13,7 @@ const createDeviceSchema = z.object({
 export async function GET(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   try {
@@ -51,13 +46,15 @@ export async function GET(request: NextRequest) {
       prisma.devices.count({ where }),
     ])
 
-    return NextResponse.json({
-      success: true,
-      data: { items, total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
+    return ApiResponder.paginated(items, {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.ceil(total / pageSize),
     })
   } catch (error) {
     console.error('获取设备列表失败:', error)
-    return NextResponse.json({ success: false, error: '获取设备列表失败' }, { status: 500 })
+    return ApiResponder.serverError('获取设备列表失败')
   }
 }
 
@@ -65,12 +62,12 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   const user = await getAuthUser(request)
   if (!user) {
-    return NextResponse.json({ success: false, error: '未授权，请先登录' }, { status: 401 })
+    return ApiResponder.unauthorized('未授权，请先登录')
   }
 
   // 只有管理员可以创建设备
   if (user.role !== 'ADMIN') {
-    return NextResponse.json({ success: false, error: '此操作需要管理员权限' }, { status: 403 })
+    return ApiResponder.forbidden('此操作需要管理员权限')
   }
 
   try {
@@ -82,7 +79,7 @@ export async function POST(request: NextRequest) {
       where: { id: validatedData.typeId },
     })
     if (!deviceType) {
-      return NextResponse.json({ success: false, error: '设备类型不存在' }, { status: 400 })
+      return ApiResponder.validationError('设备类型不存在')
     }
 
     const device = await prisma.devices.create({
@@ -97,12 +94,12 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    return NextResponse.json({ success: true, data: device })
+    return ApiResponder.created(device)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ success: false, error: error.issues[0].message }, { status: 400 })
+      return ApiResponder.validationError('数据验证失败', { issues: error.issues })
     }
     console.error('创建设备失败:', error)
-    return NextResponse.json({ success: false, error: '创建设备失败' }, { status: 500 })
+    return ApiResponder.serverError('创建设备失败')
   }
 }
