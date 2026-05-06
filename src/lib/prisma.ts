@@ -9,5 +9,5 @@ export const prisma =
   new PrismaClient();
 
 if (process.env.NODE_ENV !== "production") {
-  (globalForPrisma as any).prisma = prisma;
+  globalForPrisma.prisma = prisma;
 }

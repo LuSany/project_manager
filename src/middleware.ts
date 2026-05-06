@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import { jwtVerify } from 'jose'
 import { validateCSRFToken } from '@/lib/security'
 import { apiRateLimit, authRateLimit } from '@/lib/rate-limiter'
+import { type JWTPayload } from '@/types/auth'
 
 export type AuthenticatedRequest = NextRequest & {
   user: {
@@ -40,10 +41,11 @@ export async function requireAuth(context: MiddlewareContext): Promise<NextRespo
 
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+    const jwtPayload = payload as unknown as JWTPayload
     ;(context.req as AuthenticatedRequest).user = {
-      id: (payload as any).userId,
-      email: (payload as any).email,
-      role: (payload as any).role,
+      id: jwtPayload.userId,
+      email: jwtPayload.email,
+      role: jwtPayload.role,
     }
   } catch (error) {
     return NextResponse.json(
@@ -157,7 +159,7 @@ export async function middleware(request: NextRequest) {
       if (jwtSecret && jwtSecret.length >= 32) {
         try {
           const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret))
-          userId = (payload as any).userId
+          userId = (payload as unknown as JWTPayload).userId
         } catch {
           // Token 无效，继续使用 IP 限流
         }

@@ -1,10 +1,5 @@
 import { jwtVerify } from 'jose'
-
-export interface AuthUser {
-  userId: string
-  email: string
-  role: string
-}
+import { type AuthUser, type JWTPayload } from '@/types/auth'
 
 /**
  * 从请求的 Authorization header 中提取并验证 JWT，返回用户信息
@@ -29,11 +24,12 @@ export async function getAuthUser(request: Request): Promise<AuthUser> {
 
   try {
     const { payload } = await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+    const jwtPayload = payload as unknown as JWTPayload
 
     return {
-      userId: (payload as any).userId,
-      email: (payload as any).email,
-      role: (payload as any).role,
+      userId: jwtPayload.userId,
+      email: jwtPayload.email,
+      role: jwtPayload.role,
     }
   } catch (error) {
     throw new Error('INVALID_TOKEN')

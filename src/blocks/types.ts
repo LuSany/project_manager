@@ -20,6 +20,8 @@ export interface Block {
   updateAt: number
   /** 软删除时间戳 */
   deletedAt?: number
+  /** 类型字段（用于类型守卫） */
+  type?: 'board' | 'card' | 'view'
 }
 
 /**
@@ -235,19 +237,19 @@ export type BlockType = 'board' | 'card' | 'view'
  * 类型守卫：判断是否为 Board
  */
 export function isBoard(block: Block): block is Board {
-  return 'type' in block && (block as any).type === 'board'
+  return block.type === 'board'
 }
 
 /**
  * 类型守卫：判断是否为 Card
  */
 export function isCard(block: Block): block is Card {
-  return 'type' in block && (block as any).type === 'card'
+  return block.type === 'card'
 }
 
 /**
  * 类型守卫：判断是否为 View
  */
 export function isView(block: Block): block is View {
-  return 'type' in block && (block as any).type === 'view'
+  return block.type === 'view'
 }
