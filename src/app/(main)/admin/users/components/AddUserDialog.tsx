@@ -20,15 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
-
-interface CreateUserFormData {
-  name: string
-  email: string
-  password: string
-  role: string
-  department: string
-  position: string
-}
+import { CreateUserFormData } from '../page'
 
 interface AddUserDialogProps {
   open: boolean

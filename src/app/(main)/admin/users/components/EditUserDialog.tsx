@@ -20,17 +20,7 @@ import {
 } from '@/components/ui/select'
 import { Loader2 } from 'lucide-react'
 import { UseFormReturn } from 'react-hook-form'
-
-interface UpdateUserFormData {
-  name?: string
-  email?: string
-  password?: string
-  role?: string
-  department?: string | null
-  position?: string | null
-  phone?: string | null
-  status?: string
-}
+import { UpdateUserFormData } from '../page'
 
 interface EditUserDialogProps {
   open: boolean

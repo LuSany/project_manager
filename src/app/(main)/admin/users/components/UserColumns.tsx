@@ -4,15 +4,14 @@ import { Badge } from '@/components/ui/badge'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Edit, Trash2 } from 'lucide-react'
 import { User, statusColors, roleLabels, statusLabels } from './types'
-import { OpenEditDialogFn, OpenDeleteDialogFn } from '../page'
+
+export type OpenEditDialogFn = (user: User) => void
+export type OpenDeleteDialogFn = (user: User) => void
 
 interface UserColumnsProps {
   openEditDialog: OpenEditDialogFn
   openDeleteDialog: OpenDeleteDialogFn
 }
-
-export type OpenEditDialogFn = (user: User) => void
-export type OpenDeleteDialogFn = (user: User) => void
 
 export function getUserColumns({
   openEditDialog,
