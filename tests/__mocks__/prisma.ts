@@ -606,7 +606,7 @@ function createMockModel<T extends { id?: string }>(
           id,
           createdAt: (data as any).createdAt || now,
           updatedAt: (data as any).updatedAt || now,
-        } as T
+        } as unknown as T
         store.set(id, record)
         return record
       }
@@ -793,7 +793,7 @@ function createCompositeKeyModel<T extends Record<string, any>>(
         ...defaultValues,
         ...data,
         createdAt: (data as any).createdAt || now,
-      } as T
+      } as unknown as T
       const key = getKey(record)
       store.set(key, record)
       return record

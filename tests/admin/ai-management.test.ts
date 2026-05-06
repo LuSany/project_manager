@@ -19,7 +19,7 @@ describe('Admin - AI Management', () => {
     it('should create OpenAI config successfully', async () => {
       const admin = await createTestUser({ role: 'ADMIN' })
 
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'OpenAI Production',
           provider: 'OPENAI',
@@ -40,7 +40,7 @@ describe('Admin - AI Management', () => {
     it('should create Anthropic config', async () => {
       const admin = await createTestUser({ role: 'ADMIN' })
 
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Anthropic Claude',
           provider: 'ANTHROPIC',
@@ -58,7 +58,7 @@ describe('Admin - AI Management', () => {
     it('should create custom provider config', async () => {
       const admin = await createTestUser({ role: 'ADMIN' })
 
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Internal LLM',
           provider: 'CUSTOM',
@@ -74,7 +74,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should update AI config', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Original Config',
           provider: 'OPENAI',
@@ -83,7 +83,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const updated = await testPrisma.aIConfig.update({
+      const updated = await testPrisma.ai_configs.update({
         where: { id: config.id },
         data: {
           model: 'gpt-4o',
@@ -95,7 +95,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should delete AI config', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'To Delete',
           provider: 'OPENAI',
@@ -103,11 +103,11 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.delete({
+      await testPrisma.ai_configs.delete({
         where: { id: config.id },
       })
 
-      const found = await testPrisma.aIConfig.findUnique({
+      const found = await testPrisma.ai_configs.findUnique({
         where: { id: config.id },
       })
       expect(found).toBeNull()
@@ -116,7 +116,7 @@ describe('Admin - AI Management', () => {
 
   describe('Provider Activation', () => {
     it('should activate AI provider', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Inactive Provider',
           provider: 'OPENAI',
@@ -125,7 +125,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const activated = await testPrisma.aIConfig.update({
+      const activated = await testPrisma.ai_configs.update({
         where: { id: config.id },
         data: { isActive: true },
       })
@@ -134,7 +134,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should deactivate AI provider', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Active Provider',
           provider: 'ANTHROPIC',
@@ -143,7 +143,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const deactivated = await testPrisma.aIConfig.update({
+      const deactivated = await testPrisma.ai_configs.update({
         where: { id: config.id },
         data: { isActive: false },
       })
@@ -152,7 +152,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should set default provider', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Default Provider',
           provider: 'OPENAI',
@@ -166,7 +166,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should switch default provider', async () => {
-      const provider1 = await testPrisma.aIConfig.create({
+      const provider1 = await testPrisma.ai_configs.create({
         data: {
           name: 'Old Default',
           provider: 'OPENAI',
@@ -176,7 +176,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const provider2 = await testPrisma.aIConfig.create({
+      const provider2 = await testPrisma.ai_configs.create({
         data: {
           name: 'New Default',
           provider: 'ANTHROPIC',
@@ -186,17 +186,17 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.update({
+      await testPrisma.ai_configs.update({
         where: { id: provider1.id },
         data: { isDefault: false },
       })
 
-      await testPrisma.aIConfig.update({
+      await testPrisma.ai_configs.update({
         where: { id: provider2.id },
         data: { isDefault: true },
       })
 
-      const newDefault = await testPrisma.aIConfig.findFirst({
+      const newDefault = await testPrisma.ai_configs.findFirst({
         where: { isDefault: true },
       })
 
@@ -207,7 +207,7 @@ describe('Admin - AI Management', () => {
 
   describe('AI Service Types', () => {
     it('should configure provider for specific service type', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Risk Analysis Provider',
           provider: 'OPENAI',
@@ -221,7 +221,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should configure provider for review audit', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Review Audit Provider',
           provider: 'ANTHROPIC',
@@ -235,7 +235,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should find providers by service type', async () => {
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Risk Provider 1',
           provider: 'OPENAI',
@@ -245,7 +245,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Review Provider',
           provider: 'ANTHROPIC',
@@ -255,7 +255,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Risk Provider 2',
           provider: 'CUSTOM',
@@ -265,7 +265,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const riskProviders = await testPrisma.aIConfig.findMany({
+      const riskProviders = await testPrisma.ai_configs.findMany({
         where: {
           serviceType: 'RISK_ANALYSIS',
           isActive: true,
@@ -278,7 +278,7 @@ describe('Admin - AI Management', () => {
 
   describe('AI Provider Failover', () => {
     it('should configure multiple providers for failover', async () => {
-      const primary = await testPrisma.aIConfig.create({
+      const primary = await testPrisma.ai_configs.create({
         data: {
           name: 'Primary OpenAI',
           provider: 'OPENAI',
@@ -290,7 +290,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const backup = await testPrisma.aIConfig.create({
+      const backup = await testPrisma.ai_configs.create({
         data: {
           name: 'Backup Anthropic',
           provider: 'ANTHROPIC',
@@ -301,7 +301,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const fallback = await testPrisma.aIConfig.create({
+      const fallback = await testPrisma.ai_configs.create({
         data: {
           name: 'Fallback Internal',
           provider: 'CUSTOM',
@@ -312,7 +312,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const providers = await testPrisma.aIConfig.findMany({
+      const providers = await testPrisma.ai_configs.findMany({
         where: { isActive: true },
         orderBy: { priority: 'asc' },
       })
@@ -326,7 +326,7 @@ describe('Admin - AI Management', () => {
 
   describe('AI Query & Filter', () => {
     it('should find active providers', async () => {
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Active Provider 1',
           provider: 'OPENAI',
@@ -335,7 +335,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Inactive Provider',
           provider: 'ANTHROPIC',
@@ -344,7 +344,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Active Provider 2',
           provider: 'CUSTOM',
@@ -353,7 +353,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const active = await testPrisma.aIConfig.findMany({
+      const active = await testPrisma.ai_configs.findMany({
         where: { isActive: true },
       })
 
@@ -361,7 +361,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should find providers by provider type', async () => {
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'OpenAI Provider',
           provider: 'OPENAI',
@@ -369,7 +369,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Anthropic Provider',
           provider: 'ANTHROPIC',
@@ -377,7 +377,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const openai = await testPrisma.aIConfig.findMany({
+      const openai = await testPrisma.ai_configs.findMany({
         where: { provider: 'OPENAI' },
       })
 
@@ -386,7 +386,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should get default provider', async () => {
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Non-Default',
           provider: 'OPENAI',
@@ -395,7 +395,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      await testPrisma.aIConfig.create({
+      await testPrisma.ai_configs.create({
         data: {
           name: 'Default Provider',
           provider: 'ANTHROPIC',
@@ -405,7 +405,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const defaultProvider = await testPrisma.aIConfig.findFirst({
+      const defaultProvider = await testPrisma.ai_configs.findFirst({
         where: {
           isDefault: true,
           isActive: true,
@@ -419,7 +419,7 @@ describe('Admin - AI Management', () => {
 
   describe('Provider Model Configuration', () => {
     it('should configure model parameters', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Configured Model',
           provider: 'OPENAI',
@@ -437,7 +437,7 @@ describe('Admin - AI Management', () => {
     })
 
     it('should update model parameters', async () => {
-      const config = await testPrisma.aIConfig.create({
+      const config = await testPrisma.ai_configs.create({
         data: {
           name: 'Updatable Model',
           provider: 'OPENAI',
@@ -447,7 +447,7 @@ describe('Admin - AI Management', () => {
         },
       })
 
-      const updated = await testPrisma.aIConfig.update({
+      const updated = await testPrisma.ai_configs.update({
         where: { id: config.id },
         data: {
           model: 'gpt-4o',
