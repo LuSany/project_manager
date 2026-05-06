@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { z } from 'zod'
 import { getAuthUser } from '@/lib/auth-helpers'
 import { ApiResponder } from '@/lib/api/response'
+import { MAX_PAGE_SIZE } from '@/lib/constants'
 
 const createDeviceSchema = z.object({
   name: z.string().min(1, '设备名称不能为空'),
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '20')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '20'), MAX_PAGE_SIZE)
     const status = searchParams.get('status')
     const typeId = searchParams.get('typeId')
     const name = searchParams.get('name')

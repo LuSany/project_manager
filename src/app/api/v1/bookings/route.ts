@@ -6,6 +6,7 @@ import { getApprovalConfigByDeviceType, startApprovalChainTransaction, notifyApp
 import { checkWarningThresholds } from '@/lib/quota'
 import { getAuthUser } from '@/lib/auth-helpers'
 import { ApiResponder } from '@/lib/api/response'
+import { MAX_PAGE_SIZE } from '@/lib/constants'
 
 const createBookingSchema = z
   .object({
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '20')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '20'), MAX_PAGE_SIZE)
     const userId = searchParams.get('userId')
     const deviceId = searchParams.get('deviceId')
     const status = searchParams.get('status')

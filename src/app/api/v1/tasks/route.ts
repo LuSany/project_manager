@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { notifyTaskAssigned } from '@/lib/notification'
 import { getAuthUser, getUserProjectIds } from '@/lib/auth-helpers'
 import { ApiResponder } from '@/lib/api/response'
+import { MAX_PAGE_SIZE } from '@/lib/constants'
 
 // 任务创建验证 Schema
 const createTaskSchema = z.object({
@@ -32,7 +33,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
-    const pageSize = parseInt(searchParams.get('pageSize') || '10')
+    const pageSize = Math.min(parseInt(searchParams.get('pageSize') || '10'), MAX_PAGE_SIZE)
     const projectId = searchParams.get('projectId')
     const status = searchParams.get('status')
     const priority = searchParams.get('priority')
