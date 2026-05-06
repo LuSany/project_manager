@@ -929,10 +929,13 @@ model tasks {
 
   @@index([acceptorId])
   @@index([completedAt])
+  @@index([dueDate])
   @@index([issueId])
   @@index([milestoneId])
   @@index([priority])
   @@index([projectId])
+  @@index([projectId, dueDate])
+  @@index([projectId, status])
   @@index([status])
 }
 
@@ -1320,8 +1323,10 @@ model bookings {
   approvalRecords approval_records[]
 
   @@index([deviceId])
-  @@index([userId])
+  @@index([deviceId, startTime, endTime])
+  @@index([projectId])
   @@index([startTime, endTime])
+  @@index([userId])
 }
 
 enum DeviceStatus {
