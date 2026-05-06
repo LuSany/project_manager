@@ -227,6 +227,13 @@ export async function middleware(request: NextRequest) {
 
     try {
       await jwtVerify(token, new TextEncoder().encode(jwtSecret))
+
+      // CSRF 验证（在认证成功后进行）
+      const csrfResult = await requireCSRF(request)
+      if (csrfResult) {
+        return csrfResult
+      }
+
       const response = NextResponse.next()
       response.headers.set('X-RateLimit-Remaining', limitResult.remaining.toString())
       response.headers.set('X-RateLimit-Reset', limitResult.resetTime.toString())

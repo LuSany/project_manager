@@ -1,15 +1,81 @@
 // 安全工具函数
 import crypto from 'crypto'
 
-// 生成 CSRF token
+// CSRF Token 有效期（秒） - 1 小时
+const CSRF_TOKEN_EXPIRY = 3600
+
+// 生成 CSRF Token（使用 HMAC-SHA256 签名）
 export function generateCSRFToken(): string {
-  return crypto.randomBytes(32).toString('hex')
+  const timestamp = Math.floor(Date.now() / 1000)
+  const data = `csrf|${timestamp}`
+
+  const secret = process.env.JWT_SECRET || process.env.ENCRYPTION_KEY
+
+  if (!secret || secret.length < 32) {
+    throw new Error('JWT_SECRET or ENCRYPTION_KEY must be at least 32 characters for CSRF token generation')
+  }
+
+  const signature = crypto
+    .createHmac('sha256', secret.slice(0, 32))
+    .update(data)
+    .digest('hex')
+
+  // 格式: timestamp|signature
+  return `${timestamp}.${signature}`
 }
 
-// 验证 CSRF token
+// 验证 CSRF Token（验证签名和过期时间）
 export function validateCSRFToken(token: string): boolean {
-  // 实际应用中应该从 session 或其他存储中验证
-  return token && token.length === 64
+  if (!token) {
+    return false
+  }
+
+  const parts = token.split('.')
+
+  // 检查格式
+  if (parts.length !== 2) {
+    return false
+  }
+
+  const [timestampStr, signature] = parts
+  const timestamp = parseInt(timestampStr, 10)
+
+  // 检查 timestamp 有效性
+  if (isNaN(timestamp)) {
+    return false
+  }
+
+  // 检查过期时间
+  const now = Math.floor(Date.now() / 1000)
+  if (now - timestamp > CSRF_TOKEN_EXPIRY) {
+    return false
+  }
+
+  // 验证签名
+  const secret = process.env.JWT_SECRET || process.env.ENCRYPTION_KEY
+
+  if (!secret || secret.length < 32) {
+    return false
+  }
+
+  const data = `csrf|${timestamp}`
+  const expectedSignature = crypto
+    .createHmac('sha256', secret.slice(0, 32))
+    .update(data)
+    .digest('hex')
+
+  // 使用恒定时间比较防止时序攻击
+  if (signature.length !== expectedSignature.length) {
+    return false
+  }
+
+  for (let i = 0; i < signature.length; i++) {
+    if (signature[i] !== expectedSignature[i]) {
+      return false
+    }
+  }
+
+  return true
 }
 
 // 输入清理 - 防止 XSS 攻击

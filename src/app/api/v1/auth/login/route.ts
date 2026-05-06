@@ -6,6 +6,7 @@ import { SignJWT } from 'jose'
 import bcrypt from 'bcrypt'
 import type { AuthenticatedRequest } from '@/middleware'
 import { authRateLimit } from '@/lib/rate-limiter'
+import { generateCSRFToken } from '@/lib/security'
 
 // 登录请求验证Schema
 const loginSchema = z.object({
@@ -93,6 +94,16 @@ export async function POST(req: NextRequest) {
         },
         token,
       },
+    })
+
+    // 生成并设置 CSRF cookie
+    const csrfToken = generateCSRFToken()
+    response.cookies.set('csrf-token', csrfToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 3600, // 1 小时
+      path: '/',
     })
 
     response.headers.set('X-RateLimit-Limit', '10')
