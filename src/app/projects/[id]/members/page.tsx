@@ -2,6 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -307,13 +308,13 @@ export default function ProjectMembersPage({ params }: { params: Promise<{ id: s
                           }`}
                           onClick={() => setSelectedUserId(user.id)}
                         >
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                            {user.avatar ? (
-                              <img src={user.avatar} alt={user.name} className="w-10 h-10 rounded-full object-cover" />
-                            ) : (
-                              <User className="h-5 w-5 text-primary" />
-                            )}
-                          </div>
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+                              {user.avatar ? (
+                                <Image src={user.avatar} alt={user.name || "用户头像"} fill className="object-cover" sizes="40px" />
+                              ) : (
+                                <User className="h-5 w-5 text-primary" />
+                              )}
+                            </div>
                           <div className="flex-1 min-w-0">
                             <div className="font-medium truncate">{user.name || "未设置姓名"}</div>
                             <div className="text-sm text-muted-foreground truncate">{user.email}</div>
